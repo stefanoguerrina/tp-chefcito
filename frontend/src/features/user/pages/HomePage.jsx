@@ -10,6 +10,7 @@ import RolePage from '../../role/pages/RolePage.jsx';
 import IngredientCategoryPage from '../../ingredientCategory/pages/IngredientCategoryPage.jsx';
 import IngredientPage from '../../ingredient/pages/IngredientPage.jsx';
 import RecipePage from '../../recipe/pages/RecipePage.jsx';
+import RecipeDetailPage from '../../recipe/pages/RecipeDetailPage.jsx';
 import { getAllRecipes } from '../../recipe/services/recipeService.js';
 import { recipeToHomeCardProps } from '../../recipe/models/recipeModel.js';
 import '../styles/_home-page.scss';
@@ -31,6 +32,8 @@ const USER_PANELS = {
 function HomePage({ isAdmin }) {
   // Panel admin activo: null = home normal, o una clave de ADMIN_PANELS.
   const [activeAdminPanel, setActiveAdminPanel] = useState(null);
+  // Id de la receta cuyo detalle se está mostrando (null = sin detalle abierto).
+  const [selectedRecipeId, setSelectedRecipeId] = useState(null);
 
   // Recetas reales cargadas por los usuarios (ya no hay datos de muestra acá).
   const [communityRecipes, setCommunityRecipes] = useState([]);
@@ -96,8 +99,18 @@ function HomePage({ isAdmin }) {
             <RecipePage />
           )}
 
-          {/* Vista normal de la home cuando no hay panel admin ni de usuario activo */}
-          {activeAdminPanel === null && (
+          {/* Detalle de receta individual — se abre al clickear una card del carrusel */}
+          {selectedRecipeId !== null && activeAdminPanel === null && (
+            <RecipeDetailPage
+              recipeId={selectedRecipeId}
+              onBack={() => setSelectedRecipeId(null)}
+              isLoggedIn
+            />
+          )}
+
+          {/* Vista normal de la home cuando no hay panel admin ni de usuario activo y
+              no se está viendo el detalle de una receta */}
+          {activeAdminPanel === null && selectedRecipeId === null && (
             <>
               <HomeFeatureCards />
 
@@ -112,7 +125,11 @@ function HomePage({ isAdmin }) {
                 </p>
               )}
               {!isLoadingRecipes && !recipesError && communityRecipes.length > 0 && (
-                <RecipeCarouselSection title="Recetas de la comunidad" recipes={communityRecipes} />
+                <RecipeCarouselSection
+                  title="Recetas de la comunidad"
+                  recipes={communityRecipes}
+                  onRecipeClick={setSelectedRecipeId}
+                />
               )}
             </>
           )}

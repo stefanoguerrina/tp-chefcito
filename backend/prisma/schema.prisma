@@ -173,7 +173,8 @@ model review {
   idUser     Int
   idRecipe   Int
   idReview   Int
-  rating     Int        @db.TinyInt
+  // Decimal(3,1) soporta medias estrellas: 1.0, 1.5, 2.0 ... 5.0
+  rating     Decimal    @db.Decimal(3, 1)
   comment    String?    @db.Text
   createdAt  DateTime?  @default(now()) @db.DateTime(0)
   userrecipe userrecipe @relation(fields: [idUser, idRecipe], references: [idUser, idRecipe], onDelete: Cascade, map: "fk_review_userrecipe")

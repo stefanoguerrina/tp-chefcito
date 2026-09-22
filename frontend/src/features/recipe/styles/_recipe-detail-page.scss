@@ -1,0 +1,278 @@
+// Estilos de la página de detalle de receta (RecipeDetailPage).
+// Mobile-first: imagen a full width en mobile, layout centrado con máximo en desktop.
+@use '../../../styles/abstracts' as *;
+
+.RecipeDetailPage {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: $spacing-lg $spacing-xl $spacing-xl;
+  text-align: left;
+
+  @media (max-width: 576px) {
+    padding: $spacing-md;
+  }
+
+  &-status {
+    padding: $spacing-xl;
+    text-align: center;
+    font-family: $font-body;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+
+    &--error { color: $color-error; }
+  }
+
+  /* Botón volver */
+  &-backBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    margin-bottom: $spacing-lg;
+    border-radius: $radius-full;
+    border: 1px solid $color-outline-variant;
+    background: transparent;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    .material-symbols-outlined { font-size: 20px; }
+
+    &:hover {
+      background: $color-surface-container-low;
+      color: $color-on-surface;
+    }
+  }
+
+  /* Imagen portada */
+  &-cover {
+    position: relative;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    margin-bottom: $spacing-lg;
+    aspect-ratio: 16 / 7;
+    background: $color-surface-container;
+  }
+
+  &-coverImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &-badge {
+    position: absolute;
+    top: $spacing-md;
+    left: $spacing-md;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px $spacing-sm;
+    border-radius: $radius-full;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(4px);
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    color: $color-on-surface;
+
+    .material-symbols-outlined { font-size: 14px; color: $color-primary; }
+  }
+
+  /* Encabezado */
+  &-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $spacing-md;
+    margin-bottom: $spacing-md;
+  }
+
+  &-headerMain { flex: 1; }
+
+  &-author {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-xs;
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+  }
+
+  &-authorAvatar {
+    width: 28px;
+    height: 28px;
+    border-radius: $radius-full;
+    object-fit: cover;
+  }
+
+  &-title {
+    font-family: $font-headline;
+    font-size: 32px;
+    font-weight: 700;
+    color: $color-on-surface;
+    margin: 0 0 $spacing-sm;
+    line-height: 1.2;
+
+    @media (max-width: 576px) { font-size: 24px; }
+  }
+
+  &-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: $font-body;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined { font-size: 18px; }
+  }
+
+  &-metaDot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: $color-outline;
+    margin: 0 4px;
+  }
+
+  /* Botón guardar */
+  &-saveBtn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-full;
+    border: 2px solid $color-outline-variant;
+    background: transparent;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-on-surface-variant;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    .material-symbols-outlined { font-size: 18px; }
+
+    &:hover {
+      border-color: $color-secondary;
+      color: $color-secondary;
+    }
+
+    &--saved {
+      background: $color-secondary-container;
+      border-color: $color-secondary-container;
+      color: $color-on-secondary-container;
+      .material-symbols-outlined { font-variation-settings: "'FILL' 1"; }
+    }
+  }
+
+  /* Descripción */
+  &-description {
+    font-family: $font-body;
+    font-size: 15px;
+    color: $color-on-surface-variant;
+    line-height: 1.7;
+    margin: 0 0 $spacing-xl;
+  }
+
+  /* Secciones (ingredientes y pasos) */
+  &-section {
+    margin-bottom: $spacing-xl;
+  }
+
+  &-sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-family: $font-body;
+    font-size: 18px;
+    font-weight: 700;
+    color: $color-on-surface;
+    margin: 0 0 $spacing-md;
+    padding-bottom: $spacing-sm;
+    border-bottom: 2px solid $color-outline-variant;
+
+    .material-symbols-outlined { color: $color-primary; font-size: 22px; }
+  }
+
+  /* Lista de ingredientes */
+  &-ingredientList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &-ingredientItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-sm $spacing-md;
+    background: $color-surface-container-low;
+    border-radius: $radius-md;
+    font-family: $font-body;
+    font-size: 14px;
+  }
+
+  &-ingredientName { color: $color-on-surface; font-weight: 600; }
+  &-ingredientQty { color: $color-on-surface-variant; }
+
+  /* Lista de pasos */
+  &-stepList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &-stepItem {
+    display: flex;
+    gap: $spacing-md;
+    align-items: flex-start;
+  }
+
+  &-stepNumber {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-on-primary;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &-stepInstruction {
+    font-family: $font-body;
+    font-size: 14px;
+    color: $color-on-surface;
+    line-height: 1.65;
+    margin: 0 0 4px;
+  }
+
+  &-stepTime {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: $font-body;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined { font-size: 14px; }
+  }
+}

@@ -1,0 +1,40 @@
+// Estilos del selector interactivo de rating (StarPicker).
+// Las estrellas responden al hover con color dorado del sistema de diseño de Chefcito.
+@use '../../../styles/abstracts' as *;
+
+.StarPicker {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  user-select: none;
+
+  &-star {
+    font-size: 32px;
+    color: $color-outline-variant;
+    transition: color 0.1s, transform 0.1s;
+
+    // Estrella sobrevolada o llena: toma el color de estrellas del sistema Chefcito.
+    &[style] {
+      color: $color-tertiary-fixed-dim;
+    }
+
+    &:hover {
+      transform: scale(1.15);
+      color: $color-tertiary-fixed-dim;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      border-radius: 4px;
+    }
+  }
+
+  &-value {
+    font-family: $font-body;
+    font-size: 16px;
+    font-weight: 700;
+    color: $color-tertiary;
+    margin-left: $spacing-sm;
+  }
+}

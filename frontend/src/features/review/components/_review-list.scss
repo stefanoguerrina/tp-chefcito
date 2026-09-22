@@ -1,0 +1,164 @@
+// Estilos de la sección de reseñas (ReviewList + ReviewItem).
+// Mobile-first: columna única en mobile, margen y separadores en desktop.
+@use '../../../styles/abstracts' as *;
+
+.ReviewList {
+  padding: $spacing-lg $spacing-xl;
+  border-top: 1px solid $color-outline-variant;
+  text-align: left;
+
+  @media (max-width: 576px) {
+    padding: $spacing-md $spacing-md;
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-lg;
+  }
+
+  &-title {
+    font-family: $font-body;
+    font-size: 20px;
+    font-weight: 700;
+    color: $color-on-surface;
+    margin: 0;
+  }
+
+  &-average {
+    // El StarRating ya tiene su propio layout flex; solo ajustamos el tamaño.
+    .StarRating-icon { font-size: 20px; }
+    .StarRating-value { font-size: 15px; font-weight: 700; }
+  }
+
+  &-noRating {
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+    margin: 0;
+  }
+
+  /* Botón "Reseñar esta receta" */
+  &-reviewBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-lg;
+    margin-bottom: $spacing-lg;
+    border-radius: $radius-full;
+    border: 2px solid $color-primary;
+    background: transparent;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-primary;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    .material-symbols-outlined { font-size: 20px; }
+
+    &:hover {
+      background: $color-primary;
+      color: $color-on-primary;
+    }
+  }
+
+  &-loading,
+  &-empty {
+    font-family: $font-body;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+    margin: 0;
+  }
+
+  &-error,
+  &-deleteError {
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-error;
+    margin: 0 0 $spacing-sm;
+  }
+
+  &-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+}
+
+/* Cada reseña individual */
+.ReviewItem {
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-outline-variant;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  &-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-full;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  &-authorInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+
+  &-username {
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-on-surface;
+  }
+
+  &-date {
+    font-family: $font-body;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+  }
+
+  &-stars {
+    .StarRating-icon { font-size: 16px; }
+    .StarRating-value { display: none; } // En la lista no mostramos el número, solo iconos
+  }
+
+  &-comment {
+    font-family: $font-body;
+    font-size: 14px;
+    color: $color-on-surface;
+    line-height: 1.6;
+    margin: 0 0 $spacing-sm;
+  }
+
+  &-deleteBtn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: $font-body;
+    font-size: 12px;
+    color: $color-error;
+    cursor: pointer;
+    text-decoration: underline;
+
+    &:hover { opacity: 0.75; }
+  }
+}

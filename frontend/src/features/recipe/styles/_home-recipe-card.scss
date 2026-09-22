@@ -22,6 +22,11 @@
     }
   }
 
+  // Cuando tiene un onClick asociado, indicar que es clickeable.
+  &--clickable {
+    cursor: pointer;
+  }
+
   &-imageWrapper {
     position: relative;
     width: 100%;
