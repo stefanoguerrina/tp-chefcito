@@ -11,6 +11,7 @@ import IngredientCategoryPage from '../../ingredientCategory/pages/IngredientCat
 import IngredientPage from '../../ingredient/pages/IngredientPage.jsx';
 import RecipePage from '../../recipe/pages/RecipePage.jsx';
 import RecipeDetailPage from '../../recipe/pages/RecipeDetailPage.jsx';
+import InventoryPage from '../../inventory/pages/InventoryPage.jsx';
 import { getAllRecipes } from '../../recipe/services/recipeService.js';
 import { recipeToHomeCardProps } from '../../recipe/models/recipeModel.js';
 import '../styles/_home-page.scss';
@@ -26,6 +27,7 @@ const ADMIN_PANELS = {
 // Paneles disponibles para cualquier usuario autenticado (no requieren rol admin).
 const USER_PANELS = {
   myRecipes: 'myRecipes',
+  inventory: 'inventory',
 };
 
 // Recibe: isAdmin (habilita los paneles de administración en la sidebar).
@@ -97,6 +99,10 @@ function HomePage({ isAdmin }) {
 
           {activeAdminPanel === USER_PANELS.myRecipes && (
             <RecipePage />
+          )}
+
+          {activeAdminPanel === USER_PANELS.inventory && (
+            <InventoryPage />
           )}
 
           {/* Detalle de receta individual — se abre al clickear una card del carrusel */}

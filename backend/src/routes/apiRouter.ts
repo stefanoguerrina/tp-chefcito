@@ -9,6 +9,7 @@ import { ingredientRouter } from '../features/ingredient/routes/ingredientRouter
 import { roleRouter } from '../features/rol/routes/roleRouter.js';
 import { recipeRouter } from '../features/recipe/routes/recipeRouter.js';
 import { savedRecipesRouter } from '../features/userRecipe/routes/savedRecipesRouter.js';
+import { inventoryRouter } from '../features/inventory/routes/inventoryRouter.js';
 
 const apiRouter = Router();
 
@@ -33,5 +34,7 @@ apiRouter.use('/recipes', recipeRouter);
 
 // Saved recipes (userRecipe) listing routes
 apiRouter.use('/saved-recipes', savedRecipesRouter);
+// Inventory routes (anidado bajo /users/:userId/inventory)
+apiRouter.use('/users/:userId/inventory', inventoryRouter);
 
 export { apiRouter };
