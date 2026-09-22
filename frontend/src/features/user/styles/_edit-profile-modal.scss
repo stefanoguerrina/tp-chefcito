@@ -1,0 +1,132 @@
+// Estilos del modal de edición de perfil (features/user/components/EditProfileModal).
+// Mismo patrón visual que core/components/ConfirmModal, con campos de formulario propios.
+@use '../../../styles/abstracts' as *;
+
+.EditProfileModal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.EditProfileModal-card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-2;
+  padding: $spacing-lg;
+}
+
+.EditProfileModal-title {
+  font-family: $font-body;
+  font-size: 18px;
+  font-weight: 700;
+  color: $color-on-surface;
+  margin: 0 0 $spacing-lg;
+}
+
+.EditProfileModal-form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.EditProfileModal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+  }
+
+  input,
+  textarea {
+    font-family: $font-body;
+    font-size: 14px;
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 64px;
+    font-family: $font-body;
+  }
+}
+
+.EditProfileModal-charCount {
+  align-self: flex-end;
+  font-size: 11px;
+  color: $color-on-surface-variant;
+}
+
+.EditProfileModal-alert {
+  background: rgba($color-error, 0.1);
+  color: $color-error;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  font-size: 14px;
+}
+
+.EditProfileModal-actions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-xs;
+}
+
+.EditProfileModal-button {
+  flex: 1;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  border: none;
+  font-family: $font-body;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  &--cancel {
+    border: 1px solid $color-outline-variant;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-low;
+    }
+  }
+
+  &--confirm {
+    background: $color-primary;
+    color: $color-on-primary;
+
+    &:hover:not(:disabled) {
+      background: $color-primary-container;
+    }
+  }
+}

@@ -46,24 +46,6 @@
     flex-shrink: 0;
   }
 
-  &-links {
-    display: none;
-
-    @include respond-to(md) {
-      display: flex;
-      gap: $spacing-lg;
-
-      a {
-        color: $color-primary;
-        font-weight: 700;
-        font-size: 14px;
-        text-decoration: none;
-        border-bottom: 2px solid $color-primary;
-        padding-bottom: 4px;
-      }
-    }
-  }
-
   &-search {
     display: none;
 
@@ -84,12 +66,21 @@
 
       input {
         width: 100%;
+        // Se fuerza color-scheme: light acá porque el :root global declara
+        // "light dark" (para el resto del sitio, que sigue el tema del SO); sin esto,
+        // en navegadores con modo oscuro el input toma texto blanco sobre este fondo claro.
+        color-scheme: light;
         background: $color-surface-container-low;
+        color: $color-on-background;
         border: 1px solid $color-outline-variant;
         border-radius: $radius-full;
         padding: 12px $spacing-lg 12px 40px;
         font-family: $font-body;
         font-size: 14px;
+
+        &::placeholder {
+          color: $color-on-surface-variant;
+        }
 
         &:focus {
           outline: none;

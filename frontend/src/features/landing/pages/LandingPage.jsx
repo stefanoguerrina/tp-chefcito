@@ -16,7 +16,7 @@ import '../styles/_landing-page.scss';
 function LandingPage({ onLoginClick, onRegisterClick, onRequireAuth }) {
   return (
     <div className="LandingPage">
-      <Navbar onLoginClick={onLoginClick} onRegisterClick={onRegisterClick} />
+      <Navbar onLoginClick={onLoginClick} onRegisterClick={onRegisterClick} onRequireAuth={onRequireAuth} />
 
       <main>
         <Hero />

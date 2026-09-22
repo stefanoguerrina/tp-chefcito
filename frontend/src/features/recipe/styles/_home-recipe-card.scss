@@ -45,19 +45,6 @@
     user-select: none;
   }
 
-  &-badge {
-    position: absolute;
-    top: $spacing-sm;
-    left: $spacing-sm;
-    background: $color-secondary;
-    color: $color-on-secondary;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 4px $spacing-sm;
-    border-radius: $radius-md;
-    box-shadow: $shadow-level-1;
-  }
-
   &-favoriteButton {
     position: absolute;
     top: $spacing-sm;

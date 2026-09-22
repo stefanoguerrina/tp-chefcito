@@ -1,0 +1,129 @@
+// Estilos del botón + menú de filtro por categorías
+// (features/user/components/CategoryFilterDropdown).
+@use '../../../styles/abstracts' as *;
+
+.CategoryFilterDropdown {
+  // El menú se posiciona contra este contenedor, justo debajo del botón.
+  position: relative;
+
+  &-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    // Mismo alto y misma forma de píldora que el buscador que va al lado, para
+    // que los dos queden a la par (ver &-searchBar en _profile-page.scss).
+    height: 44px;
+    padding: 0 $spacing-lg;
+    border-radius: $radius-full;
+    border: 1px solid $color-outline-variant;
+    background: $color-surface-container-lowest;
+    box-shadow: $shadow-level-1;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: $color-primary;
+    }
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    &--active {
+      background: $color-primary;
+      border-color: $color-primary;
+      color: $color-on-primary;
+    }
+
+    // Sin categorías cargadas todavía (ver hasCategories en el componente).
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  // Contador de categorías elegidas, adentro del botón.
+  &-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: $radius-full;
+    background: $color-on-primary;
+    color: $color-primary;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  &-menu {
+    position: absolute;
+    top: calc(100% + #{$spacing-xs});
+    left: 0;
+    z-index: 10;
+    min-width: 220px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: $spacing-sm;
+    border: 1px solid $color-surface-container-highest;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    box-shadow: $shadow-level-2;
+  }
+
+  &-menuHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding: $spacing-xs $spacing-sm $spacing-sm;
+    border-bottom: 1px solid $color-surface-container-highest;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: $color-on-surface-variant;
+  }
+
+  &-clear {
+    border: none;
+    background: transparent;
+    color: $color-primary;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  &-list {
+    list-style: none;
+    margin: $spacing-xs 0 0;
+    padding: 0;
+  }
+
+  &-option {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-md;
+    font-size: 14px;
+    color: $color-on-surface;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-surface-container-low;
+    }
+
+    input {
+      accent-color: $color-primary;
+      cursor: pointer;
+    }
+  }
+}

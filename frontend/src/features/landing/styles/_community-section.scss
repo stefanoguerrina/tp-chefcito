@@ -103,7 +103,7 @@
   }
 
   &-comment {
-    background: $color-surface;
+    background: $color-surface-container-lowest;
     border: 1px solid rgba($color-surface-container-highest, 0.5);
     border-radius: $radius-lg;
     padding: $spacing-lg;
@@ -154,8 +154,9 @@
 
   &-commentQuote {
     width: 100%;
-    background: $color-surface-container-lowest;
-    border: 1px solid rgba($color-outline-variant, 0.2);
+    background: rgba($color-primary, 0.06);
+    border: 1px solid transparent;
+    border-left: 3px solid $color-primary;
     border-radius: $radius-lg;
     padding: $spacing-lg;
     position: relative;
@@ -166,11 +167,11 @@
 
     .material-symbols-outlined {
       font-size: 28px;
-      color: rgba($color-outline-variant, 0.3);
+      color: rgba($color-primary, 0.45);
     }
 
     p {
-      color: $color-on-surface-variant;
+      color: $color-on-surface;
       font-style: italic;
       line-height: 1.5;
       margin: $spacing-sm 0 0;

@@ -33,25 +33,6 @@
     transition: transform 0.5s ease;
   }
 
-  &-badge {
-    position: absolute;
-    top: $spacing-md;
-    left: $spacing-md;
-    display: inline-flex;
-    align-items: center;
-    gap: $spacing-xs;
-    background: $color-secondary-container;
-    color: $color-on-secondary-container;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px $spacing-sm;
-    border-radius: $radius-full;
-
-    .material-symbols-outlined {
-      font-size: 16px;
-    }
-  }
-
   &-favoriteButton {
     position: absolute;
     top: $spacing-md;

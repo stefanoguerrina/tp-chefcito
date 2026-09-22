@@ -11,6 +11,7 @@ import IngredientCategoryPage from '../../ingredientCategory/pages/IngredientCat
 import IngredientPage from '../../ingredient/pages/IngredientPage.jsx';
 import RecipePage from '../../recipe/pages/RecipePage.jsx';
 import RecipeDetailPage from '../../recipe/pages/RecipeDetailPage.jsx';
+import ProfilePage from './ProfilePage.jsx';
 import InventoryPage from '../../inventory/pages/InventoryPage.jsx';
 import SavedRecipesPage from '../../userRecipe/pages/SavedRecipesPage.jsx';
 import { getAllRecipes } from '../../recipe/services/recipeService.js';
@@ -34,6 +35,7 @@ const ADMIN_PANELS = {
 // Paneles disponibles para cualquier usuario autenticado (no requieren rol admin).
 const USER_PANELS = {
   myRecipes: 'myRecipes',
+  profile: 'profile',
   inventory: 'inventory',
   savedRecipes: 'savedRecipes',
 };
@@ -49,6 +51,11 @@ function HomePage({ isAdmin }) {
   const [communityRecipes, setCommunityRecipes] = useState([]);
   const [isLoadingRecipes, setIsLoadingRecipes] = useState(true);
   const [recipesError, setRecipesError] = useState('');
+
+  // Con qué debe abrirse el wizard de "Mis recetas" la próxima vez que se muestre:
+  // null (lista normal), 'create' o el id de una receta a editar. Se usa cuando se
+  // llega desde el botón "+ Nueva receta" o "Editar" del panel de Perfil.
+  const [myRecipesInitialTarget, setMyRecipesInitialTarget] = useState(null);
 
   // Ids de las recetas que el usuario autenticado ya guardó, para pintar el
   // listón de cada card sin tener que entrar al detalle de la receta.
@@ -120,7 +127,24 @@ function HomePage({ isAdmin }) {
 
   // Alterna un panel: si ya está activo lo cierra, si no lo abre.
   const handleTogglePanel = (panel) => {
+    // Cualquier navegación manual por la sidebar descarta un target pendiente
+    // para el wizard de "Mis recetas" (ver handleOpenRecipeEditor).
+    setMyRecipesInitialTarget(null);
     setActiveAdminPanel((prev) => (prev === panel ? null : panel));
+  };
+
+  // Abre "Mis recetas" directo en el wizard de alta ('create') o edición (id de
+  // receta), usado al tocar una receta desde el panel de Perfil.
+  const handleOpenRecipeEditor = (target) => {
+    setMyRecipesInitialTarget(target);
+    setActiveAdminPanel(USER_PANELS.myRecipes);
+  };
+
+  // Al cerrar el wizard que se abrió desde Perfil hay que volver a Perfil: si no,
+  // el usuario quedaba en la lista de "Mis recetas", que no es de donde salió.
+  const handleRecipeEditorExit = () => {
+    setMyRecipesInitialTarget(null);
+    setActiveAdminPanel(USER_PANELS.profile);
   };
 
   // Abre el detalle de una receta desde "Recetas guardadas": cierra ese panel
@@ -157,7 +181,18 @@ function HomePage({ isAdmin }) {
           )}
 
           {activeAdminPanel === USER_PANELS.myRecipes && (
-            <RecipePage />
+            <RecipePage
+              initialEditorTarget={myRecipesInitialTarget}
+              // Solo hay a dónde volver si el wizard se abrió desde Perfil; si el
+              // usuario entró por la sidebar, al cerrarlo se queda en "Mis recetas".
+              onEditorExit={myRecipesInitialTarget !== null ? handleRecipeEditorExit : undefined}
+            />
+          )}
+
+          {activeAdminPanel === USER_PANELS.profile && (
+            <ProfilePage
+              onEditRecipe={(recipeId) => handleOpenRecipeEditor(recipeId)}
+            />
           )}
 
           {activeAdminPanel === USER_PANELS.inventory && (

@@ -1,4 +1,4 @@
-// Card de receta (imagen + badge + título + tiempo/dificultad + rating).
+// Card de receta (imagen + título + tiempo/dificultad + rating).
 // Reutilizable por cualquier feature que necesite listar recetas (landing, búsqueda, etc.).
 import StarRating from './StarRating.jsx';
 import './_recipe-card.scss';
@@ -8,10 +8,12 @@ import './_recipe-card.scss';
 // onDelete: cuando se pasan (ej. en "Mis recetas"), la card agrega su propia
 // barra de acciones de administración integrada, en vez de dejar esos botones
 // sueltos afuera. Si no se pasan, la card se ve igual que en cualquier otro lado.
+// showSaveButton permite ocultar el botón de guardar donde no tiene sentido
+// (ej. el perfil propio: no vas a guardar tus propias recetas).
 // isSaved/onToggleSave: cuando se pasa onToggleSave (ej. en "Recetas guardadas"),
 // el listón de arriba a la derecha se vuelve funcional y guarda/quita la receta
 // en vez de mostrarse como un corazón decorativo.
-function RecipeCard({ recipe, onClick, onEdit, onDelete, isSaved, onToggleSave }) {
+function RecipeCard({ recipe, onClick, onEdit, onDelete, showSaveButton = true, isSaved, onToggleSave }) {
   const { title, author, image, rating, reviewsCount, timeMinutes, difficulty, badge } = recipe;
   const canManage = Boolean(onEdit || onDelete);
 
@@ -19,19 +21,13 @@ function RecipeCard({ recipe, onClick, onEdit, onDelete, isSaved, onToggleSave }
     <article className="RecipeCard" onClick={onClick}>
       <div className="RecipeCard-imageWrapper">
         <img className="RecipeCard-image" src={image} alt={title} />
-        {badge && (
-          <span className="RecipeCard-badge">
-            <span className="material-symbols-outlined">{badge.icon}</span>
-            {badge.label}
-          </span>
-        )}
-        {onToggleSave && (
+        {showSaveButton && (
           <button
             type="button"
             className={`RecipeCard-favoriteButton${isSaved ? ' RecipeCard-favoriteButton--saved' : ''}`}
             aria-label={isSaved ? 'Quitar receta guardada' : 'Guardar receta'}
             aria-pressed={isSaved}
-            onClick={(event) => { event.stopPropagation(); onToggleSave(); }}
+            onClick={(event) => { event.stopPropagation(); onToggleSave?.(); }}
           >
             <span className="material-symbols-outlined">bookmark</span>
           </button>

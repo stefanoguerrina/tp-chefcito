@@ -1,0 +1,28 @@
+// Estilos del componente compartido MasonryGrid (core/components).
+// El acomodo en columnas es CSS puro (column-count): el contenido va llenando
+// una columna antes de pasar a la siguiente y cada item se mantiene entero.
+@use '../../styles/abstracts' as *;
+
+.MasonryGrid {
+  column-count: 1;
+  column-gap: $spacing-lg;
+
+  @include respond-to(sm) {
+    column-count: 2;
+  }
+
+  @include respond-to(md) {
+    column-count: 3;
+  }
+
+  @include respond-to(lg) {
+    column-count: 4;
+  }
+
+  &-item {
+    break-inside: avoid;
+    // El margen inferior hace de "gap" vertical: en un layout de columnas el
+    // gap del contenedor solo separa horizontalmente.
+    margin-bottom: $spacing-lg;
+  }
+}
