@@ -1,0 +1,267 @@
+// Estilos del modal de ingrediente duplicado en inventario.
+// Mobile-first. Paleta oliva + cálida de Chefcito.
+// Diseño fluido, simétrico, homogéneo y con ritmo vertical cuidado.
+@use '../../../styles/abstracts/variables' as *;
+
+/* ---- Overlay ---- */
+.DuplicateModal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 27, 22, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: dupFadeIn 0.18s ease;
+  font-family: $font-body;
+}
+
+@keyframes dupFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---- Panel ---- */
+.DuplicateModal {
+  background: #ffffff;
+  border: 1px solid rgba(234, 223, 211, 0.95);
+  border-radius: 20px;
+  padding: 28px 24px 22px;
+  max-width: 350px;
+  width: 100%;
+  box-shadow: 0 16px 44px rgba(31, 27, 22, 0.16);
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  animation: dupSlideUp 0.22s ease;
+
+  form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@keyframes dupSlideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Botón cerrar X */
+.DuplicateModal-closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-on-surface-variant;
+  transition: background 0.15s, color 0.15s;
+
+  .material-symbols-outlined {
+    font-size: 19px;
+  }
+
+  &:hover {
+    background: #FAF2EB;
+    color: $color-on-background;
+  }
+}
+
+/* Título */
+.DuplicateModal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: $color-on-background;
+  margin: 0 0 8px;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+/* Subtítulo inmediatamente debajo del título */
+.DuplicateModal-subtitle {
+  font-size: 13px;
+  color: $color-on-surface-variant;
+  line-height: 1.5;
+  margin: 0 0 20px;
+  text-align: center;
+
+  strong {
+    color: $color-on-background;
+    font-weight: 600;
+  }
+}
+
+/* ---- Stepper Wrapper ---- */
+.DuplicateModal-stepperWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 22px;
+  width: 100%;
+}
+
+/* Stepper compacto */
+.DuplicateModal-stepper {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  background: #FAF2EB;
+  border: 1px solid rgba(234, 223, 211, 0.95);
+  border-radius: 12px;
+  padding: 3px 4px;
+  width: 170px;
+  box-sizing: border-box;
+}
+
+/* Botones - y + */
+.DuplicateModal-stepBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: #ffffff;
+  color: $color-on-background;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s, transform 0.1s;
+  box-shadow: 0 1px 3px rgba(31, 27, 22, 0.08);
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover:not(:disabled) {
+    background: #F0F5D8;
+    color: $color-primary;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.92);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+/* Input numérico central */
+.DuplicateModal-qtyInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: $color-primary;
+  font-family: $font-body;
+  outline: none;
+  min-width: 0;
+  padding: 0;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &:focus {
+    color: $color-primary;
+  }
+}
+
+/* Unidad debajo del stepper */
+.DuplicateModal-unitText {
+  font-size: 12px;
+  font-weight: 600;
+  color: $color-on-surface-variant;
+  margin: 2px 0 0;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+/* ---- Error ---- */
+.DuplicateModal-error {
+  font-size: 12px;
+  color: $color-error;
+  margin: -14px 0 16px;
+  text-align: center;
+}
+
+/* ---- Acciones ---- */
+.DuplicateModal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.DuplicateModal-btn {
+  width: 100%;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: $radius-full;
+  font-size: 14px;
+  font-family: $font-body;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, opacity 0.15s, color 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+
+  .material-symbols-outlined {
+    font-size: 17px;
+  }
+
+  &--confirm {
+    background: $color-primary;
+    border-color: $color-primary;
+    color: $color-on-primary;
+
+    &:hover {
+      opacity: 0.92;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  &--cancel {
+    background: transparent;
+    border-color: rgba(234, 223, 211, 0.95);
+    color: $color-on-surface-variant;
+
+    &:hover {
+      background: #FAF2EB;
+      color: $color-on-background;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}

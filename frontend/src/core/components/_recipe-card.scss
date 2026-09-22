@@ -42,16 +42,28 @@
     border: none;
     border-radius: $radius-full;
     background: rgba(255, 255, 255, 0.9);
-    color: $color-primary;
+    color: $color-on-surface-variant;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     box-shadow: $shadow-level-1;
-    transition: transform 0.15s ease;
+    transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
 
     &:active {
       transform: scale(0.9);
+    }
+
+    &--saved {
+      background: $color-secondary-container;
+      color: $color-on-secondary-container;
+
+      // Repetimos los otros ejes de la fuente variable (definidos en el reset
+      // global de .material-symbols-outlined) porque font-variation-settings
+      // no es acumulativo: fijar solo 'FILL' resetearía wght/GRAD/opsz.
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
     }
   }
 

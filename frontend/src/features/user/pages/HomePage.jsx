@@ -12,8 +12,16 @@ import IngredientPage from '../../ingredient/pages/IngredientPage.jsx';
 import RecipePage from '../../recipe/pages/RecipePage.jsx';
 import RecipeDetailPage from '../../recipe/pages/RecipeDetailPage.jsx';
 import ProfilePage from './ProfilePage.jsx';
+import InventoryPage from '../../inventory/pages/InventoryPage.jsx';
+import SavedRecipesPage from '../../userRecipe/pages/SavedRecipesPage.jsx';
 import { getAllRecipes } from '../../recipe/services/recipeService.js';
 import { recipeToHomeCardProps } from '../../recipe/models/recipeModel.js';
+import {
+  getSavedRecipeIds,
+  createUserRecipe,
+  deleteUserRecipe,
+} from '../../userRecipe/services/userRecipeService.js';
+import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
 import '../styles/_home-page.scss';
 
 // Paneles de admin disponibles. 'null' es la home normal.
@@ -28,6 +36,8 @@ const ADMIN_PANELS = {
 const USER_PANELS = {
   myRecipes: 'myRecipes',
   profile: 'profile',
+  inventory: 'inventory',
+  savedRecipes: 'savedRecipes',
 };
 
 // Recibe: isAdmin (habilita los paneles de administración en la sidebar).
@@ -46,6 +56,11 @@ function HomePage({ isAdmin }) {
   // null (lista normal), 'create' o el id de una receta a editar. Se usa cuando se
   // llega desde el botón "+ Nueva receta" o "Editar" del panel de Perfil.
   const [myRecipesInitialTarget, setMyRecipesInitialTarget] = useState(null);
+
+  // Ids de las recetas que el usuario autenticado ya guardó, para pintar el
+  // listón de cada card sin tener que entrar al detalle de la receta.
+  const [savedRecipeIds, setSavedRecipeIds] = useState(new Set());
+  const [saveError, setSaveError] = useState('');
 
   // Se recarga cada vez que se vuelve a la vista normal (activeAdminPanel a
   // null), no solo al montar: si no, después de crear/editar una receta desde
@@ -69,7 +84,46 @@ function HomePage({ isAdmin }) {
         setIsLoadingRecipes(false);
       }
     })();
+
+    (async () => {
+      try {
+        const ids = await getSavedRecipeIds(getCurrentUserId());
+        setSavedRecipeIds(new Set(ids));
+      } catch {
+        // Si falla, las cards simplemente arrancan sin marcar como guardadas.
+      }
+    })();
   }, [activeAdminPanel]);
+
+  // Guarda o quita el guardado de una receta desde su card, sin entrar al detalle.
+  // Actualiza el listón de forma optimista y revierte si el backend falla.
+  const handleToggleSaveRecipe = async (idRecipe) => {
+    const wasSaved = savedRecipeIds.has(idRecipe);
+    setSaveError('');
+    setSavedRecipeIds((prev) => {
+      const next = new Set(prev);
+      wasSaved ? next.delete(idRecipe) : next.add(idRecipe);
+      return next;
+    });
+    try {
+      if (wasSaved) {
+        await deleteUserRecipe(idRecipe);
+      } else {
+        await createUserRecipe(idRecipe);
+      }
+    } catch (err) {
+      setSaveError(err.message);
+      // Revierte el cambio optimista.
+      setSavedRecipeIds((prev) => {
+        const next = new Set(prev);
+        wasSaved ? next.add(idRecipe) : next.delete(idRecipe);
+        return next;
+      });
+      // Re-lanza para que quien llamó (ej. RecipeDetailPage) pueda mostrar
+      // su propio mensaje de error junto al botón, además del de la home.
+      throw err;
+    }
+  };
 
   // Alterna un panel: si ya está activo lo cierra, si no lo abre.
   const handleTogglePanel = (panel) => {
@@ -91,6 +145,13 @@ function HomePage({ isAdmin }) {
   const handleRecipeEditorExit = () => {
     setMyRecipesInitialTarget(null);
     setActiveAdminPanel(USER_PANELS.profile);
+  };
+
+  // Abre el detalle de una receta desde "Recetas guardadas": cierra ese panel
+  // para que se muestre RecipeDetailPage (solo se renderiza con activeAdminPanel null).
+  const handleOpenRecipeFromSaved = (idRecipe) => {
+    setActiveAdminPanel(null);
+    setSelectedRecipeId(idRecipe);
   };
 
   return (
@@ -134,12 +195,22 @@ function HomePage({ isAdmin }) {
             />
           )}
 
+          {activeAdminPanel === USER_PANELS.inventory && (
+            <InventoryPage />
+          )}
+
+          {activeAdminPanel === USER_PANELS.savedRecipes && (
+            <SavedRecipesPage onRecipeClick={handleOpenRecipeFromSaved} />
+          )}
+
           {/* Detalle de receta individual — se abre al clickear una card del carrusel */}
           {selectedRecipeId !== null && activeAdminPanel === null && (
             <RecipeDetailPage
               recipeId={selectedRecipeId}
               onBack={() => setSelectedRecipeId(null)}
               isLoggedIn
+              isSaved={savedRecipeIds.has(selectedRecipeId)}
+              onToggleSave={handleToggleSaveRecipe}
             />
           )}
 
@@ -154,6 +225,7 @@ function HomePage({ isAdmin }) {
 
               {isLoadingRecipes && <p className="HomePage-recipesStatus">Cargando recetas...</p>}
               {recipesError && <p className="HomePage-recipesStatus">⚠ {recipesError}</p>}
+              {saveError && <p className="HomePage-recipesStatus">⚠ {saveError}</p>}
               {!isLoadingRecipes && !recipesError && communityRecipes.length === 0 && (
                 <p className="HomePage-recipesStatus">
                   Todavía no hay recetas cargadas. ¡Sé el primero en publicar una desde "Mis recetas"!
@@ -162,8 +234,12 @@ function HomePage({ isAdmin }) {
               {!isLoadingRecipes && !recipesError && communityRecipes.length > 0 && (
                 <RecipeCarouselSection
                   title="Recetas de la comunidad"
-                  recipes={communityRecipes}
+                  recipes={communityRecipes.map((recipe) => ({
+                    ...recipe,
+                    isSaved: savedRecipeIds.has(recipe.id),
+                  }))}
                   onRecipeClick={setSelectedRecipeId}
+                  onToggleSave={handleToggleSaveRecipe}
                 />
               )}
             </>

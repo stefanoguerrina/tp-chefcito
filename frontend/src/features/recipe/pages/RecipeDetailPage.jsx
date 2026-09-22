@@ -11,16 +11,21 @@ import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
 import '../styles/_recipe-detail-page.scss';
 
 // Recibe:
-//   recipeId   — id de la receta a mostrar
-//   onBack     — handler para volver al listado
-//   isLoggedIn — para mostrar u ocultar el botón de reseñar
-function RecipeDetailPage({ recipeId, onBack, isLoggedIn }) {
+//   recipeId     — id de la receta a mostrar
+//   onBack       — handler para volver al listado
+//   isLoggedIn   — para mostrar u ocultar el botón de reseñar/guardar
+//   isSaved      — si la receta ya está guardada por el usuario autenticado
+//   onToggleSave — handler para guardar/quitar la receta (recibe recipeId).
+//                  El estado de guardado vive en HomePage (isSaved/onToggleSave)
+//                  para que quede sincronizado con el listón de la card en el
+//                  feed: si se guarda desde acá y se vuelve, la card ya lo refleja.
+function RecipeDetailPage({ recipeId, onBack, isLoggedIn, isSaved, onToggleSave }) {
   const currentUserId = getCurrentUserId();
 
   const [recipe, setRecipe] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
-  const [isSaved, setIsSaved] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -37,9 +42,15 @@ function RecipeDetailPage({ recipeId, onBack, isLoggedIn }) {
     })();
   }, [recipeId]);
 
-  // Alterna el estado de guardado (por ahora solo UI, sin llamada al backend).
-  // La lógica completa de UserRecipe se implementa en T-4.4.
-  const handleSaveRecipe = () => setIsSaved((prev) => !prev);
+  // Guarda o quita el guardado de la receta para el usuario autenticado.
+  const handleSaveRecipe = async () => {
+    setSaveError('');
+    try {
+      await onToggleSave(recipeId);
+    } catch (err) {
+      setSaveError(err.message);
+    }
+  };
 
   if (isLoading) return <p className="RecipeDetailPage-status">Cargando receta...</p>;
   if (fetchError) return <p className="RecipeDetailPage-status RecipeDetailPage-status--error">⚠ {fetchError}</p>;
@@ -103,6 +114,8 @@ function RecipeDetailPage({ recipeId, onBack, isLoggedIn }) {
           </button>
         )}
       </div>
+
+      {saveError && <p className="RecipeDetailPage-status RecipeDetailPage-status--error">⚠ {saveError}</p>}
 
       {/* Descripción */}
       {recipe.description && (

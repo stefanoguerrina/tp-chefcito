@@ -10,8 +10,11 @@ import './_recipe-card.scss';
 // sueltos afuera. Si no se pasan, la card se ve igual que en cualquier otro lado.
 // showSaveButton permite ocultar el botón de guardar donde no tiene sentido
 // (ej. el perfil propio: no vas a guardar tus propias recetas).
-function RecipeCard({ recipe, onClick, onEdit, onDelete, showSaveButton = true }) {
-  const { title, author, image, rating, reviewsCount, timeMinutes, difficulty } = recipe;
+// isSaved/onToggleSave: cuando se pasa onToggleSave (ej. en "Recetas guardadas"),
+// el listón de arriba a la derecha se vuelve funcional y guarda/quita la receta
+// en vez de mostrarse como un corazón decorativo.
+function RecipeCard({ recipe, onClick, onEdit, onDelete, showSaveButton = true, isSaved, onToggleSave }) {
+  const { title, author, image, rating, reviewsCount, timeMinutes, difficulty, badge } = recipe;
   const canManage = Boolean(onEdit || onDelete);
 
   return (
@@ -21,11 +24,12 @@ function RecipeCard({ recipe, onClick, onEdit, onDelete, showSaveButton = true }
         {showSaveButton && (
           <button
             type="button"
-            className="RecipeCard-favoriteButton"
-            aria-label="Guardar receta"
-            onClick={(event) => event.stopPropagation()}
+            className={`RecipeCard-favoriteButton${isSaved ? ' RecipeCard-favoriteButton--saved' : ''}`}
+            aria-label={isSaved ? 'Quitar receta guardada' : 'Guardar receta'}
+            aria-pressed={isSaved}
+            onClick={(event) => { event.stopPropagation(); onToggleSave?.(); }}
           >
-            <span className="material-symbols-outlined">favorite</span>
+            <span className="material-symbols-outlined">bookmark</span>
           </button>
         )}
       </div>
