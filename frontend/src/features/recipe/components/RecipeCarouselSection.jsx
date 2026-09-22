@@ -12,8 +12,9 @@ import '../styles/_recipe-carousel-section.scss';
 const SCROLL_STEP = 336;
 
 // Recibe: title (encabezado de la sección), recipes (array, ver recipeToHomeCardProps),
-// onRecipeClick (función que recibe el id de la receta al hacer click en una card).
-function RecipeCarouselSection({ title, recipes, onRecipeClick }) {
+// onRecipeClick (función que recibe el id de la receta al hacer click en una card),
+// onToggleSave (función opcional que recibe el id de la receta al tocar el listón).
+function RecipeCarouselSection({ title, recipes, onRecipeClick, onToggleSave }) {
   // Un mismo ref compartido por los dos hooks: ambos necesitan operar sobre el mismo
   // contenedor (uno escucha el drag del mouse, el otro el scroll para el loop infinito).
   const trackRef = useRef(null);
@@ -47,6 +48,7 @@ function RecipeCarouselSection({ title, recipes, onRecipeClick }) {
                 key={`${copyIndex}-${recipe.id}`}
                 recipe={recipe}
                 onClick={onRecipeClick ? () => onRecipeClick(recipe.id) : undefined}
+                onToggleSave={onToggleSave}
               />
             ))
           )}

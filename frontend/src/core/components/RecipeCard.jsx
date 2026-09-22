@@ -8,7 +8,10 @@ import './_recipe-card.scss';
 // onDelete: cuando se pasan (ej. en "Mis recetas"), la card agrega su propia
 // barra de acciones de administración integrada, en vez de dejar esos botones
 // sueltos afuera. Si no se pasan, la card se ve igual que en cualquier otro lado.
-function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
+// isSaved/onToggleSave: cuando se pasa onToggleSave (ej. en "Recetas guardadas"),
+// el listón de arriba a la derecha se vuelve funcional y guarda/quita la receta
+// en vez de mostrarse como un corazón decorativo.
+function RecipeCard({ recipe, onClick, onEdit, onDelete, isSaved, onToggleSave }) {
   const { title, author, image, rating, reviewsCount, timeMinutes, difficulty, badge } = recipe;
   const canManage = Boolean(onEdit || onDelete);
 
@@ -22,14 +25,17 @@ function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
             {badge.label}
           </span>
         )}
-        <button
-          type="button"
-          className="RecipeCard-favoriteButton"
-          aria-label="Guardar receta"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <span className="material-symbols-outlined">favorite</span>
-        </button>
+        {onToggleSave && (
+          <button
+            type="button"
+            className={`RecipeCard-favoriteButton${isSaved ? ' RecipeCard-favoriteButton--saved' : ''}`}
+            aria-label={isSaved ? 'Quitar receta guardada' : 'Guardar receta'}
+            aria-pressed={isSaved}
+            onClick={(event) => { event.stopPropagation(); onToggleSave(); }}
+          >
+            <span className="material-symbols-outlined">bookmark</span>
+          </button>
+        )}
       </div>
 
       <div className="RecipeCard-body">

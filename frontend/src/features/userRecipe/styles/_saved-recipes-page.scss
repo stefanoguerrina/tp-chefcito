@@ -1,0 +1,55 @@
+// Estilos del panel "Recetas guardadas" (listado). Reutiliza la misma estructura
+// de grilla que _recipe-page.scss ("Mis recetas").
+@use '../../../styles/abstracts' as *;
+
+.SavedRecipesPage {
+  padding: $spacing-lg $spacing-xl;
+
+  &-header {
+    display: flex;
+    align-items: baseline;
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+
+    h2 {
+      font-family: $font-body;
+      font-size: 24px;
+      font-weight: 700;
+      color: $color-on-surface;
+    }
+  }
+
+  &-count {
+    font-size: 13px;
+    color: $color-on-surface-variant;
+  }
+
+  &-grid {
+    margin-top: $spacing-lg;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: $spacing-xl;
+  }
+
+  &-alert {
+    background: rgba($color-error, 0.1);
+    color: $color-error;
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    margin: $spacing-sm 0;
+    font-size: 14px;
+  }
+
+  &-loading,
+  &-empty {
+    color: $color-on-surface-variant;
+    margin-top: $spacing-md;
+    font-size: 14px;
+  }
+
+  &-error {
+    color: $color-error;
+    margin-top: $spacing-md;
+    font-size: 14px;
+  }
+}

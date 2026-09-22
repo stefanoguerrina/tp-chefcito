@@ -13,6 +13,7 @@ const PENDING_NAV_LINKS = [
 const USER_NAV_LINKS = [
   { icon: 'add_box', label: 'Mis recetas', panel: 'myRecipes' },
   { icon: 'kitchen', label: 'Mi inventario', panel: 'inventory' },
+  { icon: 'bookmark', label: 'Recetas guardadas', panel: 'savedRecipes' },
 ];
 
 // Paneles de admin disponibles en la sidebar: cada uno tiene un ícono, label e id.
