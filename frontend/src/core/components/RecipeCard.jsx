@@ -1,4 +1,4 @@
-// Card de receta (imagen + badge + título + tiempo/dificultad + rating).
+// Card de receta (imagen + título + tiempo/dificultad + rating).
 // Reutilizable por cualquier feature que necesite listar recetas (landing, búsqueda, etc.).
 import StarRating from './StarRating.jsx';
 import './_recipe-card.scss';
@@ -8,28 +8,26 @@ import './_recipe-card.scss';
 // onDelete: cuando se pasan (ej. en "Mis recetas"), la card agrega su propia
 // barra de acciones de administración integrada, en vez de dejar esos botones
 // sueltos afuera. Si no se pasan, la card se ve igual que en cualquier otro lado.
-function RecipeCard({ recipe, onClick, onEdit, onDelete }) {
-  const { title, author, image, rating, reviewsCount, timeMinutes, difficulty, badge } = recipe;
+// showSaveButton permite ocultar el botón de guardar donde no tiene sentido
+// (ej. el perfil propio: no vas a guardar tus propias recetas).
+function RecipeCard({ recipe, onClick, onEdit, onDelete, showSaveButton = true }) {
+  const { title, author, image, rating, reviewsCount, timeMinutes, difficulty } = recipe;
   const canManage = Boolean(onEdit || onDelete);
 
   return (
     <article className="RecipeCard" onClick={onClick}>
       <div className="RecipeCard-imageWrapper">
         <img className="RecipeCard-image" src={image} alt={title} />
-        {badge && (
-          <span className="RecipeCard-badge">
-            <span className="material-symbols-outlined">{badge.icon}</span>
-            {badge.label}
-          </span>
+        {showSaveButton && (
+          <button
+            type="button"
+            className="RecipeCard-favoriteButton"
+            aria-label="Guardar receta"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <span className="material-symbols-outlined">favorite</span>
+          </button>
         )}
-        <button
-          type="button"
-          className="RecipeCard-favoriteButton"
-          aria-label="Guardar receta"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <span className="material-symbols-outlined">favorite</span>
-        </button>
       </div>
 
       <div className="RecipeCard-body">

@@ -14,8 +14,11 @@ import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import RecipeEditorPage from './RecipeEditorPage.jsx';
 import '../styles/_recipe-page.scss';
 
-// Página principal del panel "Mis recetas".
-function RecipePage() {
+// Recibe: initialEditorTarget opcional ('create', un id de receta, o null) para abrir
+// el wizard directo al montar — usado cuando se llega desde el panel de Perfil — y
+// onEditorExit opcional, que avisa cuando se cierra el wizard (tanto al guardar como
+// al cancelar) para que quien lo abrió pueda devolver al usuario a su vista.
+function RecipePage({ initialEditorTarget = null, onEditorExit }) {
   const currentUserId = getCurrentUserId();
 
   const [recipes, setRecipes] = useState([]);
@@ -25,7 +28,7 @@ function RecipePage() {
   const [fetchError, setFetchError] = useState('');
 
   // null = viendo la lista; 'create' = wizard en modo alta; un id = wizard editando esa receta.
-  const [editorTarget, setEditorTarget] = useState(null);
+  const [editorTarget, setEditorTarget] = useState(initialEditorTarget);
   // Receta que se está por borrar (null = no hay ningún modal de confirmación abierto).
   const [recipePendingDelete, setRecipePendingDelete] = useState(null);
 
@@ -69,7 +72,18 @@ function RecipePage() {
 
   const handleEditorDone = async () => {
     setEditorTarget(null);
+    // Si el wizard lo abrió otra vista (ej. Perfil), es esa la que decide a dónde
+    // volver: recargar la lista de acá sería al pedo porque no se va a mostrar.
+    if (onEditorExit) {
+      onEditorExit();
+      return;
+    }
     await loadData();
+  };
+
+  const handleEditorCancel = () => {
+    setEditorTarget(null);
+    if (onEditorExit) onEditorExit();
   };
 
   const handleConfirmDelete = async () => {
@@ -91,7 +105,7 @@ function RecipePage() {
         categories={categories}
         ingredientsCatalog={ingredientsCatalog}
         onDone={handleEditorDone}
-        onCancel={() => setEditorTarget(null)}
+        onCancel={handleEditorCancel}
       />
     );
   }

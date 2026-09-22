@@ -7,7 +7,7 @@ import '../styles/_home-recipe-card.scss';
 // Recibe: recipe (ver recipeToHomeCardProps en features/recipe/models/recipeModel.js),
 // onClick (handler opcional para abrir el detalle de la receta).
 function HomeRecipeCard({ recipe, onClick }) {
-  const { title, image, badge, description, time, difficulty, author, authorAvatar } = recipe;
+  const { title, image, description, time, difficulty, author, authorAvatar } = recipe;
 
   return (
     <article
@@ -16,7 +16,6 @@ function HomeRecipeCard({ recipe, onClick }) {
     >
       <div className="HomeRecipeCard-imageWrapper">
         <img className="HomeRecipeCard-image" src={image} alt={title} />
-        {badge && <span className="HomeRecipeCard-badge">{badge.label}</span>}
         <button type="button" className="HomeRecipeCard-favoriteButton" aria-label="Guardar receta">
           <span className="material-symbols-outlined">bookmark</span>
         </button>

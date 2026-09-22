@@ -12,6 +12,7 @@ const PENDING_NAV_LINKS = [
 // Paneles disponibles para cualquier usuario autenticado (no requieren rol admin).
 const USER_NAV_LINKS = [
   { icon: 'add_box', label: 'Mis recetas', panel: 'myRecipes' },
+  { icon: 'account_circle', label: 'Perfil', panel: 'profile' },
 ];
 
 // Paneles de admin disponibles en la sidebar: cada uno tiene un ícono, label e id.
@@ -62,11 +63,6 @@ function Sidebar({ isAdmin, activeAdminPanel, onTogglePanel }) {
             <span className="Sidebar-tooltip">{link.label}</span>
           </button>
         ))}
-
-        <button type="button" className="Sidebar-link" title="Perfil">
-          <span className="material-symbols-outlined">account_circle</span>
-          <span className="Sidebar-tooltip">Perfil</span>
-        </button>
 
         {/* Separador visual antes de los controles de admin */}
         {isAdmin && <hr className="Sidebar-divider" />}

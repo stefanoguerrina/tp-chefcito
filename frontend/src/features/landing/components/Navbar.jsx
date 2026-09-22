@@ -2,8 +2,10 @@
 // no hay feature de búsqueda de recetas todavía) y accesos a login/registro.
 import '../styles/_navbar.scss';
 
-// Recibe: onLoginClick y onRegisterClick, los handlers de useAuth que muestran cada form.
-function Navbar({ onLoginClick, onRegisterClick }) {
+// Recibe: onLoginClick y onRegisterClick, los handlers de useAuth que muestran cada form, y
+// onRequireAuth para acciones sin feature propia todavía (como el buscador), que primero
+// preguntan si el visitante quiere iniciar sesión o registrarse.
+function Navbar({ onLoginClick, onRegisterClick, onRequireAuth }) {
   return (
     <header className="Navbar">
       <div className="Navbar-content">
@@ -14,17 +16,17 @@ function Navbar({ onLoginClick, onRegisterClick }) {
             <span className="material-symbols-outlined">restaurant_menu</span>
             Chefcito
           </a>
-
-          <nav className="Navbar-links">
-            <a href="#explorar">Explorar</a>
-          </nav>
         </div>
 
-        {/* TODO: conectar con la futura feature de búsqueda de recetas. */}
+        {/* Todavía no hay feature de búsqueda de recetas: al buscar se pregunta si el
+            visitante quiere iniciar sesión o registrarse. */}
         <form
           className="Navbar-search"
           role="search"
-          onSubmit={(event) => event.preventDefault()}
+          onSubmit={(event) => {
+            event.preventDefault();
+            onRequireAuth();
+          }}
         >
           <span className="material-symbols-outlined">search</span>
           <input type="text" placeholder="Busca ideas, recetas, ingredientes..." />

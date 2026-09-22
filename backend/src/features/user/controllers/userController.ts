@@ -148,13 +148,16 @@ export const updateUserById = async (req: Request, res: Response): Promise<void>
 
   try {
     const userId = Number(req.params.id);
-    const { name, lastName, phone, avatarUrl, birthDate } = req.body;
+    const { name, lastName, phone, avatarUrl, bio, specialty, location, birthDate } = req.body;
 
     const updated = await userService.updateUser(userId, {
       name,
       lastName,
       phone,
       avatarUrl,
+      bio,
+      specialty,
+      location,
       birthDate: birthDate !== undefined ? (birthDate ? new Date(birthDate) : null) : undefined,
     });
     if (!updated) {

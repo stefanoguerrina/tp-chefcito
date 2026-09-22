@@ -63,6 +63,21 @@ export const validateUpdateUser = [
     .trim()
     .isURL()
     .withMessage('La URL del avatar debe ser una URL válida.'),
+  body('bio')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 255 })
+    .withMessage('La biografía no puede superar los 255 caracteres.'),
+  body('specialty')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 60 })
+    .withMessage('La especialidad no puede superar los 60 caracteres.'),
+  body('location')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('La ubicación no puede superar los 100 caracteres.'),
   body('birthDate')
     .optional({ nullable: true, checkFalsy: true })
     .isISO8601().withMessage('La fecha de nacimiento debe tener formato YYYY-MM-DD.')
@@ -70,10 +85,10 @@ export const validateUpdateUser = [
   // Verificamos que al menos un campo editable esté presente en el body.
   body()
     .custom((_, { req }) => {
-      const campos = ['name', 'lastName', 'phone', 'avatarUrl', 'birthDate'];
+      const campos = ['name', 'lastName', 'phone', 'avatarUrl', 'bio', 'specialty', 'location', 'birthDate'];
       const hayAlguno = campos.some((c) => req.body[c] !== undefined);
       if (!hayAlguno) {
-        throw new Error('Se debe enviar al menos un campo editable: name, lastName, phone, avatarUrl o birthDate.');
+        throw new Error('Se debe enviar al menos un campo editable: name, lastName, phone, avatarUrl, bio, specialty, location o birthDate.');
       }
       return true;
     }),

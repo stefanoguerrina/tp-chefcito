@@ -21,6 +21,9 @@ export interface UpdateUserData {
   lastName?: string;
   phone?: string | null;
   avatarUrl?: string | null;
+  bio?: string | null;
+  specialty?: string | null;
+  location?: string | null;
   birthDate?: Date | null;
 }
 
