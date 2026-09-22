@@ -19,6 +19,7 @@ import {
 import { stepRouter } from '../../step/routes/stepRouter.js';
 import { imageRouter } from '../../image/routes/imageRouter.js';
 import { recipeIngredientRouter } from '../../recipeIngredient/routes/recipeIngredientRouter.js';
+import { reviewRouter } from '../../review/routes/reviewRouter.js';
 
 const recipeRouter = Router();
 
@@ -57,5 +58,8 @@ recipeRouter.use('/:idRecipe/images', imageRouter);
 
 // /api/recipes/:idRecipe/ingredients — reemplazo de la lista de ingredientes de la receta
 recipeRouter.use('/:idRecipe/ingredients', recipeIngredientRouter);
+
+// /api/recipes/:idRecipe/reviews — CRUD de reseñas de la receta
+recipeRouter.use('/:idRecipe/reviews', reviewRouter);
 
 export { recipeRouter };

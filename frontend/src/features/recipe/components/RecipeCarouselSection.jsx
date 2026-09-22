@@ -11,8 +11,9 @@ import '../styles/_recipe-carousel-section.scss';
 // Cuánto se desplaza el carrusel por cada click en una flecha (ancho de card + gap).
 const SCROLL_STEP = 336;
 
-// Recibe: title (encabezado de la sección) y recipes (array, ver recipeToHomeCardProps en recipe/models/recipeModel.js).
-function RecipeCarouselSection({ title, recipes }) {
+// Recibe: title (encabezado de la sección), recipes (array, ver recipeToHomeCardProps),
+// onRecipeClick (función que recibe el id de la receta al hacer click en una card).
+function RecipeCarouselSection({ title, recipes, onRecipeClick }) {
   // Un mismo ref compartido por los dos hooks: ambos necesitan operar sobre el mismo
   // contenedor (uno escucha el drag del mouse, el otro el scroll para el loop infinito).
   const trackRef = useRef(null);
@@ -42,7 +43,11 @@ function RecipeCarouselSection({ title, recipes }) {
               contenido antes y después de lo que se ve, y el salto del loop sea invisible. */}
           {[0, 1, 2].map((copyIndex) =>
             recipes.map((recipe) => (
-              <HomeRecipeCard key={`${copyIndex}-${recipe.id}`} recipe={recipe} />
+              <HomeRecipeCard
+                key={`${copyIndex}-${recipe.id}`}
+                recipe={recipe}
+                onClick={onRecipeClick ? () => onRecipeClick(recipe.id) : undefined}
+              />
             ))
           )}
         </div>

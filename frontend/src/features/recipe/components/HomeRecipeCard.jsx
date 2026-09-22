@@ -1,14 +1,19 @@
 // Card de receta compacta usada en los carruseles horizontales de la home. Es más
 // angosta que RecipeCard (core/components) y admite dos variantes de body: una bajada
 // corta (description) o el tiempo/dificultad + autor, según lo que traiga la receta.
+// onClick opcional: si se pasa, la card se vuelve clickeable (navegación al detalle).
 import '../styles/_home-recipe-card.scss';
 
-// Recibe: recipe (ver recipeToHomeCardProps en features/recipe/models/recipeModel.js). Devuelve la card completa.
-function HomeRecipeCard({ recipe }) {
+// Recibe: recipe (ver recipeToHomeCardProps en features/recipe/models/recipeModel.js),
+// onClick (handler opcional para abrir el detalle de la receta).
+function HomeRecipeCard({ recipe, onClick }) {
   const { title, image, badge, description, time, difficulty, author, authorAvatar } = recipe;
 
   return (
-    <article className="HomeRecipeCard">
+    <article
+      className={`HomeRecipeCard${onClick ? ' HomeRecipeCard--clickable' : ''}`}
+      onClick={onClick}
+    >
       <div className="HomeRecipeCard-imageWrapper">
         <img className="HomeRecipeCard-image" src={image} alt={title} />
         {badge && <span className="HomeRecipeCard-badge">{badge.label}</span>}
