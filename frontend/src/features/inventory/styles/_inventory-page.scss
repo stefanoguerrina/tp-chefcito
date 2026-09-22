@@ -1,0 +1,1134 @@
+// Estilos de la feature Inventory — diseño de cards tipo "despensa".
+// Mobile-first. Paleta oliva + cálida de Chefcito.
+@use 'sass:color';
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/breakpoints' as *;
+
+// ---- Página ----
+.InventoryPage {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: $spacing-lg $spacing-gutter-mobile;
+  font-family: $font-body;
+
+  @include respond-to(md) {
+    padding: $spacing-xl $spacing-gutter-desktop;
+  }
+}
+
+// ---- Header ----
+.InventoryPage-header {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-outline-variant;
+  margin-bottom: $spacing-lg;
+
+  @include respond-to(md) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.InventoryPage-titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.InventoryPage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: $radius-full;
+  background: rgba($color-primary, 0.1);
+  color: $color-primary;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  width: fit-content;
+
+  .material-symbols-outlined {
+    font-size: 14px;
+  }
+}
+
+.InventoryPage-title {
+  font-family: $font-body;
+  font-size: 28px;
+  font-weight: 700;
+  color: $color-on-surface;
+  margin: 0;
+  letter-spacing: -0.5px;
+
+  @include respond-to(md) {
+    font-size: 32px;
+  }
+}
+
+.InventoryPage-headerActions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.InventoryPage-counter {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: 0 $spacing-md;
+  height: 52px;
+  background: #fff;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-1;
+  white-space: nowrap;
+  min-width: 180px;
+}
+
+.InventoryPage-counterIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-md;
+  background: rgba($color-secondary, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-secondary;
+  flex-shrink: 0;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+}
+
+.InventoryPage-counterText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.InventoryPage-counterLabel {
+  font-size: 11px;
+  color: $color-on-surface-variant;
+  font-weight: 500;
+}
+
+.InventoryPage-counterValue {
+  font-size: 15px;
+  font-weight: 700;
+  color: $color-on-surface;
+
+  span {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-primary;
+  }
+}
+
+.InventoryPage-addBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  height: 52px;
+  padding: 0 $spacing-lg;
+  background: $color-primary;
+  color: $color-on-primary;
+  border: none;
+  border-radius: $radius-lg;
+  font-size: 14px;
+  font-family: $font-body;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, opacity 0.15s;
+  box-shadow: $shadow-level-1;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover {
+    background: color.adjust(#4b6400, $lightness: -8%);
+  }
+}
+
+// ---- Panel de agregar (colapsable) ----
+.InventoryPage-addPanel {
+  background: rgba($color-primary, 0.04);
+  border: 1px solid rgba($color-primary, 0.18);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ---- Barra de búsqueda en inventario ----
+.InventorySearch {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  background: #fff;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  padding: $spacing-xs $spacing-sm;
+  margin-bottom: $spacing-lg;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: $shadow-level-1;
+
+  &:focus-within {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
+  }
+
+  &-icon {
+    color: $color-on-surface-variant;
+    display: flex;
+    align-items: center;
+    padding-left: 6px;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+  }
+
+  &-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-family: $font-body;
+    font-weight: 500;
+    color: $color-on-surface;
+    outline: none;
+    padding: 8px 0;
+
+    &::placeholder {
+      color: $color-on-surface-variant;
+    }
+  }
+
+  &-clear {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+    padding: 4px 8px;
+    border-radius: $radius-md;
+    transition: background 0.15s, color 0.15s;
+    font-family: $font-body;
+
+    &:hover {
+      background: $color-surface-container;
+      color: $color-on-surface;
+    }
+  }
+}
+
+// ---- Estado vacío de búsqueda ----
+.InventoryEmpty {
+  text-align: center;
+  padding: $spacing-xl * 1.5 $spacing-md;
+  background: #fff;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-md;
+
+  &-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: $color-surface-container;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto $spacing-md;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined {
+      font-size: 24px;
+    }
+  }
+
+  &-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $color-on-surface;
+    margin: 0 0 $spacing-xs;
+  }
+
+  &-text {
+    font-size: 14px;
+    color: $color-on-surface-variant;
+    margin: 0;
+  }
+}
+
+// ---- Lista de cards ----
+.InventoryList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  margin-bottom: $spacing-xl;
+}
+
+// ---- Card de ingrediente ----
+.IngredientCard {
+  background: #fff;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg * 1.3; // ~16px
+  padding: $spacing-md;
+  box-shadow: $shadow-level-1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  transition: box-shadow 0.2s, border-color 0.2s;
+
+  &:hover {
+    box-shadow: $shadow-level-2;
+    border-color: color.adjust(#e1bfb6, $lightness: -5%);
+  }
+
+  @include respond-to(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-md $spacing-lg;
+  }
+}
+
+// Parte izquierda: thumbnail + info
+.IngredientCard-left {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  min-width: 0;
+}
+
+.IngredientCard-thumb {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  background: $color-surface-container-low;
+  border: 1px solid rgba($color-outline-variant, 0.6);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+
+  .IngredientCard:hover & {
+    transform: scale(1.03);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @include respond-to(md) {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+// Placeholder cuando no hay imagen
+.IngredientCard-thumbPlaceholder {
+  font-size: 32px;
+  color: $color-on-surface-variant;
+  user-select: none;
+
+  .material-symbols-outlined {
+    font-size: 36px;
+  }
+}
+
+.IngredientCard-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.IngredientCard-titleRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.IngredientCard-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: $color-on-surface;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @include respond-to(md) {
+    font-size: 18px;
+  }
+}
+
+// Badges de estado
+.IngredientCard-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: $radius-full;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  .material-symbols-outlined {
+    font-size: 12px;
+  }
+
+  &--inStock {
+    background: rgba($color-secondary, 0.1);
+    color: $color-secondary;
+  }
+
+  &--lowStock {
+    background: rgba(#ED8936, 0.12);
+    color: #ED8936;
+  }
+
+  &--noStock {
+    background: rgba($color-error, 0.1);
+    color: $color-error;
+  }
+}
+
+.IngredientCard-unit {
+  font-size: 13px;
+  color: $color-on-surface-variant;
+  margin: 0 0 $spacing-sm;
+
+  strong {
+    color: $color-on-surface;
+    font-weight: 600;
+  }
+}
+
+.IngredientCard-qtyRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.IngredientCard-qtyLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: $color-on-surface-variant;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.IngredientCard-qty {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: $font-body;
+  line-height: 1;
+
+  &--normal  { color: $color-primary; }
+  &--low     { color: #ED8936; }
+  &--none    { color: $color-error; }
+}
+
+.IngredientCard-qtyUnit {
+  font-size: 12px;
+  font-weight: 600;
+  color: $color-on-surface-variant;
+}
+
+// Parte derecha: controles
+.IngredientCard-right {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding-top: $spacing-md;
+  border-top: 1px solid $color-surface-container-low;
+
+  @include respond-to(md) {
+    justify-content: flex-end;
+    padding-top: 0;
+    border-top: none;
+  }
+}
+
+// Control +/-
+.IngredientCard-stepper {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  background: $color-surface-container-low;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-md;
+  padding: 4px;
+  gap: 0;
+}
+
+.IngredientCard-stepperBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: #fff;
+  color: $color-on-surface;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background: rgba($color-primary, 0.1);
+    color: $color-primary;
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.IngredientCard-stepperVal {
+  text-align: center;
+  min-width: 68px;
+  padding: 0 $spacing-sm;
+
+  span:first-child {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-on-surface;
+    line-height: 1;
+  }
+
+  span:last-child {
+    display: block;
+    font-size: 10px;
+    color: $color-on-surface-variant;
+    margin-top: -1px;
+  }
+}
+
+// Botón icono (editar / eliminar)
+.IngredientCard-iconBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-md;
+  border: 1px solid $color-outline-variant;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &--edit {
+    color: $color-primary;
+
+    &:hover {
+      background: $color-surface-container-low;
+    }
+
+    &:active { transform: scale(0.93); }
+  }
+
+  &--delete {
+    background: $color-error;
+    border-color: $color-error;
+    color: #fff;
+
+    &:hover {
+      background: color.adjust(#ba1a1a, $lightness: -10%);
+      border-color: color.adjust(#ba1a1a, $lightness: -10%);
+    }
+
+    &:active { transform: scale(0.93); }
+  }
+}
+
+// ---- Formulario "Agregar ingrediente" ----
+.InventoryForm {
+  &-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: $spacing-md;
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: $color-on-surface-variant;
+    }
+  }
+
+  &-searchWrapper {
+    position: relative;
+  }
+
+  &-input {
+    padding: 10px 14px;
+    border-radius: $radius-md;
+    border: 1px solid $color-outline-variant;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-size: 14px;
+    font-family: $font-body;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+
+    &:focus { border-color: $color-primary; }
+    &::placeholder { color: $color-outline; }
+  }
+
+  &-suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    list-style: none;
+    padding: 4px 0;
+    margin: 0;
+    background: $color-surface-container-lowest;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    box-shadow: $shadow-level-2;
+    z-index: 200;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  &-suggestion {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: $font-body;
+    transition: background 0.12s;
+
+    &:hover { background: rgba($color-primary, 0.06); }
+  }
+
+  &-suggestionName {
+    font-size: 14px;
+    color: $color-on-surface;
+    text-align: left;
+  }
+
+  &-suggestionUnit {
+    font-size: 11px;
+    color: $color-on-surface-variant;
+    background: $color-surface-container;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+    white-space: nowrap;
+  }
+
+  // Fila inferior perfectamente nivelada
+  &-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+
+    @include respond-to(md) {
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 14px;
+    }
+  }
+
+  &-field--qty {
+    margin-bottom: 0;
+    @include respond-to(md) {
+      width: 160px;
+      flex-shrink: 0;
+    }
+  }
+
+  &-field--unit {
+    margin-bottom: 0;
+    @include respond-to(md) {
+      width: 140px;
+      flex-shrink: 0;
+    }
+  }
+
+  // Stepper idéntico al modal
+  &-stepper {
+    display: flex;
+    align-items: center;
+    height: 42px;
+    background: #FAF2EB;
+    border: 1px solid rgba(234, 223, 211, 0.95);
+    border-radius: 12px;
+    padding: 3px 4px;
+    box-sizing: border-box;
+  }
+
+  &-stepBtn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: none;
+    background: #ffffff;
+    color: $color-on-background;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s, transform 0.1s;
+    box-shadow: 0 1px 3px rgba(31, 27, 22, 0.08);
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: #F0F5D8;
+      color: $color-primary;
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.92);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+
+  &-qtyInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 700;
+    color: $color-primary;
+    font-family: $font-body;
+    outline: none;
+    min-width: 0;
+    padding: 0;
+    -moz-appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &:focus {
+      color: $color-primary;
+    }
+  }
+
+  // Caja de unidad fija (no editable)
+  &-unitDisplay {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    background: #FAF2EB;
+    border: 1px solid rgba(234, 223, 211, 0.95);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Contenedor de acción alineado
+  &-action {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 0;
+  }
+
+  &-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 42px;
+    padding: 0 20px;
+    border-radius: $radius-full;
+    background: $color-primary;
+    border: none;
+    color: $color-on-primary;
+    font-size: 14px;
+    font-family: $font-body;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+    box-sizing: border-box;
+
+    .material-symbols-outlined { font-size: 18px; }
+
+    &:hover { opacity: 0.92; }
+    &:active { transform: scale(0.98); }
+  }
+
+  &-error {
+    margin: $spacing-sm 0 0;
+    font-size: 12px;
+    color: $color-error;
+  }
+}
+
+// ---- Modal de edición (EditIngredientModal) ----
+.EditModal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 27, 22, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: $spacing-md;
+  animation: fadeInOverlay 0.18s ease;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.EditModal {
+  background: #fff;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg * 1.3;
+  padding: $spacing-lg;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 16px 48px rgba(31, 27, 22, 0.2);
+  position: relative;
+  animation: slideUpModal 0.22s ease;
+  font-family: $font-body;
+
+  @include respond-to(md) {
+    padding: $spacing-xl;
+  }
+}
+
+@keyframes slideUpModal {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.EditModal-close {
+  position: absolute;
+  top: $spacing-md;
+  right: $spacing-md;
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-md;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-on-surface-variant;
+  transition: background 0.15s, color 0.15s;
+
+  .material-symbols-outlined { font-size: 20px; }
+
+  &:hover {
+    background: $color-surface-container;
+    color: $color-on-surface;
+  }
+}
+
+.EditModal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  padding-right: 40px;
+}
+
+.EditModal-headerIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba($color-primary, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-primary;
+  flex-shrink: 0;
+
+  .material-symbols-outlined { font-size: 20px; }
+}
+
+.EditModal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: $color-on-surface;
+  margin: 0 0 2px;
+}
+
+.EditModal-subtitle {
+  font-size: 12px;
+  color: $color-on-surface-variant;
+  margin: 0;
+}
+
+.EditModal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: $spacing-md;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-on-surface;
+  }
+}
+
+.EditModal-input {
+  padding: 9px 12px;
+  border-radius: $radius-md;
+  border: 1px solid $color-outline-variant;
+  background: #fff;
+  color: $color-on-surface;
+  font-size: 14px;
+  font-family: $font-body;
+  font-weight: 600;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
+  }
+
+  &:disabled {
+    background: $color-surface-container-low;
+    opacity: 0.8;
+    cursor: not-allowed;
+  }
+}
+
+.EditModal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.EditModal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+}
+
+.EditModal-btn {
+  padding: 9px $spacing-md;
+  border-radius: $radius-md;
+  font-size: 13px;
+  font-family: $font-body;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, opacity 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  .material-symbols-outlined { font-size: 15px; }
+
+  &--cancel {
+    background: transparent;
+    border-color: $color-outline-variant;
+    color: $color-on-surface-variant;
+
+    &:hover { background: $color-surface-container; }
+  }
+
+  &--save {
+    background: $color-primary;
+    border-color: $color-primary;
+    color: $color-on-primary;
+
+    &:hover { opacity: 0.88; }
+  }
+}
+
+// ---- Toast ----
+.InventoryToast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: 12px $spacing-md;
+  background: $color-inverse-surface;
+  color: $color-inverse-on-surface;
+  border-radius: $radius-lg;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: $font-body;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+    color: #A7C957;
+  }
+
+  &--visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// ---- Banner de sugerencias ----
+.InventoryBanner {
+  margin-top: $spacing-xl;
+  padding: $spacing-md $spacing-lg;
+  border-radius: $radius-lg * 1.3;
+  background: rgba($color-primary, 0.06);
+  border: 1px solid rgba($color-primary, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  @include respond-to(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.InventoryBanner-body {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.InventoryBanner-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: $color-primary;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .material-symbols-outlined { font-size: 20px; }
+}
+
+.InventoryBanner-text {
+  h4 {
+    margin: 0 0 2px;
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-on-surface;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: $color-primary;
+  }
+}
+
+.InventoryBanner-btn {
+  padding: 9px $spacing-md;
+  background: $color-primary;
+  color: $color-on-primary;
+  border: none;
+  border-radius: $radius-md;
+  font-size: 13px;
+  font-family: $font-body;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  box-shadow: $shadow-level-1;
+
+  &:hover { opacity: 0.88; }
+}
+
+// ---- Mensajes globales ----
+.InventoryPage-alert {
+  padding: 12px $spacing-md;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+  font-size: 14px;
+  font-family: $font-body;
+
+  &--error {
+    background: rgba($color-error, 0.08);
+    border: 1px solid rgba($color-error, 0.3);
+    color: $color-error;
+  }
+}
+
+.InventoryPage-loading {
+  text-align: center;
+  padding: $spacing-xl * 1.5;
+  color: $color-on-surface-variant;
+  font-size: 15px;
+  font-family: $font-body;
+}

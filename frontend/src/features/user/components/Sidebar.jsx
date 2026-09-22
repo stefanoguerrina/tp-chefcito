@@ -12,6 +12,7 @@ const PENDING_NAV_LINKS = [
 // Paneles disponibles para cualquier usuario autenticado (no requieren rol admin).
 const USER_NAV_LINKS = [
   { icon: 'add_box', label: 'Mis recetas', panel: 'myRecipes' },
+  { icon: 'kitchen', label: 'Mi inventario', panel: 'inventory' },
 ];
 
 // Paneles de admin disponibles en la sidebar: cada uno tiene un ícono, label e id.
