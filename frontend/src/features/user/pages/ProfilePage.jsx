@@ -1,9 +1,12 @@
-// Página de perfil del usuario autenticado: identidad real (avatar, nombre, bio,
-// ubicación), estadísticas propias, las 3 recetas mejor valoradas y la galería
-// completa de recetas propias (grilla masonry, con buscador y filtro por
-// categorías). Reutiliza RecipeCard (la misma card del resto del sitio) para no
-// duplicar layout; el click en cualquier receta navega al wizard de "Mis
-// recetas" desde HomePage (ahí vive el editar/eliminar, no se reimplementa acá).
+// Página de perfil: identidad real (avatar, nombre, bio, ubicación), estadísticas,
+// las 3 recetas mejor valoradas y la galería completa de recetas (grilla masonry,
+// con buscador y filtro por categorías). Reutiliza RecipeCard (la misma card del
+// resto del sitio) para no duplicar layout.
+// Sirve tanto para el perfil propio (editable) como para el de otro usuario, de
+// solo lectura, al que se llega tocando su nombre desde el detalle de una receta
+// (ver isOwnProfile más abajo): ahí no hay nada para editar, y "Editar perfil" se
+// reemplaza por "Donar" (todavía sin CRUD propia, muestra el mismo aviso
+// "Próximamente" que el botón de Donar del detalle de receta).
 import { useState, useEffect } from 'react';
 import { getUserByIdService } from '../services/getUserByIdService.js';
 import { getAllRecipes } from '../../recipe/services/recipeService.js';
@@ -12,6 +15,7 @@ import { recipeToCardProps } from '../../recipe/models/recipeModel.js';
 import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
 import MasonryGrid from '../../../core/components/MasonryGrid.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
 import EditProfileModal from '../components/EditProfileModal.jsx';
 import CategoryFilterDropdown from '../components/CategoryFilterDropdown.jsx';
 import RecipePodium from '../components/RecipePodium.jsx';
@@ -28,10 +32,18 @@ const getInitials = (name, lastName) =>
 // en una sola llamada: el corte es solo visual, para no volcar 50 cards juntas.
 const RECIPES_PER_PAGE = 12;
 
-// Recibe: onEditRecipe(recipeId), que abre el wizard de "Mis recetas" desde
-// HomePage. Siempre muestra el perfil del usuario logueado.
-function ProfilePage({ onEditRecipe }) {
+// Recibe:
+//   userId        — id del usuario cuyo perfil se muestra.
+//   onEditRecipe   — (perfil propio) abre el wizard de "Mis recetas" en modo edición.
+//   onRecipeClick  — (perfil ajeno) abre el detalle de la receta, de solo lectura.
+//   onBack         — (perfil ajeno) vuelve a la vista anterior. En el perfil propio
+//                    no hay botón de volver: es un panel fijo de la sidebar.
+function ProfilePage({ userId, onEditRecipe, onRecipeClick, onBack }) {
   const currentUserId = getCurrentUserId();
+  // Si no es el propio, es de solo lectura: sin edición de nada, "Donar" en vez de
+  // "Editar perfil", y las recetas se ven (no se editan) al tocarlas.
+  const isOwnProfile = userId === currentUserId;
+  const handleRecipeCardClick = isOwnProfile ? onEditRecipe : onRecipeClick;
 
   const [user, setUser] = useState(null);
   const [recipes, setRecipes] = useState([]);
@@ -43,6 +55,8 @@ function ProfilePage({ onEditRecipe }) {
   // Se activa si la URL de avatar cargada por el usuario no llega a cargar (rota,
   // sin conexión, etc.); en ese caso se cae al círculo con iniciales.
   const [avatarBroken, setAvatarBroken] = useState(false);
+  // Muestra el aviso "Próximamente" al tocar "Donar" (la CRUD de donaciones todavía no existe).
+  const [showDonationSoon, setShowDonationSoon] = useState(false);
 
   // Reseñas recibidas en todas las recetas propias: { totalReviews, averageRating
   // (null si todavía no hay ninguna) }. Se agrega en el frontend porque el backend
@@ -67,8 +81,8 @@ function ProfilePage({ onEditRecipe }) {
       setFetchError('');
       try {
         const [userData, recipesData] = await Promise.all([
-          getUserByIdService(currentUserId),
-          getAllRecipes(currentUserId).catch((err) => {
+          getUserByIdService(userId),
+          getAllRecipes(userId).catch((err) => {
             // El backend devuelve 404 cuando el usuario todavía no tiene recetas.
             if (err.message.includes('No se encontraron')) return [];
             throw err;
@@ -107,7 +121,7 @@ function ProfilePage({ onEditRecipe }) {
         setIsLoading(false);
       }
     })();
-  }, [currentUserId]);
+  }, [userId]);
 
   // Copia un resumen del perfil al portapapeles. No hay una página pública de
   // perfil todavía, así que "compartir" comparte el dato real (no un link falso).
@@ -196,20 +210,32 @@ function ProfilePage({ onEditRecipe }) {
 
   return (
     <div className="ProfilePage">
+      {/* Solo el perfil ajeno tiene onBack: el propio es un panel fijo de la sidebar,
+          no hay a dónde "volver". */}
+      {onBack && (
+        <button type="button" className="ProfilePage-backBtn" onClick={onBack}>
+          <span className="material-symbols-outlined">arrow_back</span>
+          Volver
+        </button>
+      )}
+
       <section className="ProfilePage-header">
         <div className="ProfilePage-banner">
           {/* Todavía no existe un campo de imagen de portada en el usuario: el botón
               queda visible para respetar el diseño, pero deshabilitado (mismo criterio
-              que las tabs de abajo) en vez de prometer una acción que no pasa nada. */}
-          <button
-            type="button"
-            className="ProfilePage-coverButton"
-            disabled
-            title="Todavía no disponible"
-          >
-            <span className="material-symbols-outlined">photo_camera</span>
-            Editar portada
-          </button>
+              que las tabs de abajo) en vez de prometer una acción que no pasa nada.
+              En un perfil ajeno directamente no se muestra: no hay nada para editar. */}
+          {isOwnProfile && (
+            <button
+              type="button"
+              className="ProfilePage-coverButton"
+              disabled
+              title="Todavía no disponible"
+            >
+              <span className="material-symbols-outlined">photo_camera</span>
+              Editar portada
+            </button>
+          )}
 
           <div className="ProfilePage-bannerRow">
             <div className="ProfilePage-bannerIdentity">
@@ -241,50 +267,70 @@ function ProfilePage({ onEditRecipe }) {
           </div>
         </div>
 
-        {/* El avatar entero es el disparador de "cambiar foto": abre el mismo modal de
-            edición, donde está el campo de URL de la imagen. */}
-        <button
-          type="button"
-          className="ProfilePage-avatarWrapper"
-          onClick={() => setIsEditingProfile(true)}
-          aria-label="Cambiar foto de perfil"
-          title="Cambiar foto de perfil"
-        >
-          {user.avatarUrl && !avatarBroken ? (
-            <img
-              className="ProfilePage-avatar"
-              src={user.avatarUrl}
-              alt={user.username}
-              onError={() => setAvatarBroken(true)}
-            />
-          ) : (
-            <div className="ProfilePage-avatar ProfilePage-avatar--initials">
-              {getInitials(user.name, user.lastName)}
-            </div>
-          )}
+        {/* En el perfil propio, el avatar entero es el disparador de "cambiar foto"
+            (abre el mismo modal de edición, donde está el campo de URL de la
+            imagen). En uno ajeno es solo una imagen, sin overlay ni acción. */}
+        {isOwnProfile ? (
+          <button
+            type="button"
+            className="ProfilePage-avatarWrapper"
+            onClick={() => setIsEditingProfile(true)}
+            aria-label="Cambiar foto de perfil"
+            title="Cambiar foto de perfil"
+          >
+            {user.avatarUrl && !avatarBroken ? (
+              <img
+                className="ProfilePage-avatar"
+                src={user.avatarUrl}
+                alt={user.username}
+                onError={() => setAvatarBroken(true)}
+              />
+            ) : (
+              <div className="ProfilePage-avatar ProfilePage-avatar--initials">
+                {getInitials(user.name, user.lastName)}
+              </div>
+            )}
 
-          <span className="ProfilePage-avatarOverlay">
-            <span className="material-symbols-outlined">photo_camera</span>
-            <span className="ProfilePage-avatarOverlayLabel">Cambiar</span>
-          </span>
-        </button>
+            <span className="ProfilePage-avatarOverlay">
+              <span className="material-symbols-outlined">photo_camera</span>
+              <span className="ProfilePage-avatarOverlayLabel">Cambiar</span>
+            </span>
+          </button>
+        ) : (
+          <div className="ProfilePage-avatarWrapper">
+            {user.avatarUrl && !avatarBroken ? (
+              <img
+                className="ProfilePage-avatar"
+                src={user.avatarUrl}
+                alt={user.username}
+                onError={() => setAvatarBroken(true)}
+              />
+            ) : (
+              <div className="ProfilePage-avatar ProfilePage-avatar--initials">
+                {getInitials(user.name, user.lastName)}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="ProfilePage-identityCard">
           <div className="ProfilePage-identityRow">
             <div className="ProfilePage-identityText">
               <div className="ProfilePage-bioRow">
                 <p className="ProfilePage-bio">
-                  {user.bio || 'Todavía no agregaste una biografía.'}
+                  {user.bio || (isOwnProfile ? 'Todavía no agregaste una biografía.' : 'Todavía no agregó una biografía.')}
                 </p>
-                <button
-                  type="button"
-                  className="ProfilePage-bioEditButton"
-                  onClick={() => setIsEditingProfile(true)}
-                  aria-label="Editar biografía"
-                  title="Editar biografía"
-                >
-                  <span className="material-symbols-outlined">edit</span>
-                </button>
+                {isOwnProfile && (
+                  <button
+                    type="button"
+                    className="ProfilePage-bioEditButton"
+                    onClick={() => setIsEditingProfile(true)}
+                    aria-label="Editar biografía"
+                    title="Editar biografía"
+                  >
+                    <span className="material-symbols-outlined">edit</span>
+                  </button>
+                )}
               </div>
 
               {user.location && (
@@ -296,14 +342,25 @@ function ProfilePage({ onEditRecipe }) {
             </div>
 
             <div className="ProfilePage-actions">
-              <button
-                type="button"
-                className="ProfilePage-button ProfilePage-button--primary"
-                onClick={() => setIsEditingProfile(true)}
-              >
-                <span className="material-symbols-outlined">edit</span>
-                Editar perfil
-              </button>
+              {isOwnProfile ? (
+                <button
+                  type="button"
+                  className="ProfilePage-button ProfilePage-button--primary"
+                  onClick={() => setIsEditingProfile(true)}
+                >
+                  <span className="material-symbols-outlined">edit</span>
+                  Editar perfil
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="ProfilePage-button ProfilePage-button--primary"
+                  onClick={() => setShowDonationSoon(true)}
+                >
+                  <span className="material-symbols-outlined">volunteer_activism</span>
+                  Donar
+                </button>
+              )}
               <button
                 type="button"
                 className="ProfilePage-button ProfilePage-button--outline"
@@ -323,7 +380,9 @@ function ProfilePage({ onEditRecipe }) {
         <div className="ProfilePage-metricsHeader">
           <div className="ProfilePage-metricsTitle">
             <span className="ProfilePage-metricsDot" />
-            <span className="ProfilePage-metricsEyebrow">Panel de creador • Estadísticas de mi contenido</span>
+            <span className="ProfilePage-metricsEyebrow">
+              Panel de creador • Estadísticas de {isOwnProfile ? 'mi' : 'su'} contenido
+            </span>
           </div>
           <button
             type="button"
@@ -375,26 +434,28 @@ function ProfilePage({ onEditRecipe }) {
         </div>
       </section>
 
-      {/* Solo "Mis recetas" está implementado; borradores, colecciones y preferencias
-          quedan visibles pero inertes hasta que existan esas features (mismo criterio
-          que "Explorar"/"Notificaciones" en la sidebar). */}
+      {/* Solo "Recetas Publicadas" está implementado; borradores y preferencias quedan
+          visibles pero inertes hasta que existan esas features (mismo criterio
+          que "Explorar"/"Notificaciones" en la sidebar) — y solo tienen sentido en el
+          perfil propio, ninguna receta guardada tampoco (esas ya se ven en "Recetas
+          guardadas" de la sidebar). */}
       <div className="ProfilePage-tabs">
         <button type="button" className="ProfilePage-tab ProfilePage-tab--active">
           <span className="material-symbols-outlined">menu_book</span>
-          Mis Recetas Publicadas ({recipes.length})
+          {isOwnProfile ? 'Mis Recetas Publicadas' : 'Recetas Publicadas'} ({recipes.length})
         </button>
-        <button type="button" className="ProfilePage-tab" disabled title="Todavía no disponible">
-          <span className="material-symbols-outlined">edit_note</span>
-          Borradores
-        </button>
-        <button type="button" className="ProfilePage-tab" disabled title="Todavía no disponible">
-          <span className="material-symbols-outlined">bookmark</span>
-          Colecciones &amp; Guardadas
-        </button>
-        <button type="button" className="ProfilePage-tab" disabled title="Todavía no disponible">
-          <span className="material-symbols-outlined">tune</span>
-          Preferencias y Dieta
-        </button>
+        {isOwnProfile && (
+          <>
+            <button type="button" className="ProfilePage-tab" disabled title="Todavía no disponible">
+              <span className="material-symbols-outlined">edit_note</span>
+              Borradores
+            </button>
+            <button type="button" className="ProfilePage-tab" disabled title="Todavía no disponible">
+              <span className="material-symbols-outlined">tune</span>
+              Preferencias y Dieta
+            </button>
+          </>
+        )}
       </div>
 
       {/* Recetas Destacadas: siempre son 3 (o menos si todavía no hay tantas) y
@@ -412,25 +473,29 @@ function ProfilePage({ onEditRecipe }) {
           <RecipePodium
             recipes={featuredRecipes}
             reviewStatsByRecipe={recipeReviewStats}
-            onEditRecipe={onEditRecipe}
+            onEditRecipe={handleRecipeCardClick}
           />
         </section>
       )}
 
       {recipes.length === 0 && (
         <p className="ProfilePage-empty">
-          Todavía no publicaste ninguna receta. ¡Creá la primera desde "Mis recetas"!
+          {isOwnProfile
+            ? 'Todavía no publicaste ninguna receta. ¡Creá la primera desde "Mis recetas"!'
+            : `${user.name} todavía no publicó ninguna receta.`}
         </p>
       )}
 
-      {/* Todas mis recetas: acomodo masonry (columnas de alto dispar, ver
-          MasonryGrid) pero con la misma card de receta de siempre adentro. */}
+      {/* Galería: acomodo masonry (columnas de alto dispar, ver MasonryGrid) pero
+          con la misma card de receta de siempre adentro. */}
       {recipes.length > 0 && (
         <section className="ProfilePage-allRecipes">
           <div className="ProfilePage-sectionHeader">
             <div>
               <span className="ProfilePage-eyebrow">Galería completa</span>
-              <h3 className="ProfilePage-sectionTitle">Todas mis recetas</h3>
+              <h3 className="ProfilePage-sectionTitle">
+                {isOwnProfile ? 'Todas mis recetas' : `Todas las recetas de ${user.name}`}
+              </h3>
             </div>
             <span className="ProfilePage-galleryCount">
               Mostrando {visibleRecipes.length} de {filteredRecipes.length}
@@ -448,7 +513,7 @@ function ProfilePage({ onEditRecipe }) {
                   setSearchQuery(event.target.value);
                   resetPagination();
                 }}
-                placeholder="Buscar en mis recetas..."
+                placeholder={isOwnProfile ? 'Buscar en mis recetas...' : `Buscar en las recetas de ${user.name}...`}
               />
               {searchQuery && (
                 <button
@@ -496,7 +561,7 @@ function ProfilePage({ onEditRecipe }) {
                     rating: stats?.averageRating ?? 0,
                     reviewsCount: stats?.totalReviews ?? 0,
                   }}
-                  onClick={() => onEditRecipe(recipe.id)}
+                  onClick={() => handleRecipeCardClick(recipe.id)}
                   showSaveButton={false}
                 />
               );
@@ -518,7 +583,7 @@ function ProfilePage({ onEditRecipe }) {
         </section>
       )}
 
-      {isEditingProfile && (
+      {isOwnProfile && isEditingProfile && (
         <EditProfileModal
           user={user}
           onClose={() => setIsEditingProfile(false)}
@@ -527,6 +592,14 @@ function ProfilePage({ onEditRecipe }) {
             setAvatarBroken(false);
             setIsEditingProfile(false);
           }}
+        />
+      )}
+
+      {showDonationSoon && (
+        <AlertModal
+          title="Próximamente"
+          message="Las donaciones a creadores todavía no están disponibles en Chefcito. ¡Estamos trabajando en eso!"
+          onClose={() => setShowDonationSoon(false)}
         />
       )}
     </div>

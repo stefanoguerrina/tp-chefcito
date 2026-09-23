@@ -23,8 +23,10 @@ const userRouter = Router();
 // Con ?inactive=true devuelve usuarios dados de baja (solo admin)
 userRouter.get('/', verifyToken, searchUsers);
 
-// GET /api/users/:id — devuelve un usuario activo por ID (el propio usuario o admin)
-userRouter.get('/:id', verifyToken, verifyOwnerOrAdmin, getUserById);
+// GET /api/users/:id — devuelve un usuario activo por ID. Cualquier usuario autenticado
+// puede consultar el perfil público de cualquier otro (ver ProfilePage); el controller
+// decide qué campos devolver según si es el propio dueño/admin o no (toPublicProfile).
+userRouter.get('/:id', verifyToken, getUserById);
 
 // POST /api/users — crea un nuevo usuario (solo admin, puede asignar rol admin con makeAdmin=true)
 userRouter.post('/', verifyToken, verifyAdmin, validateCreateUser, handleValidationErrors, createUser);

@@ -1,4 +1,6 @@
 // Servicio de registro — llama al endpoint de creación de cuenta del backend.
+import { PHONE_COUNTRY_PREFIX } from "../models/registerModel";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Envía los datos de registro al backend.
@@ -18,7 +20,8 @@ export const registerService = async (form) => {
                 lastName: form.surName,
                 email: form.email,
                 password: form.password,
-                phone: form.telephone || null,
+                // El campo solo guarda el número local; el prefijo de país se antepone acá.
+                phone: form.telephone ? `${PHONE_COUNTRY_PREFIX} ${form.telephone.trim()}` : null,
                 birthDate: form.birthDate || null
             })
         });

@@ -73,7 +73,7 @@
 }
 
 .AuthModal-title {
-  font-family: $font-headline;
+  font-family: $font-body;
   font-size: 28px;
   color: $color-on-background;
   margin: 0 0 $spacing-xs;
@@ -125,6 +125,87 @@
     outline: none;
     border-color: $color-primary;
     box-shadow: 0 0 0 2px rgba($color-primary, 0.2);
+  }
+}
+
+.AuthModal-phoneWrapper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  background: $color-surface;
+
+  &:focus-within {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 2px rgba($color-primary, 0.2);
+  }
+}
+
+// Prefijo fijo "+54" con bandera argentina: no es un desplegable, Chefcito por ahora
+// solo opera en Argentina (ver PHONE_COUNTRY_PREFIX en registerModel.js).
+.AuthModal-phonePrefix {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-md;
+  background: $color-surface-container-low;
+  border-right: 1px solid $color-outline-variant;
+  font-family: $font-body;
+  font-size: 14px;
+  font-weight: 600;
+  color: $color-on-background;
+  white-space: nowrap;
+}
+
+.AuthModal-phoneFlag {
+  width: 20px;
+  height: auto;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.AuthModal-phoneInput.AuthModal-input {
+  border: none;
+  border-radius: 0;
+  flex: 1;
+  min-width: 0;
+
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+// Botón que abre el DatePickerModal: mismo aspecto que un AuthModal-input,
+// pero es un <button> (el usuario no tipea la fecha a mano).
+.AuthModal-dateButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  font-family: $font-body;
+  font-size: 14px;
+  color: $color-on-background;
+  background: $color-surface;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  .material-symbols-outlined {
+    color: $color-on-surface-variant;
+    font-size: 20px;
+  }
+
+  &:hover {
+    border-color: $color-primary;
+  }
+
+  &--placeholder {
+    color: $color-on-surface-variant;
   }
 }
 

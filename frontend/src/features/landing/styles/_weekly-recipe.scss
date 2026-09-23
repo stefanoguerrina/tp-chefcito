@@ -13,7 +13,7 @@
   }
 
   &-heading {
-    font-family: $font-headline;
+    font-family: $font-body;
     font-size: 28px;
     text-align: center;
     color: $color-on-background;
@@ -73,7 +73,7 @@
     }
 
     h3 {
-      font-family: $font-headline;
+      font-family: $font-body;
       font-size: 28px;
       color: $color-on-background;
       margin: $spacing-sm 0 4px;

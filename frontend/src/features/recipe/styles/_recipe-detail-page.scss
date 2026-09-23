@@ -104,6 +104,25 @@
     color: $color-on-surface-variant;
   }
 
+  // Cuando hay onAuthorClick, el bloque de autor es un <button>: mismo look que
+  // el div de siempre, pero clickeable para abrir el perfil de solo lectura.
+  &-author--clickable {
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+
+    span {
+      text-decoration: underline;
+      text-decoration-color: transparent;
+      transition: text-decoration-color 0.15s ease;
+    }
+
+    &:hover span {
+      text-decoration-color: currentColor;
+    }
+  }
+
   &-authorAvatar {
     width: 28px;
     height: 28px;
@@ -112,7 +131,7 @@
   }
 
   &-title {
-    font-family: $font-headline;
+    font-family: $font-body;
     font-size: 32px;
     font-weight: 700;
     color: $color-on-surface;
@@ -139,6 +158,14 @@
     border-radius: 50%;
     background: $color-outline;
     margin: 0 4px;
+  }
+
+  /* Contenedor de Guardar + Donar, apilados a la derecha del encabezado */
+  &-headerActions {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
   }
 
   /* Botón guardar */
@@ -170,6 +197,31 @@
       border-color: $color-secondary-container;
       color: $color-on-secondary-container;
       .material-symbols-outlined { font-variation-settings: "'FILL' 1"; }
+    }
+  }
+
+  /* Botón donar (abre el aviso "Próximamente": la CRUD de donaciones no está implementada) */
+  &-donateBtn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-full;
+    border: 2px solid rgba($color-tertiary, 0.35);
+    background: transparent;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-tertiary;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+
+    .material-symbols-outlined { font-size: 18px; }
+
+    &:hover {
+      background: rgba($color-tertiary, 0.1);
+      border-color: $color-tertiary;
     }
   }
 

@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import RecipeCardStage from '../components/RecipeCardStage.jsx';
 import RecipeIngredientsStage from '../components/RecipeIngredientsStage.jsx';
 import RecipeStepsStage from '../components/RecipeStepsStage.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
 import { getRecipeById, createRecipe, updateRecipe } from '../services/recipeService.js';
 import { replaceSteps } from '../../step/services/stepService.js';
 import { replaceRecipeIngredients } from '../../recipeIngredient/services/recipeIngredientService.js';
@@ -189,7 +190,6 @@ function RecipeEditorPage({ recipeId, categories, ingredientsCatalog, onDone, on
           </div>
         </div>
         <div>
-          {submitError && <p className="RecipeEditorPage-error">⚠ {submitError}</p>}
           <button
             type="button"
             className="btn btn--primary"
@@ -201,6 +201,14 @@ function RecipeEditorPage({ recipeId, categories, ingredientsCatalog, onDone, on
           </button>
         </div>
       </div>
+
+      {submitError && (
+        <AlertModal
+          title="No se pudo publicar la receta"
+          message={submitError}
+          onClose={() => setSubmitError('')}
+        />
+      )}
     </div>
   );
 }

@@ -29,11 +29,16 @@ const USER_PANELS = {
   savedRecipes: 'savedRecipes',
 };
 
-function HomePage() {
+function HomePage({ onLogout }) {
+  const currentUserId = getCurrentUserId();
+
   // Panel activo: null = home normal, o una clave de USER_PANELS.
   const [activePanel, setActivePanel] = useState(null);
   // Id de la receta cuyo detalle se está mostrando (null = sin detalle abierto).
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
+  // Id del usuario cuyo perfil (de solo lectura) se está mostrando, al tocar el
+  // nombre del creador desde el detalle de una receta (null = no hay ninguno abierto).
+  const [viewedProfileUserId, setViewedProfileUserId] = useState(null);
 
   // Recetas reales cargadas por los usuarios (ya no hay datos de muestra acá).
   const [communityRecipes, setCommunityRecipes] = useState([]);
@@ -60,7 +65,10 @@ function HomePage() {
       setRecipesError('');
       try {
         const recipes = await getAllRecipes();
-        setCommunityRecipes(recipes.map(recipeToHomeCardProps));
+        // "Recetas de la comunidad" es para descubrir lo que publicaron otros, no
+        // las propias (esas ya se gestionan desde "Mis recetas").
+        const othersRecipes = recipes.filter((recipe) => recipe.idUser !== currentUserId);
+        setCommunityRecipes(othersRecipes.map(recipeToHomeCardProps));
       } catch (err) {
         // El backend devuelve 404 cuando todavía no hay ninguna receta cargada.
         if (err.message.includes('No se encontraron')) {
@@ -75,13 +83,13 @@ function HomePage() {
 
     (async () => {
       try {
-        const ids = await getSavedRecipeIds(getCurrentUserId());
+        const ids = await getSavedRecipeIds(currentUserId);
         setSavedRecipeIds(new Set(ids));
       } catch {
         // Si falla, las cards simplemente arrancan sin marcar como guardadas.
       }
     })();
-  }, [activePanel]);
+  }, [activePanel, currentUserId]);
 
   // Guarda o quita el guardado de una receta desde su card, sin entrar al detalle.
   // Actualiza el listón de forma optimista y revierte si el backend falla.
@@ -142,73 +150,105 @@ function HomePage() {
     setSelectedRecipeId(idRecipe);
   };
 
+  // Abre el perfil de solo lectura de otro usuario, al tocar su nombre desde el
+  // detalle de una receta.
+  const handleViewUserProfile = (userId) => {
+    setSelectedRecipeId(null);
+    setViewedProfileUserId(userId);
+  };
+
+  const handleBackFromProfile = () => setViewedProfileUserId(null);
+
+  // Desde el perfil de otro usuario, ver el detalle de una de sus recetas: sale
+  // de la vista de perfil y muestra RecipeDetailPage como de costumbre.
+  const handleOpenRecipeFromProfile = (idRecipe) => {
+    setViewedProfileUserId(null);
+    setSelectedRecipeId(idRecipe);
+  };
+
   return (
     <div className="HomePage">
-      <Sidebar activePanel={activePanel} onTogglePanel={handleTogglePanel} />
+      <Sidebar activePanel={activePanel} onTogglePanel={handleTogglePanel} onLogout={onLogout} />
 
       <div className="HomePage-content">
         <main className="HomePage-main">
-          {activePanel === USER_PANELS.myRecipes && (
-            <RecipePage
-              initialEditorTarget={myRecipesInitialTarget}
-              // Solo hay a dónde volver si el wizard se abrió desde Perfil; si el
-              // usuario entró por la sidebar, al cerrarlo se queda en "Mis recetas".
-              onEditorExit={myRecipesInitialTarget !== null ? handleRecipeEditorExit : undefined}
-            />
-          )}
-
-          {activePanel === USER_PANELS.profile && (
+          {viewedProfileUserId !== null ? (
+            // Perfil de solo lectura de otro usuario (se llega tocando su nombre
+            // desde el detalle de una receta): tiene prioridad sobre cualquier panel.
             <ProfilePage
-              onEditRecipe={(recipeId) => handleOpenRecipeEditor(recipeId)}
+              userId={viewedProfileUserId}
+              onBack={handleBackFromProfile}
+              onRecipeClick={handleOpenRecipeFromProfile}
             />
-          )}
-
-          {activePanel === USER_PANELS.inventory && (
-            <InventoryPage />
-          )}
-
-          {activePanel === USER_PANELS.savedRecipes && (
-            <SavedRecipesPage onRecipeClick={handleOpenRecipeFromSaved} />
-          )}
-
-          {/* Detalle de receta individual — se abre al clickear una card del carrusel */}
-          {selectedRecipeId !== null && activePanel === null && (
-            <RecipeDetailPage
-              recipeId={selectedRecipeId}
-              onBack={() => setSelectedRecipeId(null)}
-              isLoggedIn
-              isSaved={savedRecipeIds.has(selectedRecipeId)}
-              onToggleSave={handleToggleSaveRecipe}
-            />
-          )}
-
-          {/* Vista normal de la home cuando no hay panel activo y no se está viendo
-              el detalle de una receta */}
-          {activePanel === null && selectedRecipeId === null && (
+          ) : (
             <>
-              <HomeFeatureCards />
-
-              <p className="HomePage-subtitle">Descubrí nuevas ideas para tu cocina hoy</p>
-              <hr className="HomePage-divider" />
-
-              {isLoadingRecipes && <p className="HomePage-recipesStatus">Cargando recetas...</p>}
-              {recipesError && <p className="HomePage-recipesStatus">⚠ {recipesError}</p>}
-              {saveError && <p className="HomePage-recipesStatus">⚠ {saveError}</p>}
-              {!isLoadingRecipes && !recipesError && communityRecipes.length === 0 && (
-                <p className="HomePage-recipesStatus">
-                  Todavía no hay recetas cargadas. ¡Sé el primero en publicar una desde "Mis recetas"!
-                </p>
+              {activePanel === USER_PANELS.myRecipes && (
+                <RecipePage
+                  initialEditorTarget={myRecipesInitialTarget}
+                  // Solo hay a dónde volver si el wizard se abrió desde Perfil; si el
+                  // usuario entró por la sidebar, al cerrarlo se queda en "Mis recetas".
+                  onEditorExit={myRecipesInitialTarget !== null ? handleRecipeEditorExit : undefined}
+                />
               )}
-              {!isLoadingRecipes && !recipesError && communityRecipes.length > 0 && (
-                <RecipeCarouselSection
-                  title="Recetas de la comunidad"
-                  recipes={communityRecipes.map((recipe) => ({
-                    ...recipe,
-                    isSaved: savedRecipeIds.has(recipe.id),
-                  }))}
-                  onRecipeClick={setSelectedRecipeId}
+
+              {activePanel === USER_PANELS.profile && (
+                <ProfilePage
+                  userId={currentUserId}
+                  onEditRecipe={(recipeId) => handleOpenRecipeEditor(recipeId)}
+                />
+              )}
+
+              {activePanel === USER_PANELS.inventory && (
+                <InventoryPage />
+              )}
+
+              {activePanel === USER_PANELS.savedRecipes && (
+                <SavedRecipesPage
+                  onRecipeClick={handleOpenRecipeFromSaved}
+                  onExploreClick={() => handleTogglePanel(null)}
+                />
+              )}
+
+              {/* Detalle de receta individual — se abre al clickear una card del carrusel */}
+              {selectedRecipeId !== null && activePanel === null && (
+                <RecipeDetailPage
+                  recipeId={selectedRecipeId}
+                  onBack={() => setSelectedRecipeId(null)}
+                  onAuthorClick={handleViewUserProfile}
+                  isLoggedIn
+                  isSaved={savedRecipeIds.has(selectedRecipeId)}
                   onToggleSave={handleToggleSaveRecipe}
                 />
+              )}
+
+              {/* Vista normal de la home cuando no hay panel activo y no se está viendo
+                  el detalle de una receta */}
+              {activePanel === null && selectedRecipeId === null && (
+                <>
+                  <HomeFeatureCards />
+
+                  <hr className="HomePage-divider" />
+
+                  {isLoadingRecipes && <p className="HomePage-recipesStatus">Cargando recetas...</p>}
+                  {recipesError && <p className="HomePage-recipesStatus">⚠ {recipesError}</p>}
+                  {saveError && <p className="HomePage-recipesStatus">⚠ {saveError}</p>}
+                  {!isLoadingRecipes && !recipesError && communityRecipes.length === 0 && (
+                    <p className="HomePage-recipesStatus">
+                      Todavía no hay recetas cargadas. ¡Sé el primero en publicar una desde "Mis recetas"!
+                    </p>
+                  )}
+                  {!isLoadingRecipes && !recipesError && communityRecipes.length > 0 && (
+                    <RecipeCarouselSection
+                      title="Recetas de la comunidad"
+                      recipes={communityRecipes.map((recipe) => ({
+                        ...recipe,
+                        isSaved: savedRecipeIds.has(recipe.id),
+                      }))}
+                      onRecipeClick={setSelectedRecipeId}
+                      onToggleSave={handleToggleSaveRecipe}
+                    />
+                  )}
+                </>
               )}
             </>
           )}

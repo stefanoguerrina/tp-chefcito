@@ -49,7 +49,7 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister }) => {
                         id="emailLogIn"
                         name="emailLogIn"
                         placeholder="Email o usuario"
-                        autoComplete="off"
+                        autoComplete="username"
                         value={form.email}
                         onChange={(event) => handleInputChange(event, "email")}
                     />
@@ -61,7 +61,7 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister }) => {
                             type={showPassword ? "text" : "password"}
                             id="passwordLogIn"
                             name="passwordLogIn"
-                            autoComplete="off"
+                            autoComplete="current-password"
                             value={form.password}
                             onChange={(event) => handleInputChange(event, "password")}
                         />

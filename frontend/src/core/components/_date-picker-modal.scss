@@ -1,0 +1,123 @@
+// Estilos del componente compartido DatePickerModal (core/components).
+@use '../../styles/abstracts' as *;
+
+.DatePickerModal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.DatePickerModal-card {
+  width: 100%;
+  max-width: 300px;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-2;
+  padding: $spacing-lg;
+  font-family: $font-body;
+}
+
+.DatePickerModal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+}
+
+.DatePickerModal-navButton {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: $radius-full;
+  background: transparent;
+  color: $color-on-surface-variant;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: $color-surface-container-low;
+    color: $color-on-background;
+  }
+}
+
+.DatePickerModal-selectors {
+  flex: 1;
+  display: flex;
+  gap: $spacing-xs;
+  min-width: 0;
+
+  select {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    padding: 6px 2px;
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-on-background;
+    background: $color-surface;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+    }
+  }
+}
+
+.DatePickerModal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: $spacing-xs;
+
+  span {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: $color-on-surface-variant;
+  }
+}
+
+.DatePickerModal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.DatePickerModal-day {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  font-family: $font-body;
+  font-size: 13px;
+  color: $color-on-background;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $color-surface-container-low;
+  }
+
+  &--empty {
+    cursor: default;
+  }
+
+  &--selected {
+    background: $color-primary;
+    color: $color-on-primary;
+    font-weight: 700;
+  }
+}

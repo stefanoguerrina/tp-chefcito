@@ -28,7 +28,7 @@
     padding: $spacing-xl;
 
     h3 {
-      font-family: $font-headline;
+      font-family: $font-body;
       font-size: 22px;
       color: $color-on-background;
       margin: 0 0 $spacing-xl;
@@ -84,7 +84,7 @@
 
   &-comments {
     h3 {
-      font-family: $font-headline;
+      font-family: $font-body;
       font-size: 22px;
       color: $color-on-background;
       text-align: center;

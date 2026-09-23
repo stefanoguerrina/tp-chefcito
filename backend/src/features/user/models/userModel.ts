@@ -32,3 +32,21 @@ export function toPublic<T extends { password: string }>(user: T): Omit<T, 'pass
   const { password, ...publicData } = user;
   return publicData;
 }
+
+// Campos que puede ver cualquier otro usuario autenticado en el perfil de alguien
+// más (ver GET /api/users/:id): datos de identidad pública de Chefcito, nunca
+// email/phone/birthDate (esos solo los ve el propio dueño o un admin, vía toPublic).
+export function toPublicProfile<T extends {
+  id: number;
+  username: string;
+  name: string;
+  lastName: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  specialty?: string | null;
+  location?: string | null;
+  createdAt?: Date | null;
+}>(user: T) {
+  const { id, username, name, lastName, avatarUrl, bio, specialty, location, createdAt } = user;
+  return { id, username, name, lastName, avatarUrl, bio, specialty, location, createdAt };
+}

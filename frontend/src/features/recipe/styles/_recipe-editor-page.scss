@@ -41,15 +41,27 @@
     box-sizing: border-box;
   }
 
-  // Los botones compartidos (.btn, .btn--primary, etc.) viven en
-  // ingredientCategory/styles con una paleta placeholder distinta a la real de
-  // Chefcito. Acá los pisamos con los tokens correctos, sin tocar ese archivo.
+  // .btn/.btn--primary/.btn--secondary son propios de este wizard (ya no dependen
+  // de ingredientCategory/styles, que se eliminó): tamaño, padding y colores
+  // completos acá, autosuficiente igual que NutritionalValuePanel.
   .btn {
     font-family: $font-body;
-    border-radius: $radius-md;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-lg;
+    border-radius: $radius-lg;
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 
   .btn--primary {

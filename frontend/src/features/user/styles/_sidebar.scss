@@ -1,4 +1,5 @@
 // Estilos de la sidebar fija de las páginas autenticadas (features/user/components/Sidebar).
+// Cada link muestra ícono + texto (sin tooltip al hover): mismo patrón que AdminSidebar.
 @use '../../../styles/abstracts' as *;
 
 .Sidebar {
@@ -11,66 +12,87 @@
   border-right: 1px solid $color-outline-variant;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: $spacing-md 0;
   z-index: 50;
 
-  &-logo {
-    color: $color-primary;
+  &-brand {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    height: 64px;
+    box-sizing: border-box;
+    // Mismo margin + padding horizontal que Sidebar-account/Sidebar-link--logout
+    // (32px en total), para que el ícono quede alineado con los de la nav de abajo.
+    margin: 0 $spacing-md;
+    padding: 0 $spacing-md;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  &-brandIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-md;
+    background: $color-primary;
+    color: $color-on-primary;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: $radius-full;
-    margin-bottom: $spacing-xl;
-    text-decoration: none;
-    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+    font-size: 22px;
+  }
 
-    .material-symbols-outlined {
-      font-size: 32px;
-      font-variation-settings: 'FILL' 1;
-    }
-
-    &:hover {
-      background: $color-surface-container-highest;
-    }
+  &-brandName {
+    font-family: $font-body;
+    font-weight: 700;
+    font-size: 18px;
+    color: $color-on-background;
   }
 
   &-nav {
     flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: $spacing-lg;
-    width: 100%;
+    gap: $spacing-xs;
+    padding: $spacing-md;
   }
 
   &-link {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    border: none;
-    border-radius: $radius-full;
-    background: transparent;
-    color: $color-on-surface-variant;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-md;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface-variant;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
 
     .material-symbols-outlined {
-      font-size: 28px;
+      font-size: 22px;
+      flex-shrink: 0;
     }
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: $color-surface-container-highest;
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
     &--active {
       background: $color-secondary-container;
       color: $color-on-secondary-container;
+      font-weight: 600;
 
       .material-symbols-outlined {
         font-variation-settings: 'FILL' 1;
@@ -82,31 +104,100 @@
     }
   }
 
-  // Tooltip que aparece a la derecha del ícono al pasar el mouse (oculto en mobile,
-  // donde tocar el ícono navega directo en vez de mostrar texto flotante).
-  &-tooltip {
-    display: none;
+  &-linkLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-    @include respond-to(md) {
-      display: block;
-      position: absolute;
-      left: 100%;
-      margin-left: $spacing-sm;
-      padding: $spacing-xs $spacing-sm;
-      background: $color-inverse-surface;
-      color: $color-inverse-on-surface;
-      font-size: 12px;
-      font-weight: 600;
-      border-radius: $radius-md;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.15s ease;
-      z-index: 50;
+  // Fila inferior fija: identidad del usuario logueado (avatar + nombre + username)
+  // a la izquierda y el botón de cerrar sesión a la derecha. Mismo patrón que
+  // AdminSidebar-footer/-account/-logout.
+  &-footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-xs;
+    padding: $spacing-md;
+  }
+
+  &-account {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+  }
+
+  &-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: $radius-full;
+    object-fit: cover;
+
+    &--initials {
+      background: $color-secondary-container;
+      color: $color-on-secondary-container;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: $font-body;
+      font-weight: 700;
+      font-size: 13px;
     }
   }
 
-  &-link:hover &-tooltip {
-    opacity: 1;
+  &-accountText {
+    display: flex;
+    flex-direction: column;
+    // line-height ajustado: el 145% heredado de index.css deja mucho aire entre el
+    // nombre y el username si no se lo achica acá (mismo caso que AdminSidebar-accountText).
+    line-height: 1.35;
+    min-width: 0;
+  }
+
+  &-accountName {
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 700;
+    color: $color-on-background;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &-accountUsername {
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Botón de cerrar sesión: ícono chico al lado del avatar (no una fila propia),
+  // igual que AdminSidebar-logout.
+  &-logout {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface-variant;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 22px;
+    }
+
+    &:hover {
+      background: rgba($color-error, 0.1);
+      color: $color-error;
+    }
   }
 }

@@ -7,25 +7,30 @@ import { getRecipeById } from '../services/recipeService.js';
 import { RECIPE_PLACEHOLDER_IMAGE, RECIPE_PLACEHOLDER_AVATAR } from '../models/recipeModel.js';
 import ReviewList from '../../review/components/ReviewList.jsx';
 import StarRating from '../../../core/components/StarRating.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
 import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
 import '../styles/_recipe-detail-page.scss';
 
 // Recibe:
-//   recipeId     — id de la receta a mostrar
-//   onBack       — handler para volver al listado
-//   isLoggedIn   — para mostrar u ocultar el botón de reseñar/guardar
-//   isSaved      — si la receta ya está guardada por el usuario autenticado
-//   onToggleSave — handler para guardar/quitar la receta (recibe recipeId).
+//   recipeId      — id de la receta a mostrar
+//   onBack        — handler para volver al listado
+//   onAuthorClick — handler opcional que recibe el id del creador, para abrir su
+//                   perfil de solo lectura (ver ProfilePage/HomePage)
+//   isLoggedIn    — para mostrar u ocultar el botón de reseñar/guardar
+//   isSaved       — si la receta ya está guardada por el usuario autenticado
+//   onToggleSave  — handler para guardar/quitar la receta (recibe recipeId).
 //                  El estado de guardado vive en HomePage (isSaved/onToggleSave)
 //                  para que quede sincronizado con el listón de la card en el
 //                  feed: si se guarda desde acá y se vuelve, la card ya lo refleja.
-function RecipeDetailPage({ recipeId, onBack, isLoggedIn, isSaved, onToggleSave }) {
+function RecipeDetailPage({ recipeId, onBack, onAuthorClick, isLoggedIn, isSaved, onToggleSave }) {
   const currentUserId = getCurrentUserId();
 
   const [recipe, setRecipe] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [saveError, setSaveError] = useState('');
+  // Muestra el aviso "Próximamente" al tocar "Donar" (la CRUD de donaciones todavía no existe).
+  const [showDonationSoon, setShowDonationSoon] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -82,14 +87,29 @@ function RecipeDetailPage({ recipeId, onBack, isLoggedIn, isSaved, onToggleSave 
       {/* Encabezado */}
       <div className="RecipeDetailPage-header">
         <div className="RecipeDetailPage-headerMain">
-          <div className="RecipeDetailPage-author">
-            <img
-              className="RecipeDetailPage-authorAvatar"
-              src={recipe.user?.avatarUrl ?? RECIPE_PLACEHOLDER_AVATAR}
-              alt={recipe.user?.username ?? ''}
-            />
-            <span>Por @{recipe.user?.username ?? 'desconocido'}</span>
-          </div>
+          {onAuthorClick && recipe.user?.id ? (
+            <button
+              type="button"
+              className="RecipeDetailPage-author RecipeDetailPage-author--clickable"
+              onClick={() => onAuthorClick(recipe.user.id)}
+            >
+              <img
+                className="RecipeDetailPage-authorAvatar"
+                src={recipe.user?.avatarUrl ?? RECIPE_PLACEHOLDER_AVATAR}
+                alt={recipe.user?.username ?? ''}
+              />
+              <span>Por @{recipe.user?.username ?? 'desconocido'}</span>
+            </button>
+          ) : (
+            <div className="RecipeDetailPage-author">
+              <img
+                className="RecipeDetailPage-authorAvatar"
+                src={recipe.user?.avatarUrl ?? RECIPE_PLACEHOLDER_AVATAR}
+                alt={recipe.user?.username ?? ''}
+              />
+              <span>Por @{recipe.user?.username ?? 'desconocido'}</span>
+            </div>
+          )}
           <h1 className="RecipeDetailPage-title">{recipe.name}</h1>
 
           <div className="RecipeDetailPage-meta">
@@ -101,17 +121,28 @@ function RecipeDetailPage({ recipeId, onBack, isLoggedIn, isSaved, onToggleSave 
           </div>
         </div>
 
-        {/* Botón guardar receta */}
+        {/* Guardar receta / donar al creador: ninguna de las dos tiene sentido en tu propia receta */}
         {isLoggedIn && recipe.idUser !== currentUserId && (
-          <button
-            type="button"
-            className={`RecipeDetailPage-saveBtn${isSaved ? ' RecipeDetailPage-saveBtn--saved' : ''}`}
-            onClick={handleSaveRecipe}
-            aria-pressed={isSaved}
-          >
-            <span className="material-symbols-outlined">bookmark</span>
-            {isSaved ? 'Guardada' : 'Guardar'}
-          </button>
+          <div className="RecipeDetailPage-headerActions">
+            <button
+              type="button"
+              className={`RecipeDetailPage-saveBtn${isSaved ? ' RecipeDetailPage-saveBtn--saved' : ''}`}
+              onClick={handleSaveRecipe}
+              aria-pressed={isSaved}
+            >
+              <span className="material-symbols-outlined">bookmark</span>
+              {isSaved ? 'Guardada' : 'Guardar'}
+            </button>
+
+            <button
+              type="button"
+              className="RecipeDetailPage-donateBtn"
+              onClick={() => setShowDonationSoon(true)}
+            >
+              <span className="material-symbols-outlined">volunteer_activism</span>
+              Donar
+            </button>
+          </div>
         )}
       </div>
 
@@ -179,6 +210,14 @@ function RecipeDetailPage({ recipeId, onBack, isLoggedIn, isSaved, onToggleSave 
         onSaveRecipe={handleSaveRecipe}
         isSaved={isSaved}
       />
+
+      {showDonationSoon && (
+        <AlertModal
+          title="Próximamente"
+          message="Las donaciones a creadores todavía no están disponibles en Chefcito. ¡Estamos trabajando en eso!"
+          onClose={() => setShowDonationSoon(false)}
+        />
+      )}
     </article>
   );
 }

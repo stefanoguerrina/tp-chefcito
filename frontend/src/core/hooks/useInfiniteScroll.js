@@ -8,11 +8,15 @@ import { useLayoutEffect } from 'react';
 
 const COPIES = 3;
 
-// Recibe: trackRef (el contenedor con overflow-x: auto cuyo contenido está triplicado).
-export const useInfiniteScroll = (trackRef) => {
+// Recibe: trackRef (el contenedor con overflow-x: auto cuyo contenido está triplicado) y
+// enabled (RecipeCarouselSection lo pone en false cuando hay pocas recetas: si el track
+// no está triplicado, dividir scrollWidth por 3 daría una posición inicial incorrecta,
+// y las 2-3 copias visibles a la vez se verían como recetas "duplicadas").
+export const useInfiniteScroll = (trackRef, enabled = true) => {
   // useLayoutEffect (no useEffect) para que el salto a la copia del medio pase antes
   // del primer paint: si no, se alcanza a ver un parpadeo arrancando en la copia 1.
   useLayoutEffect(() => {
+    if (!enabled) return undefined;
     const track = trackRef.current;
     if (!track) return undefined;
 
@@ -32,5 +36,5 @@ export const useInfiniteScroll = (trackRef) => {
 
     track.addEventListener('scroll', handleScroll);
     return () => track.removeEventListener('scroll', handleScroll);
-  }, [trackRef]);
+  }, [trackRef, enabled]);
 };
