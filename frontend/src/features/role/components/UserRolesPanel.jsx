@@ -1,10 +1,11 @@
 // Sub-panel de roles de un usuario — se muestra expandido dentro de SearchUsersForm
-// al clickear "Roles". Permite ver qué roles tiene asignados y asignarle/quitarle
-// roles mediante la tabla intermedia userrole. Cada cambio pide confirmación en un modal
-// antes de ejecutarse. Solo lo ve un admin.
+// al clickear "Roles", o dentro de AdminUserRolesModal desde el dashboard. Permite ver
+// qué roles tiene asignados y asignarle/quitarle roles mediante la tabla intermedia
+// userrole. Cada cambio pide confirmación en un modal antes de ejecutarse. Solo lo ve un admin.
 import { useState, useEffect } from 'react';
 import { getAllRoles, getRolesByUser, assignRoleToUser, removeRoleFromUser } from '../services/roleService.js';
 import ConfirmRoleModal from './ConfirmRoleModal.jsx';
+import '../styles/_user-roles-panel.scss';
 
 // Recibe: userId (número), username (para el mensaje del modal de confirmación).
 function UserRolesPanel({ userId, username }) {
@@ -62,34 +63,32 @@ function UserRolesPanel({ userId, username }) {
   };
 
   return (
-    <div className="admin-panel__roles-panel">
-      <h4 className="admin-panel__roles-panel-title">Roles del usuario</h4>
+    <div className="UserRolesPanel">
+      <h4 className="UserRolesPanel-title">Roles del usuario</h4>
 
-      {isLoading && <p className="admin-panel__loading admin-panel__loading--sm">Cargando roles...</p>}
+      {isLoading && <p className="UserRolesPanel-status">Cargando roles...</p>}
 
-      {error && (
-        <div className="admin-panel__alert admin-panel__alert--error">⚠ {error}</div>
-      )}
+      {error && <p className="UserRolesPanel-status UserRolesPanel-status--error">⚠ {error}</p>}
 
       {!isLoading && allRoles.length === 0 && !error && (
-        <p className="admin-panel__empty admin-panel__empty--sm">
+        <p className="UserRolesPanel-status">
           No hay roles creados todavía. Creá uno desde el panel de Roles.
         </p>
       )}
 
       {!isLoading && allRoles.length > 0 && (
-        <div className="admin-panel__role-chips">
+        <div className="UserRolesPanel-chips">
           {allRoles.map((role) => {
             const isAssigned = assignedRoleIds.includes(role.id);
             return (
               <button
                 key={role.id}
                 type="button"
-                className={`admin-panel__role-chip${isAssigned ? ' admin-panel__role-chip--assigned' : ''}`}
+                className={`UserRolesPanel-chip${isAssigned ? ' UserRolesPanel-chip--assigned' : ''}`}
                 onClick={() => handleChipClick(role)}
                 title={role.description || role.name}
               >
-                {isAssigned ? '✓ ' : '+ '}
+                <span className="material-symbols-outlined">{isAssigned ? 'check' : 'add'}</span>
                 {role.name}
               </button>
             );

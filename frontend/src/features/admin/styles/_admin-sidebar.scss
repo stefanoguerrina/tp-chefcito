@@ -1,0 +1,242 @@
+// Navegación del panel de administración (features/admin/components/AdminSidebar).
+// Mobile-first: en mobile es una barra fija arriba con la marca y la nav en scroll
+// horizontal; desde $breakpoint-lg pasa a ser la sidebar vertical fija a la izquierda.
+@use '../../../styles/abstracts' as *;
+
+// Ancho de la sidebar admin en desktop (own variable: es más ancha que
+// $layout-sidebar-width porque muestra también el label de cada link). La usa también
+// _admin-page.scss para el margin-left del contenido.
+$admin-sidebar-width: 264px;
+// Alto de la barra superior en mobile, para que AdminPage-main le deje lugar arriba.
+$admin-sidebar-mobile-height: 56px;
+// Alto compartido con AdminTopbar en desktop, para que la línea debajo de la marca
+// (Chefcito) y la línea debajo del título de la sección queden a la misma altura.
+$admin-header-height: 80px;
+
+.AdminSidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: $admin-sidebar-mobile-height;
+  background: $color-surface-container-low;
+  border-bottom: 1px solid $color-outline-variant;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: 0 $spacing-md;
+  z-index: 50;
+
+  @include respond-to(lg) {
+    flex-direction: column;
+    align-items: stretch;
+    left: 0;
+    top: 0;
+    width: $admin-sidebar-width;
+    height: 100vh;
+    border-bottom: none;
+    border-right: 1px solid $color-outline-variant;
+    padding: 0;
+  }
+
+  &-brand {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    flex-shrink: 0;
+
+    @include respond-to(lg) {
+      height: $admin-header-height;
+      box-sizing: border-box;
+      padding: 0 $spacing-md;
+      border-bottom: 1px solid $color-outline-variant;
+    }
+  }
+
+  &-brandIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-md;
+    background: $color-primary;
+    color: $color-on-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 22px;
+  }
+
+  &-brandText {
+    display: none;
+    flex-direction: column;
+    // line-height ajustado: el 145% heredado de index.css deja mucho aire entre
+    // "Chefcito" y el subtítulo si no se lo achica acá (mismo caso que -accountText).
+    line-height: 1.35;
+    min-width: 0;
+
+    @include respond-to(lg) {
+      display: flex;
+    }
+  }
+
+  &-brandName {
+    // Misma tipografía que el resto del panel (ver AdminPage-font-family): nada de
+    // Playfair Display acá, todo el panel usa una sola familia de fuentes.
+    font-family: $font-body;
+    font-weight: 700;
+    font-size: 18px;
+    color: $color-on-background;
+  }
+
+  &-brandSubtitle {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $color-on-surface-variant;
+  }
+
+  &-nav {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    overflow-x: auto;
+
+    @include respond-to(lg) {
+      flex-direction: column;
+      align-items: stretch;
+      overflow-x: visible;
+      padding: $spacing-md;
+    }
+  }
+
+  &-link {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface-variant;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 22px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    &--active {
+      background: $color-on-background;
+      color: $color-surface-container-lowest;
+      font-weight: 600;
+    }
+  }
+
+  &-linkLabel {
+    display: none;
+
+    @include respond-to(lg) {
+      display: inline;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &-footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+
+    @include respond-to(lg) {
+      justify-content: space-between;
+      padding: $spacing-md;
+      border-top: 1px solid $color-outline-variant;
+    }
+  }
+
+  &-account {
+    display: none;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+
+    @include respond-to(lg) {
+      display: flex;
+    }
+  }
+
+  &-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: $radius-full;
+    background: $color-secondary-container;
+    color: $color-on-secondary-container;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  &-accountText {
+    display: flex;
+    flex-direction: column;
+    // line-height ajustado: el 145% heredado de index.css deja mucho aire entre el
+    // nombre y "Administrador" si no se lo achica acá.
+    line-height: 1.35;
+    min-width: 0;
+  }
+
+  &-accountName {
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-on-background;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &-accountRole {
+    font-size: 11px;
+    color: $color-on-surface-variant;
+  }
+
+  &-logout {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface-variant;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: rgba($color-error, 0.1);
+      color: $color-error;
+    }
+  }
+}

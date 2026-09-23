@@ -1,0 +1,49 @@
+// Gráfico de barras del dashboard (features/admin/components/AdminBarChart).
+@use '../../../styles/abstracts' as *;
+
+.AdminBarChart {
+  height: 140px;
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-sm;
+
+  &-column {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: $spacing-xs;
+  }
+
+  &-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+  }
+
+  &-bar {
+    width: 100%;
+    border-radius: $radius-md $radius-md 0 0;
+    background: rgba($color-tertiary, 0.18);
+    transition: background-color 0.15s ease;
+
+    &--highlighted {
+      background: $color-tertiary;
+    }
+  }
+
+  &-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+  }
+
+  &-empty {
+    text-align: center;
+    color: $color-on-surface-variant;
+    font-size: 13px;
+    padding: $spacing-md 0;
+  }
+}

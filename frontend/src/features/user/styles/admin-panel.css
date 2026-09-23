@@ -393,65 +393,6 @@
     color: #59413b;
 }
 
-/* ---- Roles del usuario (panel anidado dentro de un item) ---- */
-.admin-panel__roles-panel {
-    /* Fuerza el panel a ocupar toda la fila dentro del item (que es flex) */
-    flex-basis: 100%;
-    width: 100%;
-    margin-top: 10px;
-    padding-top: 12px;
-    border-top: 1px dashed #e1bfb6;
-}
-
-.admin-panel__roles-panel-title {
-    margin: 0 0 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #59413b;
-}
-
-.admin-panel__role-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.admin-panel__role-chip {
-    padding: 5px 12px;
-    border-radius: 999px;
-    border: 1px solid #e1bfb6;
-    background: transparent;
-    color: #59413b;
-    font-size: 13px;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.admin-panel__role-chip:hover:not(:disabled) {
-    border-color: rgba(75, 100, 0, 0.3);
-}
-
-.admin-panel__role-chip:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-
-.admin-panel__role-chip--assigned {
-    background: rgba(75, 100, 0, 0.08);
-    border-color: rgba(75, 100, 0, 0.3);
-    color: #4b6400;
-    font-weight: 600;
-}
-
-/* Variantes compactas usadas en paneles anidados (ej: roles del usuario) */
-.admin-panel__loading--sm,
-.admin-panel__empty--sm {
-    padding: 4px 0;
-    text-align: left;
-    font-size: 13px;
-}
-
 /* ---- Responsive ---- */
 @media (max-width: 576px) {
     .admin-panel__item {

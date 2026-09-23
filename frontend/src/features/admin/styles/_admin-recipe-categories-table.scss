@@ -1,0 +1,263 @@
+// Tabla de gestión de categorías de receta del dashboard
+// (features/admin/components/AdminRecipeCategoriesTable).
+// Mismo lenguaje visual que _admin-ingredient-categories-table.scss / _role-page.scss.
+@use '../../../styles/abstracts' as *;
+
+.AdminRecipeCategoriesTable {
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-level-1;
+
+  &-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    border-bottom: 1px solid $color-outline-variant;
+  }
+
+  &-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: $color-on-background;
+  }
+
+  &-actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    box-sizing: border-box;
+    padding: 0 $spacing-sm 0 $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-full;
+    background: $color-surface-container;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    input {
+      width: 180px;
+      max-width: 40vw;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: $font-body;
+      font-size: 13px;
+      color: $color-on-background;
+
+      &::placeholder {
+        color: $color-on-surface-variant;
+      }
+    }
+  }
+
+  // Botón circular de solo ícono para dar de alta una categoría nueva (mismo patrón que
+  // AdminIngredientCategoriesTable-newButton / RolePage-newButton).
+  &-newButton {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-on-primary;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+
+  &-status {
+    text-align: center;
+    color: $color-on-surface-variant;
+    padding: $spacing-xl $spacing-md;
+  }
+
+  &-scroll {
+    // La tabla puede ser más ancha que el viewport en mobile: scroll horizontal propio,
+    // nunca la página entera (regla general del proyecto para tablas/anchos fijos).
+    overflow-x: auto;
+  }
+
+  &-table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-size: 13px;
+
+    th {
+      text-align: left;
+      padding: $spacing-sm $spacing-md;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: $color-on-surface-variant;
+      background: $color-surface-container;
+      border-bottom: 1px solid $color-outline-variant;
+    }
+
+    td {
+      padding: $spacing-sm $spacing-md;
+      border-bottom: 1px solid $color-outline-variant;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: $color-surface-container;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    // Anidado acá (no a nivel de .AdminRecipeCategoriesTable) para que la especificidad de
+    // ".AdminRecipeCategoriesTable-table .AdminRecipeCategoriesTable-cell--center" le gane
+    // al "th { text-align: left }" de arriba y pueda centrar los encabezados.
+    .AdminRecipeCategoriesTable-cell--center {
+      text-align: center;
+    }
+  }
+
+  &-name {
+    font-weight: 700;
+    color: $color-on-background;
+    line-height: 1.35;
+  }
+
+  // Código derivado del id (#CAT-REC-0003), debajo del nombre — mismo criterio de
+  // line-height ajustado que el resto de las tablas del panel.
+  &-code {
+    font-size: 12px;
+    color: $color-on-surface-variant;
+    line-height: 1.35;
+  }
+
+  &-description {
+    color: $color-on-surface-variant;
+  }
+
+  &-recipesCount {
+    color: $color-on-background;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  &-recipesLabel {
+    font-size: 12px;
+    color: $color-on-surface-variant;
+  }
+
+  &-rowActions {
+    display: flex;
+    justify-content: center;
+    gap: $spacing-xs;
+  }
+
+  &-iconButton {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-background;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--danger {
+      border-color: rgba($color-error, 0.3);
+      color: $color-error;
+
+      &:hover:not(:disabled) {
+        background: rgba($color-error, 0.08);
+      }
+    }
+  }
+
+  &-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding: $spacing-md;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+    background: $color-surface-container;
+  }
+
+  &-pagination {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &-pageButton {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-background;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &-pageIndicator {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}

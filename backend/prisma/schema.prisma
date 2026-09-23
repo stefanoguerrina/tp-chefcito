@@ -20,6 +20,7 @@ model User {
   specialty                         String?      @db.VarChar(60)
   location                          String?      @db.VarChar(100)
   birthDate                         DateTime?    @db.Date
+  createdAt                         DateTime?    @default(now()) @db.DateTime(0)
   deletedAt                         DateTime?    @db.DateTime(0)
   donation_donation_idDonorTouser   donation[]   @relation("donation_idDonorTouser")
   donation_donation_idGranteeTouser donation[]   @relation("donation_idGranteeTouser")

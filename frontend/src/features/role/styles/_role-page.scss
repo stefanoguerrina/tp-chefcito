@@ -1,0 +1,214 @@
+// Panel de administración de roles (features/role/pages/RolePage). Mismo lenguaje
+// visual que el dashboard de administración (features/admin/styles/_admin-users-table.scss):
+// tarjeta blanca, tabla con acciones en ícono, sin acoplarse a los estilos de esa feature.
+@use '../../../styles/abstracts' as *;
+
+.RolePage {
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-level-1;
+
+  &-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    border-bottom: 1px solid $color-outline-variant;
+  }
+
+  &-titleGroup {
+    display: flex;
+    align-items: baseline;
+    gap: $spacing-sm;
+  }
+
+  &-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: $color-on-background;
+  }
+
+  &-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: $color-primary;
+    background: rgba($color-primary, 0.1);
+    padding: 2px $spacing-sm;
+    border-radius: $radius-full;
+    white-space: nowrap;
+  }
+
+  &-actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+  }
+
+  // Botón de refrescar: mismo tamaño que el de alta, pero en estilo "outline" (acción
+  // secundaria) en vez de sólido.
+  &-refreshButton {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-full;
+    background: transparent;
+    color: $color-on-background;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  // Botón circular de solo ícono para dar de alta un rol nuevo (mismo patrón que
+  // AdminUsersTable-newButton: acción primaria = verde oliva, sin texto).
+  &-newButton {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-on-primary;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+
+  &-status {
+    text-align: center;
+    color: $color-on-surface-variant;
+    padding: $spacing-xl $spacing-md;
+
+    &--error {
+      color: $color-error;
+      padding: $spacing-sm $spacing-md 0;
+      text-align: left;
+    }
+  }
+
+  &-scroll {
+    // La tabla puede ser más ancha que el viewport en mobile: scroll horizontal propio,
+    // nunca la página entera (regla general del proyecto para tablas/anchos fijos).
+    overflow-x: auto;
+  }
+
+  &-table {
+    width: 100%;
+    min-width: 420px;
+    border-collapse: collapse;
+    font-size: 13px;
+
+    th {
+      text-align: left;
+      padding: $spacing-sm $spacing-md;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: $color-on-surface-variant;
+      background: $color-surface-container;
+      border-bottom: 1px solid $color-outline-variant;
+    }
+
+    td {
+      padding: $spacing-sm $spacing-md;
+      border-bottom: 1px solid $color-outline-variant;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: $color-surface-container;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    // Anidado acá (no a nivel de .RolePage) para que la especificidad de
+    // ".RolePage-table .RolePage-cell--center" le gane al "th { text-align: left }"
+    // de arriba y pueda centrar el encabezado de "Acciones".
+    .RolePage-cell--center {
+      text-align: center;
+    }
+  }
+
+  &-roleName {
+    font-weight: 700;
+    color: $color-on-background;
+  }
+
+  &-roleDescription {
+    color: $color-on-surface-variant;
+  }
+
+  &-rowActions {
+    display: flex;
+    justify-content: center;
+    gap: $spacing-xs;
+  }
+
+  &-iconButton {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-background;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--danger {
+      border-color: rgba($color-error, 0.3);
+      color: $color-error;
+
+      &:hover:not(:disabled) {
+        background: rgba($color-error, 0.08);
+      }
+    }
+  }
+}

@@ -1,14 +1,11 @@
-// Home page — vista principal que se muestra tras un login exitoso.
-// Compone el layout autenticado (sidebar fija) y, solo para un admin, permite alternar
-// entre el contenido normal de la home y los paneles de administración.
+// Home page — vista principal que se muestra tras un login exitoso de un usuario común.
+// Compone el layout autenticado (sidebar fija) y permite alternar entre los paneles
+// propios del usuario (Mis recetas, Perfil, Inventario, Recetas guardadas).
+// Un admin nunca llega acá: cae directo en AdminPage (ver App.jsx).
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar.jsx';
 import HomeFeatureCards from '../../recipe/components/HomeFeatureCards.jsx';
 import RecipeCarouselSection from '../../recipe/components/RecipeCarouselSection.jsx';
-import SearchUsersForm from '../components/SearchUsersForm.jsx';
-import RolePage from '../../role/pages/RolePage.jsx';
-import IngredientCategoryPage from '../../ingredientCategory/pages/IngredientCategoryPage.jsx';
-import IngredientPage from '../../ingredient/pages/IngredientPage.jsx';
 import RecipePage from '../../recipe/pages/RecipePage.jsx';
 import RecipeDetailPage from '../../recipe/pages/RecipeDetailPage.jsx';
 import ProfilePage from './ProfilePage.jsx';
@@ -24,15 +21,7 @@ import {
 import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
 import '../styles/_home-page.scss';
 
-// Paneles de admin disponibles. 'null' es la home normal.
-const ADMIN_PANELS = {
-  users: 'users',
-  roles: 'roles',
-  ingredientCategories: 'ingredientCategories',
-  ingredients: 'ingredients',
-};
-
-// Paneles disponibles para cualquier usuario autenticado (no requieren rol admin).
+// Paneles disponibles en la sidebar del usuario. 'null' es la home normal.
 const USER_PANELS = {
   myRecipes: 'myRecipes',
   profile: 'profile',
@@ -40,10 +29,9 @@ const USER_PANELS = {
   savedRecipes: 'savedRecipes',
 };
 
-// Recibe: isAdmin (habilita los paneles de administración en la sidebar).
-function HomePage({ isAdmin }) {
-  // Panel admin activo: null = home normal, o una clave de ADMIN_PANELS.
-  const [activeAdminPanel, setActiveAdminPanel] = useState(null);
+function HomePage() {
+  // Panel activo: null = home normal, o una clave de USER_PANELS.
+  const [activePanel, setActivePanel] = useState(null);
   // Id de la receta cuyo detalle se está mostrando (null = sin detalle abierto).
   const [selectedRecipeId, setSelectedRecipeId] = useState(null);
 
@@ -62,11 +50,11 @@ function HomePage({ isAdmin }) {
   const [savedRecipeIds, setSavedRecipeIds] = useState(new Set());
   const [saveError, setSaveError] = useState('');
 
-  // Se recarga cada vez que se vuelve a la vista normal (activeAdminPanel a
-  // null), no solo al montar: si no, después de crear/editar una receta desde
-  // "Mis recetas" y volver a Inicio, la lista quedaba con los datos viejos.
+  // Se recarga cada vez que se vuelve a la vista normal (activePanel a null), no solo
+  // al montar: si no, después de crear/editar una receta desde "Mis recetas" y volver
+  // a Inicio, la lista quedaba con los datos viejos.
   useEffect(() => {
-    if (activeAdminPanel !== null) return;
+    if (activePanel !== null) return;
     (async () => {
       setIsLoadingRecipes(true);
       setRecipesError('');
@@ -93,7 +81,7 @@ function HomePage({ isAdmin }) {
         // Si falla, las cards simplemente arrancan sin marcar como guardadas.
       }
     })();
-  }, [activeAdminPanel]);
+  }, [activePanel]);
 
   // Guarda o quita el guardado de una receta desde su card, sin entrar al detalle.
   // Actualiza el listón de forma optimista y revierte si el backend falla.
@@ -130,57 +118,37 @@ function HomePage({ isAdmin }) {
     // Cualquier navegación manual por la sidebar descarta un target pendiente
     // para el wizard de "Mis recetas" (ver handleOpenRecipeEditor).
     setMyRecipesInitialTarget(null);
-    setActiveAdminPanel((prev) => (prev === panel ? null : panel));
+    setActivePanel((prev) => (prev === panel ? null : panel));
   };
 
   // Abre "Mis recetas" directo en el wizard de alta ('create') o edición (id de
   // receta), usado al tocar una receta desde el panel de Perfil.
   const handleOpenRecipeEditor = (target) => {
     setMyRecipesInitialTarget(target);
-    setActiveAdminPanel(USER_PANELS.myRecipes);
+    setActivePanel(USER_PANELS.myRecipes);
   };
 
   // Al cerrar el wizard que se abrió desde Perfil hay que volver a Perfil: si no,
   // el usuario quedaba en la lista de "Mis recetas", que no es de donde salió.
   const handleRecipeEditorExit = () => {
     setMyRecipesInitialTarget(null);
-    setActiveAdminPanel(USER_PANELS.profile);
+    setActivePanel(USER_PANELS.profile);
   };
 
   // Abre el detalle de una receta desde "Recetas guardadas": cierra ese panel
-  // para que se muestre RecipeDetailPage (solo se renderiza con activeAdminPanel null).
+  // para que se muestre RecipeDetailPage (solo se renderiza con activePanel null).
   const handleOpenRecipeFromSaved = (idRecipe) => {
-    setActiveAdminPanel(null);
+    setActivePanel(null);
     setSelectedRecipeId(idRecipe);
   };
 
   return (
     <div className="HomePage">
-      <Sidebar
-        isAdmin={isAdmin}
-        activeAdminPanel={activeAdminPanel}
-        onTogglePanel={handleTogglePanel}
-      />
+      <Sidebar activePanel={activePanel} onTogglePanel={handleTogglePanel} />
 
       <div className="HomePage-content">
         <main className="HomePage-main">
-          {isAdmin && activeAdminPanel === ADMIN_PANELS.users && (
-            <SearchUsersForm />
-          )}
-
-          {isAdmin && activeAdminPanel === ADMIN_PANELS.roles && (
-            <RolePage />
-          )}
-
-          {isAdmin && activeAdminPanel === ADMIN_PANELS.ingredientCategories && (
-            <IngredientCategoryPage />
-          )}
-
-          {isAdmin && activeAdminPanel === ADMIN_PANELS.ingredients && (
-            <IngredientPage />
-          )}
-
-          {activeAdminPanel === USER_PANELS.myRecipes && (
+          {activePanel === USER_PANELS.myRecipes && (
             <RecipePage
               initialEditorTarget={myRecipesInitialTarget}
               // Solo hay a dónde volver si el wizard se abrió desde Perfil; si el
@@ -189,22 +157,22 @@ function HomePage({ isAdmin }) {
             />
           )}
 
-          {activeAdminPanel === USER_PANELS.profile && (
+          {activePanel === USER_PANELS.profile && (
             <ProfilePage
               onEditRecipe={(recipeId) => handleOpenRecipeEditor(recipeId)}
             />
           )}
 
-          {activeAdminPanel === USER_PANELS.inventory && (
+          {activePanel === USER_PANELS.inventory && (
             <InventoryPage />
           )}
 
-          {activeAdminPanel === USER_PANELS.savedRecipes && (
+          {activePanel === USER_PANELS.savedRecipes && (
             <SavedRecipesPage onRecipeClick={handleOpenRecipeFromSaved} />
           )}
 
           {/* Detalle de receta individual — se abre al clickear una card del carrusel */}
-          {selectedRecipeId !== null && activeAdminPanel === null && (
+          {selectedRecipeId !== null && activePanel === null && (
             <RecipeDetailPage
               recipeId={selectedRecipeId}
               onBack={() => setSelectedRecipeId(null)}
@@ -214,9 +182,9 @@ function HomePage({ isAdmin }) {
             />
           )}
 
-          {/* Vista normal de la home cuando no hay panel admin ni de usuario activo y
-              no se está viendo el detalle de una receta */}
-          {activeAdminPanel === null && selectedRecipeId === null && (
+          {/* Vista normal de la home cuando no hay panel activo y no se está viendo
+              el detalle de una receta */}
+          {activePanel === null && selectedRecipeId === null && (
             <>
               <HomeFeatureCards />
 

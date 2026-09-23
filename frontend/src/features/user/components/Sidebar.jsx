@@ -1,6 +1,6 @@
-// Barra de navegación lateral fija, visible en toda página autenticada.
-// Para un admin, expone botones de acceso a los distintos paneles de administración.
-// Recibe: isAdmin, activeAdminPanel (panel activo actualmente), onTogglePanel (callback).
+// Barra de navegación lateral fija, visible en toda página de un usuario autenticado.
+// Un admin no usa esta sidebar: tiene la suya propia en features/admin.
+// Recibe: activePanel (panel activo actualmente), onTogglePanel (callback).
 import '../styles/_sidebar.scss';
 
 // Accesos todavía sin feature propia: quedan visibles pero inertes hasta que existan.
@@ -9,7 +9,7 @@ const PENDING_NAV_LINKS = [
   { icon: 'notifications', label: 'Notificaciones' },
 ];
 
-// Paneles disponibles para cualquier usuario autenticado (no requieren rol admin).
+// Paneles disponibles en la sidebar del usuario.
 const USER_NAV_LINKS = [
   { icon: 'add_box', label: 'Mis recetas', panel: 'myRecipes' },
   { icon: 'kitchen', label: 'Mi inventario', panel: 'inventory' },
@@ -17,15 +17,7 @@ const USER_NAV_LINKS = [
   { icon: 'account_circle', label: 'Perfil', panel: 'profile' },
 ];
 
-// Paneles de admin disponibles en la sidebar: cada uno tiene un ícono, label e id.
-const ADMIN_NAV_LINKS = [
-  { icon: 'manage_accounts', label: 'Usuarios', panel: 'users' },
-  { icon: 'shield_person', label: 'Roles', panel: 'roles' },
-  { icon: 'category', label: 'Categorías de ingrediente', panel: 'ingredientCategories' },
-  { icon: 'grocery', label: 'Ingredientes', panel: 'ingredients' },
-];
-
-function Sidebar({ isAdmin, activeAdminPanel, onTogglePanel }) {
+function Sidebar({ activePanel, onTogglePanel }) {
   return (
     <aside className="Sidebar">
       <a className="Sidebar-logo" href="#top" title="Chefcito">
@@ -33,10 +25,10 @@ function Sidebar({ isAdmin, activeAdminPanel, onTogglePanel }) {
       </a>
 
       <nav className="Sidebar-nav">
-        {/* Botón de inicio: cierra cualquier panel admin abierto */}
+        {/* Botón de inicio: cierra cualquier panel abierto */}
         <button
           type="button"
-          className={`Sidebar-link${activeAdminPanel === null ? ' Sidebar-link--active' : ''}`}
+          className={`Sidebar-link${activePanel === null ? ' Sidebar-link--active' : ''}`}
           title="Inicio"
           onClick={() => onTogglePanel(null)}
         >
@@ -44,12 +36,12 @@ function Sidebar({ isAdmin, activeAdminPanel, onTogglePanel }) {
           <span className="Sidebar-tooltip">Inicio</span>
         </button>
 
-        {/* Botones de panel propio: cada uno alterna su panel correspondiente (no requieren admin) */}
+        {/* Botones de panel propio: cada uno alterna su panel correspondiente */}
         {USER_NAV_LINKS.map((link) => (
           <button
             key={link.panel}
             type="button"
-            className={`Sidebar-link${activeAdminPanel === link.panel ? ' Sidebar-link--active' : ''}`}
+            className={`Sidebar-link${activePanel === link.panel ? ' Sidebar-link--active' : ''}`}
             title={link.label}
             onClick={() => onTogglePanel(link.panel)}
           >
@@ -65,24 +57,6 @@ function Sidebar({ isAdmin, activeAdminPanel, onTogglePanel }) {
             <span className="Sidebar-tooltip">{link.label}</span>
           </button>
         ))}
-
-        {/* Separador visual antes de los controles de admin */}
-        {isAdmin && <hr className="Sidebar-divider" />}
-
-        {/* Botones de admin: cada uno alterna su panel correspondiente */}
-        {isAdmin &&
-          ADMIN_NAV_LINKS.map((link) => (
-            <button
-              key={link.panel}
-              type="button"
-              className={`Sidebar-link${activeAdminPanel === link.panel ? ' Sidebar-link--active' : ''}`}
-              title={link.label}
-              onClick={() => onTogglePanel(link.panel)}
-            >
-              <span className="material-symbols-outlined">{link.icon}</span>
-              <span className="Sidebar-tooltip">{link.label}</span>
-            </button>
-          ))}
       </nav>
     </aside>
   );

@@ -1,0 +1,61 @@
+// Tarjeta chica clickeable de cifra (features/admin/components/AdminStatTile).
+@use '../../../styles/abstracts' as *;
+
+.AdminStatTile {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  background: $color-surface-container-lowest;
+  cursor: pointer;
+  text-align: left;
+  font-family: $font-body;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: $color-primary;
+    box-shadow: $shadow-level-1;
+  }
+
+  &-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: $radius-md;
+    background: rgba($color-primary, 0.1);
+    color: $color-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  &-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: $color-on-background;
+  }
+
+  &-label {
+    font-size: 12px;
+    color: $color-on-surface-variant;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &-arrow {
+    color: $color-outline;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+}

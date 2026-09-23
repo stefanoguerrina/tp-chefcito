@@ -1,5 +1,5 @@
-// Sub-panel de valores nutricionales de un ingrediente.
-// Se muestra expandido dentro de IngredientPage al clickear "Valores nutricionales".
+// Sub-panel de valores nutricionales de un ingrediente. Se muestra dentro de
+// IngredientFormModal al editar un ingrediente (columna aparte, ver ese componente).
 // Permite listar, agregar, editar y eliminar valores nutricionales.
 import { useState, useEffect } from 'react';
 import {
@@ -8,6 +8,7 @@ import {
   updateNutritionalValue,
   deleteNutritionalValue,
 } from '../../nutritionalValue/services/nutritionalValueService.js';
+import '../styles/_nutritional-value-panel.scss';
 
 // Formulario para crear o editar un valor nutricional.
 // Recibe: initialData (null para crear, objeto para editar), onSubmit, onCancel.
@@ -86,10 +87,10 @@ function NutritionalValueForm({ initialData, onSubmit, onCancel }) {
       </div>
       {error && <p className="NutritionalValueForm-error">⚠ {error}</p>}
       <div className="NutritionalValueForm-actions">
-        <button type="submit" disabled={isSubmitting} className="btn btn--primary btn--sm">
+        <button type="submit" disabled={isSubmitting} className="NutritionalValueForm-submit">
           {isSubmitting ? 'Guardando...' : initialData ? 'Actualizar' : 'Agregar'}
         </button>
-        <button type="button" onClick={onCancel} className="btn btn--secondary btn--sm">
+        <button type="button" onClick={onCancel} className="NutritionalValueForm-cancel">
           Cancelar
         </button>
       </div>
@@ -185,14 +186,14 @@ function NutritionalValuePanel({ idIngredient }) {
               <div className="NutritionalValuePanel-itemActions">
                 <button
                   type="button"
-                  className="btn btn--secondary btn--sm"
+                  className="NutritionalValuePanel-button"
                   onClick={() => handleEdit(nv)}
                 >
                   Editar
                 </button>
                 <button
                   type="button"
-                  className="btn btn--danger btn--sm"
+                  className="NutritionalValuePanel-button NutritionalValuePanel-button--danger"
                   onClick={() => handleDelete(nv)}
                 >
                   Eliminar
@@ -208,7 +209,7 @@ function NutritionalValuePanel({ idIngredient }) {
       {formMode === null && (
         <button
           type="button"
-          className="btn btn--secondary btn--sm"
+          className="NutritionalValuePanel-button NutritionalValuePanel-button--add"
           onClick={() => { setFormMode('create'); setActionError(''); }}
         >
           + Agregar valor nutricional

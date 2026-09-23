@@ -1,0 +1,214 @@
+// Panel de valores nutricionales de un ingrediente (features/ingredient/pages/NutritionalValuePanel).
+// Estilo propio con los tokens del proyecto — antes dependía de _ingredient-page.scss y
+// de clases ".btn" genéricas que en realidad venían filtradas desde otra feature
+// (ingredientCategory), así que ahora es autosuficiente.
+@use '../../../styles/abstracts' as *;
+
+.NutritionalValuePanel {
+  &-title {
+    margin: 0 0 $spacing-sm;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-on-background;
+  }
+
+  &-loading,
+  &-empty {
+    margin: 0 0 $spacing-sm;
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+  }
+
+  &-error {
+    margin: 0 0 $spacing-sm;
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-error;
+  }
+
+  &-list {
+    list-style: none;
+    margin: 0 0 $spacing-sm;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding: $spacing-sm;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container;
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-on-background;
+
+    strong {
+      color: $color-on-background;
+    }
+  }
+
+  &-itemActions {
+    display: flex;
+    gap: $spacing-xs;
+    flex-shrink: 0;
+  }
+
+  &-button {
+    padding: 4px $spacing-sm;
+    border-radius: $radius-full;
+    border: 1px solid $color-outline-variant;
+    background: transparent;
+    color: $color-on-background;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &--danger {
+      border-color: rgba($color-error, 0.3);
+      color: $color-error;
+
+      &:hover:not(:disabled) {
+        background: rgba($color-error, 0.08);
+      }
+    }
+
+    &--add {
+      border-color: rgba($color-primary, 0.3);
+      color: $color-primary;
+
+      &:hover:not(:disabled) {
+        background: rgba($color-primary, 0.08);
+      }
+    }
+  }
+}
+
+// Formulario de alta/edición de un valor nutricional puntual.
+.NutritionalValueForm {
+  margin-top: $spacing-sm;
+  padding: $spacing-md;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-md;
+  background: $color-surface-container;
+
+  &-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  &-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 110px;
+
+    label {
+      font-family: $font-body;
+      font-size: 12px;
+      font-weight: 600;
+      color: $color-on-surface-variant;
+    }
+
+    input {
+      padding: 6px $spacing-sm;
+      border-radius: $radius-md;
+      border: 1px solid $color-outline-variant;
+      background: $color-surface-container-lowest;
+      color: $color-on-background;
+      font-family: $font-body;
+      font-size: 13px;
+      outline: none;
+
+      &:focus {
+        border-color: $color-primary;
+      }
+
+      // Saca las flechas nativas de los inputs numéricos (Porción y Valor): quedaban
+      // fuera de lugar con el resto del estilo del formulario.
+      &[type='number'] {
+        appearance: textfield;
+        -moz-appearance: textfield;
+
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  &-actions {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  &-submit {
+    padding: 6px $spacing-md;
+    border: none;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-on-primary;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+  }
+
+  &-cancel {
+    padding: 6px $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-full;
+    background: transparent;
+    color: $color-on-surface-variant;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+  }
+
+  &-error {
+    color: $color-error;
+    font-family: $font-body;
+    font-size: 12px;
+    margin: 0 0 $spacing-sm;
+  }
+}
