@@ -9,6 +9,32 @@
   // así un título queda claramente pegado a su contenido y no flotando entre dos.
   gap: $spacing-lg;
 
+  // Botón "Volver": solo aparece en el perfil de otro usuario (ver onBack en
+  // ProfilePage.jsx), mismo estilo que RecipeDetailPage-backBtn.
+  &-backBtn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-full;
+    border: 1px solid $color-outline-variant;
+    background: transparent;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    .material-symbols-outlined { font-size: 20px; }
+
+    &:hover {
+      background: $color-surface-container-low;
+      color: $color-on-surface;
+    }
+  }
+
   // --- 1. Header: banner + avatar superpuesto + identidad + acciones ---
   &-header {
     background: $color-surface-container-lowest;
@@ -136,7 +162,7 @@
 
   &-bannerName {
     margin: 0;
-    font-family: $font-headline;
+    font-family: $font-body;
     font-size: 20px;
     line-height: 1.2;
     font-weight: 700;
@@ -239,7 +265,7 @@
     justify-content: center;
     background: $color-primary-container;
     color: $color-on-primary-container;
-    font-family: $font-headline;
+    font-family: $font-body;
     font-size: 32px;
     font-weight: 700;
   }
@@ -340,13 +366,6 @@
     display: flex;
     gap: $spacing-sm;
     flex-shrink: 0;
-
-    // En el header las dos acciones principales van en mayúsculas (como el
-    // diseño); el "Crear nueva receta" de abajo reusa &-button sin este cambio.
-    .ProfilePage-button {
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
   }
 
   &-button {

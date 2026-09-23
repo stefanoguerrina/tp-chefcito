@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { authRepository } from '../repository/authRepository.js';
 import { toPublic, ADMIN_ROLE_ID } from '../../user/models/userModel.js';
+import { roleRepository } from '../../rol/repository/roleRepository.js';
+import { ensureDefaultUserRole } from '../../rol/services/roleService.js';
 
 const SALT_ROUNDS = 10;
 
@@ -44,6 +46,11 @@ export async function register(data: {
     phone: data.phone?.trim() ?? null,
     birthDate: data.birthDate ?? null,
   });
+
+  // Todo usuario nuevo recibe el rol "Usuario" por defecto (se crea solo si la BD
+  // todavía no lo tiene, ver roleService.ensureDefaultUserRole).
+  const defaultRole = await ensureDefaultUserRole();
+  await roleRepository.assignToUser(user.id, defaultRole.id);
 
   return { ok: true, user: toPublic(user) };
 }

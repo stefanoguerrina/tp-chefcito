@@ -4,6 +4,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import * as userService from '../services/userService.js';
+import { toPublicProfile } from '../models/userModel.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
 // Devuelve la lista de usuarios sin sus contraseñas.
@@ -36,8 +37,12 @@ export const searchUsers = async (req: AuthRequest, res: Response): Promise<void
 };
 
 // Devuelve un usuario activo por su ID sin su contraseña.
+// Cualquier usuario autenticado puede consultar el perfil público de cualquier
+// otro (ver ProfilePage: tocar el nombre del creador de una receta abre su
+// perfil de solo lectura) — pero solo ve los campos públicos (toPublicProfile).
+// El propio usuario o un admin ven además los campos privados (email, phone, birthDate).
 // GET /api/users/:id
-export const getUserById = async (req: Request, res: Response): Promise<void> => {
+export const getUserById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = Number(req.params.id);
 
@@ -52,7 +57,8 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    res.status(200).json(user);
+    const isOwnerOrAdmin = req.user?.id === userId || req.user?.isAdmin === true;
+    res.status(200).json(isOwnerOrAdmin ? user : toPublicProfile(user));
   } catch (error) {
     console.error('[getUserById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });

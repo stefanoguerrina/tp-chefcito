@@ -66,4 +66,6 @@ $shadow-level-2: 0 8px 24px rgba(31, 27, 22, 0.12);
 // --- Layout ---
 // Ancho de la sidebar fija de las páginas autenticadas (features/user). Vive acá porque
 // tanto la sidebar como el contenedor que la compensa (margin-left) necesitan el mismo valor.
-$layout-sidebar-width: 80px;
+// Muestra ícono + label de cada link (mismo patrón que AdminSidebar), por eso es más
+// ancha que un rail de solo íconos.
+$layout-sidebar-width: 232px;

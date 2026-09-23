@@ -49,7 +49,6 @@ $admin-header-height: 80px;
       height: $admin-header-height;
       box-sizing: border-box;
       padding: 0 $spacing-md;
-      border-bottom: 1px solid $color-outline-variant;
     }
   }
 
@@ -168,7 +167,6 @@ $admin-header-height: 80px;
     @include respond-to(lg) {
       justify-content: space-between;
       padding: $spacing-md;
-      border-top: 1px solid $color-outline-variant;
     }
   }
 

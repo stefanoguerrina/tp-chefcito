@@ -11,8 +11,11 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Misma familia tipográfica que $font-body/$font-headline en styles/abstracts/_variables.scss:
+     estas variables son el fallback para cualquier elemento sin estilo propio (ver index.html
+     para los <link> de Google Fonts que cargan ambas). */
+  --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --heading: 'Playfair Display', serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
@@ -52,6 +55,18 @@
 
 body {
   margin: 0;
+}
+
+/* Los controles de formulario (button, input, select, textarea) NO heredan font-family
+   del body por defecto: el navegador les aplica la fuente del sistema operativo. Por eso,
+   sin este reset, cualquier <button>/<input> sin font-family propio (ej. los botones
+   "Iniciar sesión"/"Registrarse" del Navbar) se ve con una tipografía distinta al resto
+   del sitio en vez de heredar $font-body/$font-headline como el resto de la página. */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 /* Ícono de Google (Material Symbols): configuración base requerida por la fuente. */
@@ -129,4 +144,25 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* Autocompletado del navegador (usuario/contraseña guardados, etc.): por defecto Chrome
+   pinta el fondo de amarillo/oliva e ignora el `background` del input. El truco es forzar
+   ese fondo con un box-shadow inset (repintado por el propio navegador) en vez de `background`,
+   y fijar el color de texto con -webkit-text-fill-color. `transition` con delay gigante evita
+   el flash de color antes de que el box-shadow se aplique. Cubre inputs en toda la app. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff8f1 inset;
+  box-shadow: 0 0 0 1000px #fff8f1 inset;
+  -webkit-text-fill-color: #1e1b17;
+  caret-color: #1e1b17;
+  transition: background-color 600000s 0s, color 600000s 0s;
 }

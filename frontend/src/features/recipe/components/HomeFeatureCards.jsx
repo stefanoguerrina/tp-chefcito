@@ -12,8 +12,6 @@ const FEATURE_CARDS = [
 function HomeFeatureCards() {
   return (
     <section className="HomeFeatureCards">
-      <h2 className="HomeFeatureCards-heading">Explorá recetas de varias maneras</h2>
-
       <div className="HomeFeatureCards-grid">
         {/* TODO: conectar cada card con su feature real (inventario, búsqueda, asistente IA). */}
         {FEATURE_CARDS.map((card) => (

@@ -19,6 +19,14 @@ export const useRegisterForm = ({ onClose, onRegisterSubmit }) => {
         setForm((prevForm) => ({ ...prevForm, [attr]: event.target.value }));
     };
 
+    // Igual que handleInputChange, pero para el DatePickerModal: no hay un evento de
+    // input real, solo la fecha ISO ("YYYY-MM-DD") que el usuario eligió en el calendario.
+    const handleDateChange = (isoDate) => {
+        setErrorOfEmptyFields(false);
+        setErrorOfRegister("");
+        setForm((prevForm) => ({ ...prevForm, birthDate: isoDate }));
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -45,5 +53,5 @@ export const useRegisterForm = ({ onClose, onRegisterSubmit }) => {
         }
     };
 
-    return { form, isLoading, errorOfEmptyFields, errorOfRegister, handleInputChange, handleSubmit };
+    return { form, isLoading, errorOfEmptyFields, errorOfRegister, handleInputChange, handleDateChange, handleSubmit };
 };

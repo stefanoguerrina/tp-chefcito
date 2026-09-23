@@ -1,6 +1,8 @@
 // Modal del formulario de registro de nuevo usuario.
 import { useState } from "react";
 import { useRegisterForm } from "../hooks/useRegisterForm";
+import { formatDateDisplay, PHONE_COUNTRY_PREFIX } from "../models/registerModel";
+import DatePickerModal from "../../../core/components/DatePickerModal.jsx";
 import "../styles/_auth-modal.scss";
 
 const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
@@ -10,12 +12,16 @@ const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
         errorOfEmptyFields,
         errorOfRegister,
         handleInputChange,
+        handleDateChange,
         handleSubmit
     } = useRegisterForm({ onClose, onRegisterSubmit });
 
     // Estado puramente visual: si la contraseña se muestra en texto plano o no.
     const [showPassword, setShowPassword] = useState(false);
     const handleToggleShowPassword = () => setShowPassword((prev) => !prev);
+
+    // Estado puramente visual: si el modal de calendario está abierto.
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     return (
         <div className="AuthModal-overlay" onClick={onClose}>
@@ -50,6 +56,7 @@ const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
                                 className="AuthModal-input"
                                 type="text"
                                 placeholder="Nombre"
+                                autoComplete="given-name"
                                 value={form.formalName}
                                 onChange={(event) => handleInputChange(event, "formalName")}
                             />
@@ -59,6 +66,7 @@ const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
                                 className="AuthModal-input"
                                 type="text"
                                 placeholder="Apellido"
+                                autoComplete="family-name"
                                 value={form.surName}
                                 onChange={(event) => handleInputChange(event, "surName")}
                             />
@@ -69,6 +77,7 @@ const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
                         className="AuthModal-input"
                         type="text"
                         placeholder="Nombre de usuario"
+                        autoComplete="username"
                         value={form.userName}
                         onChange={(event) => handleInputChange(event, "userName")}
                     />
@@ -77,9 +86,41 @@ const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
                         className="AuthModal-input"
                         type="email"
                         placeholder="Email"
+                        autoComplete="email"
                         value={form.email}
                         onChange={(event) => handleInputChange(event, "email")}
                     />
+
+                    <div className="AuthModal-phoneWrapper">
+                        <span className="AuthModal-phonePrefix">
+                            <svg className="AuthModal-phoneFlag" viewBox="0 0 3 2" aria-hidden="true">
+                                <rect width="3" height="2" fill="#fff" />
+                                <rect width="3" height="0.667" fill="#74acdf" />
+                                <rect width="3" height="0.667" y="1.333" fill="#74acdf" />
+                                <circle cx="1.5" cy="1" r="0.28" fill="#f6b40e" />
+                            </svg>
+                            {PHONE_COUNTRY_PREFIX}
+                        </span>
+                        <input
+                            className="AuthModal-input AuthModal-phoneInput"
+                            type="tel"
+                            placeholder="Teléfono (opcional)"
+                            autoComplete="tel-national"
+                            value={form.telephone}
+                            onChange={(event) => handleInputChange(event, "telephone")}
+                        />
+                    </div>
+
+                    <button
+                        type="button"
+                        className="AuthModal-dateButton"
+                        onClick={() => setShowDatePicker(true)}
+                    >
+                        <span className={form.birthDate ? "" : "AuthModal-dateButton--placeholder"}>
+                            {form.birthDate ? formatDateDisplay(form.birthDate) : "Fecha de nacimiento (DD/MM/AAAA)"}
+                        </span>
+                        <span className="material-symbols-outlined">calendar_month</span>
+                    </button>
 
                     <div>
                         <div className="AuthModal-passwordWrapper">
@@ -87,6 +128,7 @@ const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
                                 className="AuthModal-input"
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Creá una contraseña"
+                                autoComplete="new-password"
                                 value={form.password}
                                 onChange={(event) => handleInputChange(event, "password")}
                             />
@@ -104,14 +146,6 @@ const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
                         <p className="AuthModal-hint">Usá al menos 6 caracteres.</p>
                     </div>
 
-                    <input
-                        className="AuthModal-input"
-                        type="text"
-                        placeholder="Teléfono (opcional)"
-                        value={form.telephone}
-                        onChange={(event) => handleInputChange(event, "telephone")}
-                    />
-
                     {errorOfEmptyFields && (
                         <p className="AuthModal-error">Por favor, completá todos los campos requeridos.</p>
                     )}
@@ -120,7 +154,9 @@ const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
                         <p className="AuthModal-error">{errorOfRegister}</p>
                     )}
 
-                    <button type="submit" className="AuthModal-submit">Crear cuenta</button>
+                    <button type="submit" className="AuthModal-submit" disabled={isLoading}>
+                        {isLoading ? "Creando cuenta..." : "Crear cuenta"}
+                    </button>
                 </form>
 
                 <div className="AuthModal-footer">
@@ -136,6 +172,14 @@ const RegisterForm = ({ onClose, onRegisterSubmit, onSwitchToLogin }) => {
                     </p>
                 </div>
             </div>
+
+            {showDatePicker && (
+                <DatePickerModal
+                    value={form.birthDate}
+                    onSelect={handleDateChange}
+                    onClose={() => setShowDatePicker(false)}
+                />
+            )}
         </div>
     );
 };
