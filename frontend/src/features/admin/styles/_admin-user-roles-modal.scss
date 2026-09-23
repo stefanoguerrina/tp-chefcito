@@ -1,0 +1,88 @@
+// Modal de gestión de roles de un usuario (features/admin/components/AdminUserRolesModal).
+@use '../../../styles/abstracts' as *;
+
+.AdminUserRolesModal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(30, 27, 23, 0.5);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.AdminUserRolesModal-card {
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-2;
+  overflow: hidden;
+}
+
+.AdminUserRolesModal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $spacing-md;
+  padding: $spacing-lg $spacing-lg $spacing-md;
+  border-bottom: 1px solid $color-outline-variant;
+}
+
+.AdminUserRolesModal-title {
+  margin: 0;
+  font-family: $font-body;
+  font-size: 17px;
+  font-weight: 700;
+  color: $color-on-background;
+}
+
+.AdminUserRolesModal-subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: $color-on-surface-variant;
+}
+
+.AdminUserRolesModal-close {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  color: $color-on-surface-variant;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background: $color-surface-container-high;
+  }
+}
+
+.AdminUserRolesModal-body {
+  padding: $spacing-lg;
+  overflow-y: auto;
+
+  // UserRolesPanel (features/role) está pensado para vivir también dentro de un <li>
+  // flex (SearchUsersForm) y trae su propio margen/borde superior para eso — acá, como
+  // primer y único contenido de la tarjeta, no hacen falta.
+  .UserRolesPanel {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+}

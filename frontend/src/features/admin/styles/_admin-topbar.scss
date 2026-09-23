@@ -1,0 +1,68 @@
+// Barra superior de contenido del panel admin (features/admin/components/AdminTopbar).
+// No confundir con la barra de navegación fija en mobile (_admin-sidebar.scss): esta va
+// dentro de AdminPage-content, debajo de aquella.
+@use '../../../styles/abstracts' as *;
+// Trae el alto compartido con la marca de la sidebar (ver ese partial), para que las
+// dos líneas de separación queden a la misma altura en desktop.
+@use './admin-sidebar' as adminSidebar;
+
+.AdminTopbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-gutter-mobile;
+  background: $color-surface-container-lowest;
+  border-bottom: 1px solid $color-outline-variant;
+
+  @include respond-to(lg) {
+    height: adminSidebar.$admin-header-height;
+    box-sizing: border-box;
+    padding: 0 $spacing-gutter-desktop;
+  }
+
+  &-title {
+    margin: 0;
+    // Todo el panel usa una sola familia de fuentes (ver AdminPage), sin Playfair Display.
+    font-family: $font-body;
+    font-size: 22px;
+    font-weight: 700;
+    color: $color-on-background;
+  }
+
+  &-subtitle {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+  }
+
+  &-refresh {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-md;
+    border-radius: $radius-full;
+    border: 1px solid $color-outline-variant;
+    background: transparent;
+    color: $color-on-background;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}

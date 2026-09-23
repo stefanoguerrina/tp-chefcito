@@ -1,7 +1,7 @@
 // Panel de administración de roles — listar, crear, editar y eliminar roles.
-// Reutiliza los estilos admin-panel.css para mantener el mismo look & feel que el resto
-// de los paneles de administración (Usuarios, Categorías de ingrediente, Ingredientes).
-// Solo accesible para admins (gate hecho en HomePage/Sidebar).
+// Sigue el mismo lenguaje visual que el dashboard de administración (features/admin):
+// tarjeta blanca, tabla con acciones en ícono y modales en vez de window.confirm.
+// Solo accesible para admins (gate hecho en App.jsx: un admin cae directo en AdminPage).
 import { useState, useEffect } from 'react';
 import {
   getAllRoles,
@@ -9,90 +9,26 @@ import {
   updateRole,
   deleteRole,
 } from '../services/roleService.js';
-import '../../user/styles/admin-panel.css';
+import RoleFormModal from '../components/RoleFormModal.jsx';
+import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
+import '../styles/_role-page.scss';
 
-// Formulario embebido para crear o editar un rol.
-// Recibe: initialData (null para crear, objeto para editar), onSubmit, onCancel.
-function RoleForm({ initialData, onSubmit, onCancel }) {
-  const [name, setName] = useState(initialData?.name ?? '');
-  const [description, setDescription] = useState(initialData?.description ?? '');
-  const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-    setIsSubmitting(true);
-    try {
-      await onSubmit({ name: name.trim(), description: description.trim() || undefined });
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <form className="admin-panel__create-form" onSubmit={handleSubmit}>
-      <h3 className="admin-panel__create-form-title">
-        {initialData ? `Editar rol "${initialData.name}"` : 'Nuevo rol'}
-      </h3>
-      <div className="admin-panel__form-grid">
-        <div className="admin-panel__form-group">
-          <label htmlFor="rf-name">Nombre *</label>
-          <input
-            id="rf-name"
-            className="admin-panel__input"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            placeholder="Ej: Moderador"
-          />
-        </div>
-        <div className="admin-panel__form-group">
-          <label htmlFor="rf-description">Descripción</label>
-          <input
-            id="rf-description"
-            className="admin-panel__input"
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Opcional"
-          />
-        </div>
-      </div>
-
-      {error && (
-        <div className="admin-panel__alert admin-panel__alert--error">⚠ {error}</div>
-      )}
-
-      <div className="admin-panel__form-actions">
-        <button type="submit" className="admin-panel__btn admin-panel__btn--create" disabled={isSubmitting}>
-          {isSubmitting ? 'Guardando...' : initialData ? 'Guardar cambios' : 'Crear rol'}
-        </button>
-        <button type="button" className="admin-panel__btn admin-panel__btn--cancel" onClick={onCancel}>
-          Cancelar
-        </button>
-      </div>
-    </form>
-  );
-}
-
-// Página principal del panel de roles.
 function RolePage() {
   const [roles, setRoles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
 
-  // null = sin formulario; 'create' = nuevo; 'edit' = editando editingRole
-  const [formMode, setFormMode] = useState(null);
-  const [editingRole, setEditingRole] = useState(null);
-
-  const [actionError, setActionError] = useState('');
+  // Modal de alta/edición: null = cerrado, 'create' o el rol que se está editando.
+  const [formTarget, setFormTarget] = useState(null);
+  // Rol pendiente de confirmar eliminación, o null si el modal está cerrado.
+  const [pendingDeleteRole, setPendingDeleteRole] = useState(null);
+  // Rol cuya eliminación falló (con el motivo), o null si no hay ningún aviso para
+  // mostrar. Se muestra en un modal aparte en vez de un banner que queda pegado en pantalla.
+  const [deleteFailure, setDeleteFailure] = useState(null);
   const [deletingRoleId, setDeletingRoleId] = useState(null);
 
-  // Carga inicial de roles.
+  // Carga (o recarga) la lista de roles desde el backend.
   const loadRoles = async () => {
     setIsLoading(true);
     setFetchError('');
@@ -115,129 +51,144 @@ function RolePage() {
     loadRoles();
   }, []);
 
-  const handleCreate = async (data) => {
-    await createRole(data);
-    setFormMode(null);
+  // Crea o edita un rol según qué haya en formTarget, y refresca la lista al terminar.
+  const handleSubmitForm = async (data) => {
+    if (formTarget === 'create') {
+      await createRole(data);
+    } else {
+      await updateRole(formTarget.id, data);
+    }
+    setFormTarget(null);
     await loadRoles();
   };
 
-  const handleEditClick = (role) => {
-    setEditingRole(role);
-    setFormMode('edit');
-    setActionError('');
-  };
-
-  const handleUpdate = async (data) => {
-    await updateRole(editingRole.id, data);
-    setFormMode(null);
-    setEditingRole(null);
-    await loadRoles();
-  };
-
-  const handleDeleteClick = async (role) => {
-    const confirmed = window.confirm(
-      `¿Eliminar el rol "${role.name}"?\nEsta acción no se puede deshacer y fallará si el rol tiene usuarios asignados.`
-    );
-    if (!confirmed) return;
-    setActionError('');
+  // Al confirmar el modal de eliminación, borra el rol y lo saca de la lista local. Si
+  // falla (409, todavía tiene usuarios asignados), se cierra el modal de confirmación y
+  // se muestra el motivo en un modal de aviso aparte.
+  const handleConfirmDelete = async () => {
+    const role = pendingDeleteRole;
     setDeletingRoleId(role.id);
     try {
       await deleteRole(role.id);
       setRoles((prev) => prev.filter((r) => r.id !== role.id));
     } catch (err) {
-      setActionError(err.message);
+      setDeleteFailure({ name: role.name, message: err.message });
     } finally {
       setDeletingRoleId(null);
+      setPendingDeleteRole(null);
     }
   };
 
-  const handleCancelForm = () => {
-    setFormMode(null);
-    setEditingRole(null);
-  };
-
   return (
-    <div className="admin-panel">
-      <div className="admin-panel__header">
-        <h2 className="admin-panel__title">Panel de Administración — Roles</h2>
-        <span className="admin-panel__count">
-          {roles.length} rol{roles.length !== 1 ? 'es' : ''}
-        </span>
-      </div>
+    <section className="RolePage">
+      <header className="RolePage-header">
+        <div className="RolePage-titleGroup">
+          <h2 className="RolePage-title">Roles registrados</h2>
+          <span className="RolePage-count">
+            {roles.length} rol{roles.length !== 1 ? 'es' : ''}
+          </span>
+        </div>
 
-      <div className="admin-panel__controls">
-        <button
-          className="admin-panel__btn admin-panel__btn--refresh"
-          onClick={loadRoles}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Cargando...' : '↻ Refrescar'}
-        </button>
-        {formMode === null && (
+        <div className="RolePage-actions">
           <button
-            className="admin-panel__btn admin-panel__btn--new"
-            onClick={() => { setFormMode('create'); setActionError(''); }}
-            id="btnNuevoRol"
+            type="button"
+            className="RolePage-refreshButton"
+            onClick={loadRoles}
+            disabled={isLoading}
+            title="Actualizar"
           >
-            + Nuevo rol
+            <span className="material-symbols-outlined">refresh</span>
           </button>
-        )}
-      </div>
+          <button
+            type="button"
+            className="RolePage-newButton"
+            onClick={() => setFormTarget('create')}
+            title="Nuevo rol"
+            aria-label="Nuevo rol"
+          >
+            <span className="material-symbols-outlined">add</span>
+          </button>
+        </div>
+      </header>
 
-      {formMode === 'create' && (
-        <RoleForm initialData={null} onSubmit={handleCreate} onCancel={handleCancelForm} />
-      )}
+      {fetchError && <p className="RolePage-status RolePage-status--error">⚠ {fetchError}</p>}
 
-      {formMode === 'edit' && editingRole && (
-        <RoleForm initialData={editingRole} onSubmit={handleUpdate} onCancel={handleCancelForm} />
-      )}
-
-      {actionError && (
-        <div className="admin-panel__alert admin-panel__alert--error">⚠ {actionError}</div>
-      )}
-
-      {isLoading && <p className="admin-panel__loading">Cargando roles...</p>}
-      {fetchError && (
-        <div className="admin-panel__alert admin-panel__alert--error">⚠ {fetchError}</div>
-      )}
+      {isLoading && <p className="RolePage-status">Cargando roles...</p>}
 
       {!isLoading && !fetchError && roles.length === 0 && (
-        <p className="admin-panel__empty">No hay roles creados.</p>
+        <p className="RolePage-status">No hay roles creados todavía.</p>
       )}
 
       {!isLoading && roles.length > 0 && (
-        <ul className="admin-panel__list">
-          {roles.map((role) => (
-            <li key={role.id} className="admin-panel__item">
-              <div className="admin-panel__item-info">
-                <span className="admin-panel__item-username">{role.name}</span>
-                {role.description && (
-                  <span className="admin-panel__item-email">{role.description}</span>
-                )}
-                <span className="admin-panel__item-id">ID: {role.id}</span>
-              </div>
-              <div className="admin-panel__item-actions admin-panel__item-actions--group">
-                <button
-                  type="button"
-                  className="admin-panel__btn admin-panel__btn--edit"
-                  onClick={() => handleEditClick(role)}
-                >
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  className="admin-panel__btn admin-panel__btn--delete"
-                  onClick={() => handleDeleteClick(role)}
-                  disabled={deletingRoleId === role.id}
-                >
-                  {deletingRoleId === role.id ? 'Eliminando...' : 'Eliminar'}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="RolePage-scroll">
+          <table className="RolePage-table">
+            <thead>
+              <tr>
+                <th>Rol</th>
+                <th>Descripción</th>
+                <th className="RolePage-cell--center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {roles.map((role) => (
+                <tr key={role.id}>
+                  <td className="RolePage-roleName">{role.name}</td>
+                  <td className="RolePage-roleDescription">{role.description || '—'}</td>
+                  <td className="RolePage-cell--center">
+                    <div className="RolePage-rowActions">
+                      <button
+                        type="button"
+                        className="RolePage-iconButton"
+                        onClick={() => setFormTarget(role)}
+                        title="Editar rol"
+                      >
+                        <span className="material-symbols-outlined">edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="RolePage-iconButton RolePage-iconButton--danger"
+                        onClick={() => setPendingDeleteRole(role)}
+                        disabled={deletingRoleId === role.id}
+                        title="Eliminar rol"
+                      >
+                        <span className="material-symbols-outlined">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </div>
+
+      {formTarget !== null && (
+        <RoleFormModal
+          initialData={formTarget === 'create' ? null : formTarget}
+          onSubmit={handleSubmitForm}
+          onCancel={() => setFormTarget(null)}
+        />
+      )}
+
+      {pendingDeleteRole && (
+        <ConfirmModal
+          title={`Eliminar rol "${pendingDeleteRole.name}"`}
+          message="Esta acción no se puede deshacer y va a fallar si el rol todavía tiene usuarios asignados."
+          confirmLabel="Eliminar"
+          danger
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setPendingDeleteRole(null)}
+        />
+      )}
+
+      {deleteFailure && (
+        <AlertModal
+          title={`No se pudo eliminar "${deleteFailure.name}"`}
+          message={deleteFailure.message}
+          onClose={() => setDeleteFailure(null)}
+        />
+      )}
+    </section>
   );
 }
 

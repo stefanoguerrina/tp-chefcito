@@ -1,9 +1,10 @@
-// Estilos del modal de confirmación para asignar/quitar un rol a un usuario.
-// Sigue el mismo lenguaje visual que AuthModal (features/auth/styles/_auth-modal.scss):
-// overlay con blur + tarjeta clara con los tokens de styles/abstracts/_variables.scss.
+// Estilos del modal de alta/edición de categoría de receta
+// (features/category/components/CategoryFormModal). Mismo lenguaje visual que
+// ingredientCategory/styles/_category-form-modal.scss: overlay con blur + tarjeta clara
+// con los tokens de styles/abstracts/_variables.scss.
 @use '../../../styles/abstracts' as *;
 
-.RoleConfirmModal-overlay {
+.CategoryFormModal-overlay {
   position: fixed;
   inset: 0;
   z-index: 300;
@@ -16,71 +17,74 @@
   padding: $spacing-lg;
 }
 
-.RoleConfirmModal-card {
+.CategoryFormModal-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   background: $color-surface-container-lowest;
   border: 1px solid $color-outline-variant;
   border-radius: $radius-lg;
   box-shadow: $shadow-level-2;
   padding: $spacing-lg;
-  text-align: center;
 }
 
-.RoleConfirmModal-icon {
-  width: 44px;
-  height: 44px;
-  margin: 0 auto $spacing-md;
-  border-radius: $radius-full;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  // Mismo verde oliva ($color-primary) que el resto de las acciones "activas" del
-  // panel de administración (asignar un rol).
-  background: rgba($color-primary, 0.12);
-  color: $color-primary;
-
-  &--remove {
-    background: rgba($color-error, 0.12);
-    color: $color-error;
-  }
-}
-
-.RoleConfirmModal-title {
-  // Todo el panel de administración usa una sola familia de fuentes, sin Playfair Display.
+.CategoryFormModal-title {
   font-family: $font-body;
   font-size: 18px;
   font-weight: 700;
   color: $color-on-background;
-  margin: 0 0 $spacing-sm;
+  margin: 0 0 $spacing-md;
 }
 
-.RoleConfirmModal-message {
-  font-family: $font-body;
-  font-size: 14px;
-  color: $color-on-surface-variant;
-  margin: 0 0 $spacing-lg;
-  line-height: 1.5;
+.CategoryFormModal-form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
 
-  strong {
+.CategoryFormModal-field {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+
+  label {
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+  }
+
+  input {
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
     color: $color-on-background;
+    font-family: $font-body;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: $color-primary;
+    }
   }
 }
 
-.RoleConfirmModal-error {
+.CategoryFormModal-error {
   font-family: $font-body;
   font-size: 13px;
   color: $color-error;
-  margin: -#{$spacing-md} 0 $spacing-md;
+  margin: 0;
 }
 
-.RoleConfirmModal-actions {
+.CategoryFormModal-actions {
   display: flex;
   flex-direction: column;
   gap: $spacing-sm;
+  margin-top: $spacing-xs;
 }
 
-.RoleConfirmModal-confirm {
+.CategoryFormModal-confirm {
   width: 100%;
   border: none;
   font-family: $font-body;
@@ -92,11 +96,6 @@
   color: $color-on-primary;
   transition: opacity 0.2s ease;
 
-  &--remove {
-    background: $color-error;
-    color: #fff;
-  }
-
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -107,7 +106,7 @@
   }
 }
 
-.RoleConfirmModal-cancel {
+.CategoryFormModal-cancel {
   width: 100%;
   background: transparent;
   color: $color-on-surface-variant;

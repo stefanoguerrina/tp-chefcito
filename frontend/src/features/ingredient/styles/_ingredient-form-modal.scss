@@ -1,0 +1,235 @@
+// Estilos del modal de alta/edición de ingrediente (features/ingredient/components/IngredientFormModal).
+// Mismo lenguaje visual que RoleFormModal (features/role): overlay con blur + tarjeta
+// clara con los tokens de styles/abstracts/_variables.scss.
+@use '../../../styles/abstracts' as *;
+
+.IngredientFormModal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(30, 27, 23, 0.5);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.IngredientFormModal-card {
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-2;
+  padding: $spacing-lg;
+}
+
+// Al editar, la tarjeta suma la columna de valores nutricionales: necesita más ancho
+// para no quedar angosta. En mobile queda igual (ahí las columnas van apiladas igual).
+.IngredientFormModal-card--wide {
+  @include respond-to(md) {
+    max-width: 760px;
+  }
+}
+
+.IngredientFormModal-title {
+  font-family: $font-body;
+  font-size: 18px;
+  font-weight: 700;
+  color: $color-on-background;
+  margin: 0 0 $spacing-md;
+}
+
+// Formulario + valores nutricionales: apilados en mobile (el formulario ya viene largo
+// como para además ponerlo angosto), lado a lado desde tablet para no hacer un modal
+// altísimo.
+.IngredientFormModal-columns {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+
+  @include respond-to(md) {
+    flex-direction: row;
+    align-items: flex-start;
+
+    .IngredientFormModal-form {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .IngredientFormModal-nutrition {
+      flex: 1;
+      min-width: 0;
+      // Desde acá el separador pasa de arriba (mobile) a la izquierda.
+      padding-top: 0;
+      border-top: none;
+      padding-left: $spacing-lg;
+      border-left: 1px solid $color-outline-variant;
+    }
+  }
+}
+
+.IngredientFormModal-form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+// En mobile (columnas apiladas) separa visualmente del formulario de arriba, ya que
+// ahí no hay borde lateral que lo distinga. Desde md, .IngredientFormModal-columns
+// lo pisa y pasa el borde al costado izquierdo (ver arriba).
+.IngredientFormModal-nutrition {
+  padding-top: $spacing-md;
+  border-top: 1px dashed $color-outline-variant;
+}
+
+.IngredientFormModal-row {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  @include respond-to(sm) {
+    flex-direction: row;
+
+    .IngredientFormModal-field {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+}
+
+.IngredientFormModal-field {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+
+  label {
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+  }
+
+  input[type='text'] {
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-background;
+    font-family: $font-body;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: $color-primary;
+    }
+  }
+}
+
+.IngredientFormModal-categoryList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  max-height: 140px;
+  overflow-y: auto;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-md;
+  background: $color-surface-container;
+}
+
+.IngredientFormModal-categoryEmpty {
+  margin: 0;
+  padding: $spacing-xs;
+  font-size: 13px;
+  color: $color-on-surface-variant;
+}
+
+.IngredientFormModal-categoryOption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px $spacing-sm;
+  border-radius: $radius-full;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  font-family: $font-body;
+  font-size: 13px;
+  color: $color-on-background;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: rgba($color-primary, 0.35);
+  }
+
+  input[type='checkbox'] {
+    accent-color: $color-primary;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+  }
+}
+
+.IngredientFormModal-error {
+  font-family: $font-body;
+  font-size: 13px;
+  color: $color-error;
+  margin: 0;
+}
+
+.IngredientFormModal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-xs;
+}
+
+.IngredientFormModal-confirm {
+  width: 100%;
+  border: none;
+  font-family: $font-body;
+  font-weight: 600;
+  padding: $spacing-md;
+  border-radius: $radius-full;
+  cursor: pointer;
+  background: $color-primary;
+  color: $color-on-primary;
+  transition: opacity 0.2s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+.IngredientFormModal-cancel {
+  width: 100%;
+  background: transparent;
+  color: $color-on-surface-variant;
+  border: 2px solid $color-outline-variant;
+  font-family: $font-body;
+  font-weight: 600;
+  padding: calc(#{$spacing-md} - 2px);
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background: $color-surface-container-high;
+  }
+}

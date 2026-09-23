@@ -1,0 +1,82 @@
+// Layout general del panel de administración (features/admin/pages/AdminPage).
+@use '../../../styles/abstracts' as *;
+// Trae el ancho/alto reales de la sidebar (ver ese partial) para no duplicar el valor.
+@use './admin-sidebar' as adminSidebar;
+
+// El scaffold original (#root en index.css) trae un ancho fijo pensado para la landing;
+// el panel admin necesita ancho completo, igual que hace HomePage con su propio #root:has().
+#root:has(.AdminPage) {
+  width: 100%;
+  border-inline: none;
+  text-align: initial;
+}
+
+.AdminPage {
+  font-family: $font-body;
+  background: $color-surface-container;
+  color: $color-on-background;
+  min-height: 100vh;
+  display: flex;
+
+  &-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    // En mobile la sidebar es una barra fija arriba: se le deja el espacio con padding-top.
+    padding-top: adminSidebar.$admin-sidebar-mobile-height;
+
+    @include respond-to(lg) {
+      padding-top: 0;
+      margin-left: adminSidebar.$admin-sidebar-width;
+    }
+  }
+
+  &-main {
+    flex: 1;
+    padding: $spacing-md $spacing-gutter-mobile $spacing-xl;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+
+    @include respond-to(lg) {
+      padding: $spacing-lg $spacing-gutter-desktop $spacing-xl;
+    }
+  }
+
+  &-status,
+  &-error {
+    text-align: center;
+    padding: $spacing-xl 0;
+    color: $color-on-surface-variant;
+  }
+
+  &-error {
+    color: $color-error;
+  }
+
+  &-metricsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-lg;
+
+    @include respond-to(md) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  &-statsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-md;
+
+    @include respond-to(sm) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @include respond-to(lg) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}

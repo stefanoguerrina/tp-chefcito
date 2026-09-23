@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from '../features/user/pages/HomePage.jsx';
+import AdminPage from '../features/admin/pages/AdminPage.jsx';
 import AuthPage from '../features/auth/pages/AuthPage.jsx';
 
 function App() {
@@ -15,6 +16,13 @@ function App() {
     setIsAdmin(adminStatus === true);
   };
 
+  // Cierra la sesión: descarta el JWT guardado y vuelve a AuthPage.
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsAppLoggedIn(false);
+    setIsAdmin(false);
+  };
+
   return (
     <div className="App">
       {!isAppLoggedIn ? (
@@ -22,8 +30,18 @@ function App() {
       ) : (
         <BrowserRouter>
           <Routes>
-            {/* Main route — passes isAdmin so the page can conditionally render the admin panel */}
-            <Route path="/" element={<HomePage isAdmin={isAdmin} />} />
+            {/* Un admin no ve la home de un usuario común: cae directo en su propio
+                panel, con su propia navegación y ubicaciones (ver features/admin). */}
+            <Route
+              path="/"
+              element={
+                isAdmin ? (
+                  <AdminPage onLogout={handleLogout} />
+                ) : (
+                  <HomePage />
+                )
+              }
+            />
 
             {/* Space reserved for future pages (e.g., Profile, Recipes, etc.) */}
           </Routes>

@@ -1,0 +1,363 @@
+// Tabla resumen de usuarios del dashboard (features/admin/components/AdminUsersTable).
+@use '../../../styles/abstracts' as *;
+
+.AdminUsersTable {
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-level-1;
+
+  &-header {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    border-bottom: 1px solid $color-outline-variant;
+
+    @include respond-to(md) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  &-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: $color-on-background;
+  }
+
+  &-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  // Mismo alto que el botón circular de al lado (&-newButton), para que ambos
+  // controles queden parejos en la cabecera.
+  &-tabs {
+    display: flex;
+    align-items: stretch;
+    height: 36px;
+    box-sizing: border-box;
+    gap: 2px;
+    padding: 2px;
+    border-radius: $radius-full;
+    background: $color-surface-container;
+    border: 1px solid $color-outline-variant;
+  }
+
+  &-tab {
+    display: flex;
+    align-items: center;
+    padding: 0 $spacing-md;
+    border: none;
+    border-radius: $radius-full;
+    background: transparent;
+    color: $color-on-surface-variant;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+
+    // Mismo verde del botón "Alta de usuario" (&-newButton), para que se vea que
+    // ambos son la acción/estado "activo" de la cabecera.
+    &--active {
+      background: $color-primary;
+      color: $color-on-primary;
+    }
+  }
+
+  // Mismo patrón que AdminIngredientsTable-search / AdminIngredientCategoriesTable-search.
+  &-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    box-sizing: border-box;
+    padding: 0 $spacing-sm 0 $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-full;
+    background: $color-surface-container;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    input {
+      width: 180px;
+      max-width: 40vw;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: $font-body;
+      font-size: 13px;
+      color: $color-on-background;
+
+      &::placeholder {
+        color: $color-on-surface-variant;
+      }
+    }
+  }
+
+  // Botón circular de solo ícono (sin texto): dar de alta un usuario nuevo abre el
+  // formulario completo en la sección "Usuarios" (ver onManageUsers).
+  &-newButton {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-on-primary;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+
+  &-status {
+    text-align: center;
+    color: $color-on-surface-variant;
+    padding: $spacing-xl 0;
+  }
+
+  &-scroll {
+    // La tabla puede ser más ancha que el viewport en mobile: scroll horizontal propio,
+    // nunca la página entera (regla general del proyecto para tablas/anchos fijos).
+    overflow-x: auto;
+  }
+
+  &-table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-size: 13px;
+
+    th {
+      text-align: left;
+      padding: $spacing-sm $spacing-md;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: $color-on-surface-variant;
+      background: $color-surface-container;
+      border-bottom: 1px solid $color-outline-variant;
+    }
+
+    td {
+      padding: $spacing-sm $spacing-md;
+      border-bottom: 1px solid $color-outline-variant;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: $color-surface-container;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    // Anidado acá (en vez de a nivel de .AdminUsersTable) para que la selección
+    // ".AdminUsersTable-table .AdminUsersTable-cell--center" tenga más especificidad
+    // que el "th { text-align: left }" de arriba y pueda pisarlo en el encabezado.
+    .AdminUsersTable-cell--center {
+      text-align: center;
+    }
+  }
+
+  // Fila de un usuario dado de baja: se atenúa para diferenciarla de un vistazo,
+  // igual que hace .admin-panel__item--inactive en el panel completo de Usuarios.
+  &-row--inactive {
+    opacity: 0.6;
+  }
+
+  &-user {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: $radius-md;
+    background: $color-surface-container-high;
+    color: $color-on-background;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  &-userText {
+    display: flex;
+    flex-direction: column;
+    // line-height ajustado: el 145% heredado de index.css deja mucho aire entre las
+    // dos líneas (nombre y @usuario), que quedan pegadas de más si no se lo achica acá.
+    line-height: 1.35;
+    min-width: 0;
+  }
+
+  &-userName {
+    font-weight: 700;
+    color: $color-on-background;
+  }
+
+  &-userMeta {
+    font-size: 12px;
+    color: $color-on-surface-variant;
+  }
+
+  &-role {
+    color: $color-on-background;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  &-recipes {
+    font-weight: 700;
+    color: $color-on-background;
+    white-space: nowrap;
+    // Mismo ajuste que -userText: sin esto el 145% heredado separa de más esta línea
+    // de la de valoraciones de abajo.
+    line-height: 1.35;
+  }
+
+  &-reviews {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+    white-space: nowrap;
+    line-height: 1.35;
+  }
+
+  &-starIcon {
+    font-size: 14px;
+    color: $color-tertiary-fixed-dim;
+  }
+
+  &-date {
+    color: $color-on-surface-variant;
+    white-space: nowrap;
+  }
+
+  &-rowActions {
+    display: flex;
+    justify-content: center;
+    gap: $spacing-xs;
+  }
+
+  &-iconButton {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-background;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--danger {
+      border-color: rgba($color-error, 0.3);
+      color: $color-error;
+
+      &:hover:not(:disabled) {
+        background: rgba($color-error, 0.08);
+      }
+    }
+
+    &--restore {
+      border-color: rgba($color-secondary, 0.3);
+      color: $color-secondary;
+
+      &:hover:not(:disabled) {
+        background: rgba($color-secondary, 0.08);
+      }
+    }
+  }
+
+  &-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding: $spacing-md;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+    background: $color-surface-container;
+  }
+
+  &-pagination {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &-pageButton {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-background;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &-pageIndicator {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}

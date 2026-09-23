@@ -1,0 +1,100 @@
+// Tarjeta grande de métrica del dashboard (features/admin/components/AdminMetricCard).
+@use '../../../styles/abstracts' as *;
+
+.AdminMetricCard {
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-left: 4px solid $color-primary;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-level-1;
+
+  // El acento del borde y del badge cambia según la métrica que representa la tarjeta.
+  &--secondary {
+    border-left-color: $color-tertiary;
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+  }
+
+  &-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $color-on-surface-variant;
+  }
+
+  &-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px $spacing-sm;
+    border-radius: $radius-full;
+    background: rgba($color-primary, 0.1);
+    color: $color-primary;
+  }
+
+  &--secondary &-badge {
+    background: rgba($color-tertiary, 0.12);
+    color: $color-tertiary;
+  }
+
+  &-figure {
+    display: flex;
+    align-items: baseline;
+    gap: $spacing-xs;
+    // Achicado (antes $spacing-md arriba / $spacing-xs abajo): cuando la tarjeta no
+    // tiene "hint", el valor quedaba con mucho aire respecto del pie de abajo.
+    margin: $spacing-sm 0 2px;
+  }
+
+  &-value {
+    // Todo el panel usa una sola familia de fuentes (ver AdminPage), sin Playfair Display.
+    font-family: $font-body;
+    font-size: 40px;
+    font-weight: 700;
+    color: $color-on-background;
+    line-height: 1;
+  }
+
+  &-unit {
+    font-size: 16px;
+    font-weight: 500;
+    color: $color-on-surface-variant;
+  }
+
+  &-hint {
+    margin: 0 0 $spacing-md;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+  }
+
+  &-footer {
+    margin-top: auto;
+    padding-top: $spacing-sm;
+    border-top: 1px solid $color-outline-variant;
+
+    // Tarjetas sin cifra principal (ej: "Top ingredientes más usados"): el pie va
+    // pegado al header, no empujado abajo del todo como cuando sí hay una cifra grande.
+    &--tight {
+      margin-top: $spacing-sm;
+    }
+  }
+
+  &-footerHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+  }
+}
