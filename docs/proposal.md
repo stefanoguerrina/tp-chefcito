@@ -8,9 +8,7 @@
 * 54323 - Schujman, Gastón Enrique (3K02)
 
 ### Repositorios
-* [frontend app](http://hyperlinkToGihubOrGitlab)
-* [backend app](http://hyperlinkToGihubOrGitlab)
-*Nota*: si utiliza un monorepo indicar un solo link con fullstack app.
+* [fullstack app (monorepo: `frontend/` + `backend/`)](https://github.com/stefanoguerrina/tp-chefcito)
 
 ## Tema
 ### Descripción

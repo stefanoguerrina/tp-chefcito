@@ -1,71 +1,54 @@
-// Main application component managing authentication state and route navigation.
-import { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from '../features/user/pages/HomePage.jsx';
-import AdminPage from '../features/admin/pages/AdminPage.jsx';
+// Componente raíz: provee la sesión (AuthProvider) y define todas las rutas de la app,
+// protegidas según el nivel de acceso (visitante, usuario común o administrador).
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './AuthContext.jsx';
+import ProtectedRoute, { PUBLIC_HOME_PATH } from './ProtectedRoute.jsx';
 import AuthPage from '../features/auth/pages/AuthPage.jsx';
-import { decodeToken } from '../shared/utils/decodeToken.js';
-
-// Lee el token guardado en localStorage (si lo hay) y lo valida: debe existir,
-// tener un payload decodificable y no estar vencido (campo `exp`, en segundos).
-// Así la sesión sobrevive a un F5 sin pedir login de nuevo, sea admin o usuario común.
-const getStoredSession = () => {
-  const token = localStorage.getItem('token');
-  if (!token) return null;
-
-  const payload = decodeToken(token);
-  if (!payload || (payload.exp && payload.exp * 1000 < Date.now())) {
-    localStorage.removeItem('token');
-    return null;
-  }
-
-  return { isAdmin: payload.isAdmin === true };
-};
+import UserLayout from '../features/user/components/UserLayout.jsx';
+import HomePage from '../features/user/pages/HomePage.jsx';
+import ProfilePage from '../features/user/pages/ProfilePage.jsx';
+import RecipePage from '../features/recipe/pages/RecipePage.jsx';
+import RecipeEditorPage from '../features/recipe/pages/RecipeEditorPage.jsx';
+import RecipeDetailPage from '../features/recipe/pages/RecipeDetailPage.jsx';
+import InventoryPage from '../features/inventory/pages/InventoryPage.jsx';
+import SavedRecipesPage from '../features/userRecipe/pages/SavedRecipesPage.jsx';
+import AdminPage from '../features/admin/pages/AdminPage.jsx';
 
 function App() {
-  const storedSession = getStoredSession();
-  const [isAppLoggedIn, setIsAppLoggedIn] = useState(storedSession !== null);
-  // Tracks whether the logged-in user has the admin role.
-  const [isAdmin, setIsAdmin] = useState(storedSession?.isAdmin ?? false);
-
-  // Receives adminStatus from useAuth after a successful login.
-  const handleSuccessfulLogin = (adminStatus) => {
-    setIsAppLoggedIn(true);
-    setIsAdmin(adminStatus === true);
-  };
-
-  // Cierra la sesión: descarta el JWT guardado y vuelve a AuthPage.
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAppLoggedIn(false);
-    setIsAdmin(false);
-  };
-
   return (
-    <div className="App">
-      {!isAppLoggedIn ? (
-        <AuthPage onLoginSuccess={handleSuccessfulLogin} />
-      ) : (
-        <BrowserRouter>
-          <Routes>
-            {/* Un admin no ve la home de un usuario común: cae directo en su propio
-                panel, con su propia navegación y ubicaciones (ver features/admin). */}
-            <Route
-              path="/"
-              element={
-                isAdmin ? (
-                  <AdminPage onLogout={handleLogout} />
-                ) : (
-                  <HomePage onLogout={handleLogout} />
-                )
-              }
-            />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Visitantes sin sesión: landing con login y registro. */}
+          <Route element={<ProtectedRoute allow="guest" />}>
+            <Route path={PUBLIC_HOME_PATH} element={<AuthPage />} />
+          </Route>
 
-            {/* Space reserved for future pages (e.g., Profile, Recipes, etc.) */}
-          </Routes>
-        </BrowserRouter>
-      )}
-    </div>
+          {/* Usuario común: todas las secciones comparten la sidebar (UserLayout). */}
+          <Route element={<ProtectedRoute allow="user" />}>
+            <Route element={<UserLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="recetas/:recipeId" element={<RecipeDetailPage />} />
+              <Route path="mis-recetas" element={<RecipePage />} />
+              <Route path="mis-recetas/nueva" element={<RecipeEditorPage />} />
+              <Route path="mis-recetas/:recipeId/editar" element={<RecipeEditorPage />} />
+              <Route path="perfil" element={<ProfilePage />} />
+              <Route path="usuarios/:userId" element={<ProfilePage />} />
+              <Route path="inventario" element={<InventoryPage />} />
+              <Route path="guardadas" element={<SavedRecipesPage />} />
+            </Route>
+          </Route>
+
+          {/* Administrador: panel propio, la sección va en la URL. */}
+          <Route element={<ProtectedRoute allow="admin" />}>
+            <Route path="admin/:section?" element={<AdminPage />} />
+          </Route>
+
+          {/* Cualquier otra URL vuelve al inicio (ProtectedRoute decide cuál según el rol). */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

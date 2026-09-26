@@ -21,18 +21,7 @@ import {
   buildUserRows,
   sumSeries,
 } from '../models/adminDashboardModel.js';
-
-// Los listados del backend responden 404 ("No se encontraron ...") cuando todavía no hay
-// ningún registro cargado. Para el dashboard eso no es un error sino una lista vacía, así
-// que se traduce a []; cualquier otro fallo sí se propaga para mostrarlo en pantalla.
-const fetchListOrEmpty = async (fetchList) => {
-  try {
-    return await fetchList();
-  } catch (error) {
-    if (error.message.includes('No se encontraron')) return [];
-    throw error;
-  }
-};
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 
 export const useAdminDashboard = () => {
   const [metrics, setMetrics] = useState(null);
@@ -50,82 +39,96 @@ export const useAdminDashboard = () => {
   // Estado de las acciones por fila de la tabla (dar de baja / reactivar).
   const [busyUserId, setBusyUserId] = useState(null);
 
-  // Pide en paralelo todo lo que muestra el dashboard y arma el resumen.
-  const fetchDashboard = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const [users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles] =
-        await Promise.all([
-          fetchListOrEmpty(() => searchUsersService({ inactive: false })),
-          fetchListOrEmpty(() => searchUsersService({ inactive: true })),
-          fetchListOrEmpty(() => getAllRecipes()),
-          fetchListOrEmpty(() => getAllIngredients()),
-          fetchListOrEmpty(() => getAllIngredientCategories()),
-          fetchListOrEmpty(() => getAllCategories()),
-          fetchListOrEmpty(() => getAllRoles()),
-        ]);
-
-      // Segunda tanda: para cada usuario sus roles, y para cada receta sus reviews.
-      // Van en paralelo entre sí, pero después de la primera tanda porque dependen de
-      // sus resultados (necesitan la lista de usuarios y de recetas ya resueltas).
-      // Si algo de esto falla no se rompe todo el dashboard: la tabla simplemente
-      // muestra "Sin rol asignado" o "Sin valoraciones aún" para esos casos.
-      const allUsers = [...users, ...inactive];
-      const [roleResults, reviewResults] = await Promise.all([
-        Promise.all(
-          allUsers.map((user) =>
-            getRolesByUser(user.id).catch(() => null)
-          )
-        ),
-        Promise.all(
-          recipes.map((recipe) =>
-            getReviewsByRecipe(recipe.id).catch(() => ({ reviews: [], averageRating: null }))
-          )
-        ),
+  // Pide en paralelo todo lo que muestra el dashboard. No toca el estado: devuelve los
+  // datos crudos para que fetchDashboard los guarde dentro del callback de la promesa.
+  const loadDashboardData = async () => {
+    const [users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles] =
+      await Promise.all([
+        fetchListOrEmpty(() => searchUsersService({ inactive: false })),
+        fetchListOrEmpty(() => searchUsersService({ inactive: true })),
+        fetchListOrEmpty(() => getAllRecipes()),
+        fetchListOrEmpty(() => getAllIngredients()),
+        fetchListOrEmpty(() => getAllIngredientCategories()),
+        fetchListOrEmpty(() => getAllCategories()),
+        fetchListOrEmpty(() => getAllRoles()),
       ]);
 
-      const roleLabelMap = new Map();
-      allUsers.forEach((user, index) => {
-        roleLabelMap.set(user.id, buildRoleLabel(roleResults[index]));
-      });
+    // Segunda tanda: para cada usuario sus roles, y para cada receta sus reviews.
+    // Van en paralelo entre sí, pero después de la primera tanda porque dependen de
+    // sus resultados (necesitan la lista de usuarios y de recetas ya resueltas).
+    // Si algo de esto falla no se rompe todo el dashboard: la tabla simplemente
+    // muestra "Sin rol asignado" o "Sin valoraciones aún" para esos casos.
+    const allUsers = [...users, ...inactive];
+    const [roleResults, reviewResults] = await Promise.all([
+      Promise.all(
+        allUsers.map((user) =>
+          getRolesByUser(user.id).catch(() => null)
+        )
+      ),
+      Promise.all(
+        recipes.map((recipe) =>
+          getReviewsByRecipe(recipe.id).catch(() => ({ reviews: [], averageRating: null }))
+        )
+      ),
+    ]);
 
-      const reviewResultsByRecipeId = new Map();
-      recipes.forEach((recipe, index) => {
-        reviewResultsByRecipeId.set(recipe.id, reviewResults[index]);
-      });
+    const roleLabelMap = new Map();
+    allUsers.forEach((user, index) => {
+      roleLabelMap.set(user.id, buildRoleLabel(roleResults[index]));
+    });
 
-      const recipesLastWeek = buildRecipesLastWeek(recipes);
+    const reviewResultsByRecipeId = new Map();
+    recipes.forEach((recipe, index) => {
+      reviewResultsByRecipeId.set(recipe.id, reviewResults[index]);
+    });
 
-      setActiveUsers(users);
-      setInactiveUsers(inactive);
-      setRecipeCountByUser(countRecipesByUser(recipes));
-      setRoleLabelByUser(roleLabelMap);
-      setReviewStatsByUser(buildReviewStatsByUser(recipes, reviewResultsByRecipeId));
-
-      setMetrics({
-        activeUsersCount: users.length,
-        inactiveUsersCount: inactive.length,
-        recipesCount: recipes.length,
-        recipesThisWeekCount: sumSeries(recipesLastWeek),
-        ingredientsCount: ingredients.length,
-        ingredientCategoriesCount: ingredientCategories.length,
-        recipeCategoriesCount: recipeCategories.length,
-        rolesCount: roles.length,
-        recipesLastWeek,
-        topCreators: buildTopCreators(recipes),
-      });
-    } catch (err) {
-      console.error('[useAdminDashboard] Error al cargar el dashboard:', err);
-      setError(err.message || 'No pudimos cargar los datos del panel.');
-    } finally {
-      setIsLoading(false);
-    }
+    return { users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles, roleLabelMap, reviewResultsByRecipeId };
   };
 
-  // Carga inicial al montar el dashboard.
+  // Guarda en el estado los datos ya cargados y arma el resumen de métricas.
+  const applyDashboardData = ({ users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles, roleLabelMap, reviewResultsByRecipeId }) => {
+    const recipesLastWeek = buildRecipesLastWeek(recipes);
+
+    setActiveUsers(users);
+    setInactiveUsers(inactive);
+    setRecipeCountByUser(countRecipesByUser(recipes));
+    setRoleLabelByUser(roleLabelMap);
+    setReviewStatsByUser(buildReviewStatsByUser(recipes, reviewResultsByRecipeId));
+
+    setMetrics({
+      activeUsersCount: users.length,
+      inactiveUsersCount: inactive.length,
+      recipesCount: recipes.length,
+      recipesThisWeekCount: sumSeries(recipesLastWeek),
+      ingredientsCount: ingredients.length,
+      ingredientCategoriesCount: ingredientCategories.length,
+      recipeCategoriesCount: recipeCategories.length,
+      rolesCount: roles.length,
+      recipesLastWeek,
+      topCreators: buildTopCreators(recipes),
+    });
+    setError('');
+  };
+
+  // El estado se actualiza solo dentro de los callbacks de la promesa (nunca de forma
+  // sincrónica), así se puede llamar desde el useEffect sin renders en cascada.
+  const fetchDashboard = () =>
+    loadDashboardData()
+      .then(applyDashboardData)
+      .catch((err) => setError(err.message || 'No pudimos cargar los datos del panel.'))
+      .finally(() => setIsLoading(false));
+
+  // Recarga manual (botón "Actualizar"): muestra el loading y vuelve a pedir todo.
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    await fetchDashboard();
+  };
+
+  // Carga inicial al montar el dashboard (isLoading ya arranca en true). Solo debe correr
+  // una vez: fetchDashboard se recrea en cada render y re-ejecutaría la carga sin fin.
   useEffect(() => {
     fetchDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Las filas se recalculan solas cada vez que cambia alguna de sus fuentes (p. ej. al
@@ -201,8 +204,8 @@ export const useAdminDashboard = () => {
         next.set(userId, buildRoleLabel(roles));
         return next;
       });
-    } catch (err) {
-      console.error('[useAdminDashboard] Error al refrescar el rol del usuario:', err);
+    } catch {
+      // Sin aviso: la columna "Rol" queda con la etiqueta anterior hasta el próximo refresco.
     }
   };
 
@@ -212,7 +215,7 @@ export const useAdminDashboard = () => {
     isLoading,
     error,
     busyUserId,
-    handleRefresh: fetchDashboard,
+    handleRefresh,
     handleDeleteUser,
     handleRestoreUser,
     handleUserUpdated,

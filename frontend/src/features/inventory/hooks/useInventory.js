@@ -1,7 +1,9 @@
 // Hook useInventory: centraliza el estado y las operaciones del inventario del usuario.
-// Maneja los estados de loading, error y el flujo del modal de edición al detectar duplicados.
-import { useState, useEffect, useCallback } from 'react';
-import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
+// Maneja los estados de loading y error (de carga y de acciones) y el flujo del modal
+// que aparece al intentar agregar un ingrediente que ya estaba en la despensa.
+import { useState, useEffect } from 'react';
+import { useAuthContext } from '../../../app/AuthContext.jsx';
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import {
   getInventory,
   addToInventory,
@@ -11,70 +13,59 @@ import {
 import { getAllIngredients } from '../../ingredient/services/ingredientService.js';
 
 function useInventory() {
-  const userId = getCurrentUserId();
+  const { userId } = useAuthContext();
 
   // Estado del inventario
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  // Error al cargar el inventario (se muestra en la página con "Reintentar").
+  const [loadError, setLoadError] = useState('');
+  // Error de la última acción (agregar, editar, quitar): se muestra en un modal.
+  const [actionError, setActionError] = useState('');
 
   // Lista de ingredientes disponibles para el buscador
   const [allIngredients, setAllIngredients] = useState([]);
   const [ingredientsLoading, setIngredientsLoading] = useState(true);
 
   // Modal de duplicado: se muestra cuando el POST responde 409
-  const [duplicateModal, setDuplicateModal] = useState(null);
   // { ingredientName, idIngredient, current: { availableQuantity, unitOfMeasure } }
+  const [duplicateModal, setDuplicateModal] = useState(null);
 
-  // Carga el inventario del usuario autenticado
-  const loadInventory = useCallback(async () => {
-    if (!userId) return;
-    setIsLoading(true);
-    setError('');
-    try {
-      const data = await getInventory(userId);
-      setItems(data);
-    } catch (err) {
-      // El backend devuelve 404 cuando el inventario está vacío, no es un error real
-      if (err.message.includes('vacío') || err.message.includes('404')) {
-        setItems([]);
-      } else {
-        setError(err.message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId]);
+  // Carga el inventario del usuario autenticado (un 404 = despensa vacía).
+  // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
+  // llamar desde el useEffect sin renders en cascada.
+  const loadInventory = () =>
+    fetchListOrEmpty(() => getInventory(userId))
+      .then((data) => {
+        setItems(data);
+        setLoadError('');
+      })
+      .catch((err) => setLoadError(err.message))
+      .finally(() => setIsLoading(false));
 
-  // Carga todos los ingredientes disponibles para el selector de búsqueda
-  const loadIngredients = useCallback(async () => {
-    setIngredientsLoading(true);
-    try {
-      const data = await getAllIngredients();
-      setAllIngredients(data);
-    } catch {
-      setAllIngredients([]);
-    } finally {
-      setIngredientsLoading(false);
-    }
-  }, []);
+  // Carga todos los ingredientes disponibles para el selector de búsqueda.
+  // Si falla, el selector queda vacío (el form ya avisa que no hay ingredientes).
+  const loadIngredients = () =>
+    fetchListOrEmpty(() => getAllIngredients())
+      .then(setAllIngredients)
+      .catch(() => setAllIngredients([]))
+      .finally(() => setIngredientsLoading(false));
 
   useEffect(() => {
     loadInventory();
     loadIngredients();
-  }, [loadInventory, loadIngredients]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
-  // Muestra un mensaje de éxito temporal (3 segundos)
-  const showSuccess = (msg) => {
-    setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(''), 3000);
+  // Reintenta la carga del inventario después de un error.
+  const reload = () => {
+    setIsLoading(true);
+    loadInventory();
   };
 
   // Agrega un ingrediente al inventario.
-  // Si ya existe, guarda los datos del conflicto para mostrar el modal.
+  // Devuelve true si se agregó; false si ya existía (abre el modal de duplicado) o si falló.
   const handleAdd = async (ingredientId, availableQuantity, unitOfMeasure) => {
-    setError('');
     try {
       const result = await addToInventory(userId, {
         idIngredient: ingredientId,
@@ -91,48 +82,51 @@ function useInventory() {
           idIngredient: ingredientId,
           current: result.current,
         });
-        return;
+        return false;
       }
 
       setItems((prev) => [...prev, result.item]);
-      showSuccess('Ingrediente agregado al inventario.');
+      return true;
     } catch (err) {
-      setError(err.message);
+      setActionError(err.message);
+      return false;
     }
   };
 
   // Actualiza la cantidad/unidad de un ítem (tanto desde edición directa como desde el modal).
+  // Devuelve true si se guardó, false si falló.
   const handleUpdate = async (ingredientId, data) => {
-    setError('');
     try {
       const updated = await updateInventoryItem(userId, ingredientId, data);
       setItems((prev) => prev.map((it) => (it.idIngredient === ingredientId ? updated : it)));
-      showSuccess('Inventario actualizado.');
       setDuplicateModal(null);
+      return true;
     } catch (err) {
-      setError(err.message);
+      setActionError(err.message);
+      return false;
     }
   };
 
-  // Elimina un ítem del inventario.
+  // Elimina un ítem del inventario. Devuelve true si se eliminó, false si falló.
   const handleRemove = async (ingredientId) => {
-    setError('');
     try {
       await removeFromInventory(userId, ingredientId);
       setItems((prev) => prev.filter((it) => it.idIngredient !== ingredientId));
-      showSuccess('Ingrediente eliminado del inventario.');
+      return true;
     } catch (err) {
-      setError(err.message);
+      setActionError(err.message);
+      return false;
     }
   };
 
   const handleCloseDuplicateModal = () => setDuplicateModal(null);
+  const handleCloseActionError = () => setActionError('');
 
   return {
     items,
     isLoading,
-    error,
-    successMsg,
+    loadError,
+    actionError,
     allIngredients,
     ingredientsLoading,
     duplicateModal,
@@ -140,7 +134,8 @@ function useInventory() {
     handleUpdate,
     handleRemove,
     handleCloseDuplicateModal,
-    reload: loadInventory,
+    handleCloseActionError,
+    reload,
   };
 }
 

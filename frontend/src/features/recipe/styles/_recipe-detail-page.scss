@@ -5,11 +5,11 @@
 .RecipeDetailPage {
   max-width: 760px;
   margin: 0 auto;
-  padding: $spacing-lg $spacing-xl $spacing-xl;
+  padding: $spacing-md;
   text-align: left;
 
-  @media (max-width: 576px) {
-    padding: $spacing-md;
+  @include respond-to(sm) {
+    padding: $spacing-lg $spacing-xl $spacing-xl;
   }
 
   &-status {
@@ -132,13 +132,13 @@
 
   &-title {
     font-family: $font-body;
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 700;
     color: $color-on-surface;
     margin: 0 0 $spacing-sm;
     line-height: 1.2;
 
-    @media (max-width: 576px) { font-size: 24px; }
+    @include respond-to(sm) { font-size: 32px; }
   }
 
   &-meta {

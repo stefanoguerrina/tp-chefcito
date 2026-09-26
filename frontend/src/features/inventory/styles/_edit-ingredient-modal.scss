@@ -25,7 +25,7 @@
 
 /* ---- Panel ---- */
 .EditModal {
-  background: #ffffff;
+  background: $color-surface-container-lowest;
   border: 1px solid rgba(234, 223, 211, 0.95);
   border-radius: 20px;
   padding: 28px 24px 22px;
@@ -75,7 +75,7 @@
   }
 
   &:hover {
-    background: #FAF2EB;
+    background: $color-pantry-cream;
     color: $color-on-background;
   }
 }
@@ -118,7 +118,7 @@
   display: inline-flex;
   align-items: center;
   height: 42px;
-  background: #FAF2EB;
+  background: $color-pantry-cream;
   border: 1px solid rgba(234, 223, 211, 0.95);
   border-radius: 12px;
   padding: 3px 4px;
@@ -132,7 +132,7 @@
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: #ffffff;
+  background: $color-surface-container-lowest;
   color: $color-on-background;
   cursor: pointer;
   display: flex;
@@ -147,7 +147,7 @@
   }
 
   &:hover:not(:disabled) {
-    background: #F0F5D8;
+    background: $color-pantry-lime-light;
     color: $color-primary;
   }
 
@@ -255,7 +255,7 @@
     color: $color-on-surface-variant;
 
     &:hover {
-      background: #FAF2EB;
+      background: $color-pantry-cream;
       color: $color-on-background;
     }
 

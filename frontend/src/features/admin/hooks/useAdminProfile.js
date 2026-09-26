@@ -3,18 +3,17 @@
 // que hace falta este pedido extra para tener el nombre real de la persona.
 import { useState, useEffect } from 'react';
 import { getUserByIdService } from '../../user/services/getUserByIdService.js';
-import { getCurrentUserId, getCurrentUsername } from '../../../shared/utils/decodeToken.js';
+import { useAuthContext } from '../../../app/AuthContext.jsx';
 import { getPersonInitials } from '../models/adminDashboardModel.js';
 
 export const useAdminProfile = () => {
   // Arranca con el username del token como respaldo, por si el fetch todavía no resolvió
   // o llega a fallar: la sidebar nunca se queda con el pie vacío.
-  const username = getCurrentUsername();
+  const { userId, username } = useAuthContext();
   const [fullName, setFullName] = useState(username ? `@${username}` : 'Administrador');
   const [initials, setInitials] = useState(username?.[0]?.toUpperCase() ?? 'A');
 
   useEffect(() => {
-    const userId = getCurrentUserId();
     if (!userId) return;
 
     (async () => {
@@ -27,7 +26,7 @@ export const useAdminProfile = () => {
         // Si falla, se queda con el respaldo (@username) armado más arriba.
       }
     })();
-  }, []);
+  }, [userId]);
 
   return { fullName, initials };
 };

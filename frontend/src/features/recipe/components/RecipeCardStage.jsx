@@ -4,31 +4,30 @@
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
 import { RECIPE_DIFFICULTIES, RECIPE_PLACEHOLDER_IMAGE } from '../models/recipeModel.js';
 
-const MAX_COVER_IMAGE_BYTES = 5 * 1024 * 1024;
-
 // Recibe: values ({ name, description, preparationTime, difficulty, categoryId,
-// coverImagePreview }), categories (para el selector), authorUsername (solo
-// lectura, sale del usuario logueado), onFieldChange (campo, valor), onCoverImageSelect
-// (recibe el File elegido), onContinue (botón "confirmar y continuar").
+// coverImagePreview, coverImageLink }), categories (para el selector), authorUsername
+// (solo lectura, sale del usuario logueado), onFieldChange (campo, valor),
+// onCoverImageSelect (recibe el File elegido), onCoverImageLinkChange (recibe el link
+// pegado), coverImageError (mensaje de error de la foto, o ''), isProcessingImage
+// (true mientras se comprime la foto) y onContinue (botón "confirmar y continuar").
 function RecipeCardStage({
   values,
   categories,
   authorUsername,
   onFieldChange,
   onCoverImageSelect,
+  onCoverImageLinkChange,
+  coverImageError,
+  isProcessingImage,
   onContinue,
 }) {
   const previewCategoryName = categories.find((c) => String(c.id) === values.categoryId)?.name;
 
   const handleCoverImageChange = (event) => {
     const file = event.target.files?.[0];
-    if (!file) return;
-    if (file.size > MAX_COVER_IMAGE_BYTES) {
-      window.alert('La foto no puede superar los 5 MB.');
-      event.target.value = '';
-      return;
-    }
-    onCoverImageSelect(file);
+    // Se limpia el input para que elegir de nuevo el mismo archivo vuelva a disparar onChange.
+    event.target.value = '';
+    if (file) onCoverImageSelect(file);
   };
 
   return (
@@ -75,10 +74,28 @@ function RecipeCardStage({
           <label>Fotografía de portada</label>
           <label className="RecipeCardStage-dropzone" htmlFor="recf-cover">
             <span className="material-symbols-outlined">cloud_upload</span>
-            <p><span>Subí una foto</span> o arrastrala acá</p>
-            <span className="RecipeCardStage-dropzoneHint">JPG, PNG o WEBP (máx. 5 MB)</span>
-            <input id="recf-cover" type="file" accept="image/*" onChange={handleCoverImageChange} />
+            <p><span>{isProcessingImage ? 'Procesando foto...' : 'Subí una foto'}</span> desde tu dispositivo</p>
+            <span className="RecipeCardStage-dropzoneHint">JPG, PNG o WEBP (se optimiza automáticamente)</span>
+            <input
+              id="recf-cover"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleCoverImageChange}
+              disabled={isProcessingImage}
+            />
           </label>
+        </div>
+
+        <div className="RecipeCardStage-field">
+          <label htmlFor="recf-cover-link">…o pegá el link de una imagen</label>
+          <input
+            id="recf-cover-link"
+            type="url"
+            value={values.coverImageLink}
+            onChange={(e) => onCoverImageLinkChange(e.target.value)}
+            placeholder="https://..."
+          />
+          {coverImageError && <p className="RecipeCardStage-error">{coverImageError}</p>}
         </div>
 
         <div className="RecipeCardStage-field">

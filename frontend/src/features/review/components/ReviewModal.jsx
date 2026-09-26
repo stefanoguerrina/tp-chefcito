@@ -6,7 +6,7 @@ import { useState } from 'react';
 import StarPicker from './StarPicker.jsx';
 import { createReviewPayload } from '../models/reviewModel.js';
 import { createReview } from '../services/reviewService.js';
-import { RECIPE_PLACEHOLDER_IMAGE } from '../../recipe/models/recipeModel.js';
+import { getRecipeImageUrl } from '../../recipe/models/recipeModel.js';
 import './_review-modal.scss';
 
 // Recibe:
@@ -21,8 +21,7 @@ function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const mainImage = recipe.image?.find((img) => img.isMain) ?? recipe.image?.[0] ?? null;
-  const imageUrl = mainImage?.imageUrl ?? RECIPE_PLACEHOLDER_IMAGE;
+  const imageUrl = getRecipeImageUrl(recipe);
   const authorName = recipe.user?.username ?? 'Sin autor';
   const timeText = recipe.preparationTime ? `${recipe.preparationTime} min` : '—';
   const difficultyText = recipe.difficulty ?? 'Sin definir';

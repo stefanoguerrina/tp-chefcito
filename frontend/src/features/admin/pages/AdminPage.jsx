@@ -1,14 +1,13 @@
 // Página raíz del panel de administración: layout separado de la home de usuario común
 // (sidebar + topbar propios), con el dashboard de métricas como landing y acceso a los
 // paneles de gestión que ya existían (Usuarios, Roles, Ingredientes, Cat. de ingrediente).
-// Solo se llega acá si isAdmin es true (gate hecho en App.jsx).
-import { useState } from 'react';
+// La sección activa sale de la URL (/admin/:section), así se puede recargar o volver
+// atrás sin perderla. Solo se llega acá con rol admin (ProtectedRoute en App.jsx).
+import { useParams, useNavigate } from 'react-router-dom';
 import AdminSidebar from '../components/AdminSidebar.jsx';
 import AdminTopbar from '../components/AdminTopbar.jsx';
 import AdminMetricCard from '../components/AdminMetricCard.jsx';
-import AdminStatTile from '../components/AdminStatTile.jsx';
-import AdminBarChart from '../components/AdminBarChart.jsx';
-import AdminRankingList from '../components/AdminRankingList.jsx';
+import AdminDashboardSummary from '../components/AdminDashboardSummary.jsx';
 import AdminUsersTable from '../components/AdminUsersTable.jsx';
 import AdminIngredientsTable from '../components/AdminIngredientsTable.jsx';
 import AdminIngredientCategoriesTable from '../components/AdminIngredientCategoriesTable.jsx';
@@ -17,18 +16,27 @@ import AdminCategoryDistribution from '../components/AdminCategoryDistribution.j
 import AdminTopIngredientsGrid from '../components/AdminTopIngredientsGrid.jsx';
 import SearchUsersForm from '../../user/components/SearchUsersForm.jsx';
 import RolePage from '../../role/pages/RolePage.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
 import { useAdminDashboard } from '../hooks/useAdminDashboard.js';
 import { useAdminIngredients } from '../hooks/useAdminIngredients.js';
 import { useAdminIngredientCategories } from '../hooks/useAdminIngredientCategories.js';
 import { useAdminRecipeCategories } from '../hooks/useAdminRecipeCategories.js';
 import { useAdminProfile } from '../hooks/useAdminProfile.js';
 import { ADMIN_SECTIONS, ADMIN_SECTION_HEADERS } from '../models/adminSectionsModel.js';
+import { useAuthContext } from '../../../app/AuthContext.jsx';
 import { formatCategoriesCount, formatIngredientsCount } from '../models/adminIngredientsModel.js';
 import '../styles/_admin-page.scss';
 
-// Recibe: onLogout (callback de App.jsx que cierra la sesión y vuelve al login).
-function AdminPage({ onLogout }) {
-  const [activeSection, setActiveSection] = useState(ADMIN_SECTIONS.dashboard);
+function AdminPage() {
+  const navigate = useNavigate();
+  const { logout } = useAuthContext();
+  const { section } = useParams();
+  // Una sección desconocida en la URL cae en el dashboard.
+  const activeSection = Object.values(ADMIN_SECTIONS).includes(section) ? section : ADMIN_SECTIONS.dashboard;
+
+  // Cambiar de sección es navegar: el dashboard vive en /admin y el resto en /admin/:section.
+  const setActiveSection = (nextSection) =>
+    navigate(nextSection === ADMIN_SECTIONS.dashboard ? '/admin' : `/admin/${nextSection}`);
   const {
     metrics,
     userRows,
@@ -109,7 +117,7 @@ function AdminPage({ onLogout }) {
         onSelectSection={setActiveSection}
         adminName={adminName}
         adminInitials={adminInitials}
-        onLogout={onLogout}
+        onLogout={logout}
       />
 
       <div className="AdminPage-content">
@@ -123,69 +131,12 @@ function AdminPage({ onLogout }) {
         <main className="AdminPage-main">
           {activeSection === ADMIN_SECTIONS.dashboard && (
             <>
-              {error && <p className="AdminPage-error">⚠ {error}</p>}
+              {error && <ErrorState message={error} onRetry={handleRefresh} />}
               {isLoading && !metrics && <p className="AdminPage-status">Cargando panel...</p>}
 
               {metrics && (
                 <>
-                  <section className="AdminPage-metricsGrid">
-                    <AdminMetricCard
-                      label="Usuarios registrados"
-                      value={metrics.activeUsersCount + metrics.inactiveUsersCount}
-                      hint={`${metrics.activeUsersCount} activos · ${metrics.inactiveUsersCount} dados de baja`}
-                      footerTitle="Creadores con más recetas"
-                      variant="primary"
-                    >
-                      <AdminRankingList
-                        items={metrics.topCreators}
-                        unitLabel="recetas"
-                        unitLabelSingular="receta"
-                        emptyMessage="Todavía nadie publicó una receta."
-                      />
-                    </AdminMetricCard>
-
-                    <AdminMetricCard
-                      label="Recetas publicadas"
-                      value={metrics.recipesCount}
-                      unit="recetas"
-                      hint={`${metrics.recipesThisWeekCount} nuevas en los últimos 7 días`}
-                      badge="Recetas"
-                      footerTitle="Últimos 7 días"
-                      variant="secondary"
-                    >
-                      <AdminBarChart
-                        data={metrics.recipesLastWeek}
-                        emptyMessage="No hubo recetas nuevas esta semana."
-                      />
-                    </AdminMetricCard>
-                  </section>
-
-                  <section className="AdminPage-statsGrid">
-                    <AdminStatTile
-                      icon="grocery"
-                      label="Ingredientes cargados"
-                      value={metrics.ingredientsCount}
-                      onClick={() => setActiveSection(ADMIN_SECTIONS.ingredients)}
-                    />
-                    <AdminStatTile
-                      icon="category"
-                      label="Categorías de ingrediente"
-                      value={metrics.ingredientCategoriesCount}
-                      onClick={() => setActiveSection(ADMIN_SECTIONS.ingredientCategories)}
-                    />
-                    <AdminStatTile
-                      icon="menu_book"
-                      label="Categorías de receta"
-                      value={metrics.recipeCategoriesCount}
-                      onClick={() => setActiveSection(ADMIN_SECTIONS.recipeCategories)}
-                    />
-                    <AdminStatTile
-                      icon="shield_person"
-                      label="Roles definidos"
-                      value={metrics.rolesCount}
-                      onClick={() => setActiveSection(ADMIN_SECTIONS.roles)}
-                    />
-                  </section>
+                  <AdminDashboardSummary metrics={metrics} onSelectSection={setActiveSection} />
 
                   <AdminUsersTable
                     rows={userRows}
@@ -207,7 +158,7 @@ function AdminPage({ onLogout }) {
 
           {activeSection === ADMIN_SECTIONS.ingredients && (
             <>
-              {ingredientsError && <p className="AdminPage-error">⚠ {ingredientsError}</p>}
+              {ingredientsError && <ErrorState message={ingredientsError} onRetry={handleRefreshIngredients} />}
               {isLoadingIngredients && ingredients.length === 0 && (
                 <p className="AdminPage-status">Cargando ingredientes...</p>
               )}
@@ -249,7 +200,7 @@ function AdminPage({ onLogout }) {
 
           {activeSection === ADMIN_SECTIONS.ingredientCategories && (
             <>
-              {categoriesError && <p className="AdminPage-error">⚠ {categoriesError}</p>}
+              {categoriesError && <ErrorState message={categoriesError} onRetry={handleRefreshCategories} />}
               {isLoadingCategories && adminCategories.length === 0 && (
                 <p className="AdminPage-status">Cargando categorías...</p>
               )}
@@ -289,7 +240,7 @@ function AdminPage({ onLogout }) {
 
           {activeSection === ADMIN_SECTIONS.recipeCategories && (
             <>
-              {recipeCategoriesError && <p className="AdminPage-error">⚠ {recipeCategoriesError}</p>}
+              {recipeCategoriesError && <ErrorState message={recipeCategoriesError} onRetry={handleRefreshRecipeCategories} />}
               {isLoadingRecipeCategories && recipeCategories.length === 0 && (
                 <p className="AdminPage-status">Cargando categorías...</p>
               )}

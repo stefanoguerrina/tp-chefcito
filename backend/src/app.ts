@@ -4,6 +4,7 @@ import cors from "cors";
 import { apiRouter } from "./routes/apiRouter.js";
 import path from 'path';
 import dotenv from 'dotenv';
+import { UPLOADS_DIR, UPLOADS_PUBLIC_PATH } from './core/fileStorage.js';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -20,10 +21,12 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:5174'
 ];
 app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
-// Límite subido de 100kb (default de Express) a 10mb: las imágenes de receta
-// todavía se envían como data URL en el body (no hay almacenamiento de
-// archivos propio), y una foto de unos pocos MB en base64 supera el default.
-app.use(express.json({ limit: '10mb' }));
+// Límite del body JSON: 1mb sobra para cualquier formulario. Las imágenes ya no viajan en
+// el JSON: se suben como archivo (multipart) y las procesa multer (ver features/image).
+app.use(express.json({ limit: '1mb' }));
+
+// Sirve las imágenes subidas (backend/uploads) en /uploads, ej. /uploads/recipes/x.webp.
+app.use(UPLOADS_PUBLIC_PATH, express.static(UPLOADS_DIR));
 
 app.get("/", (req, res) => {
     res.send("You reached the App!");

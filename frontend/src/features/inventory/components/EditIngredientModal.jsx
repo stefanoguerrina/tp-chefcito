@@ -1,7 +1,7 @@
 // Modal para actualizar la cantidad de un ingrediente del inventario.
 // Muestra el nombre como texto, un stepper (+/-) con input editable central,
 // y la unidad de medida como texto debajo del stepper.
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import '../styles/_edit-ingredient-modal.scss';
 
 // Recibe:
@@ -9,21 +9,10 @@ import '../styles/_edit-ingredient-modal.scss';
 //   onConfirm(ingredientId, { availableQuantity, unitOfMeasure }): callback al guardar.
 //   onClose: callback al cancelar.
 function EditIngredientModal({ item, onConfirm, onClose }) {
-  const [quantity, setQuantity] = useState('');
+  // Arranca con la cantidad actual del ítem. El padre monta el modal solo cuando hay
+  // un ítem abierto (y con key por ítem), así que no hace falta sincronizarlo en un efecto.
+  const [quantity, setQuantity] = useState(String(item.availableQuantity ?? 0));
   const [qtyError, setQtyError] = useState('');
-  const inputRef = useRef(null);
-
-  // Pre-llena la cantidad al abrir el modal (o cuando cambia el ítem)
-  useEffect(() => {
-    if (item) {
-      setQuantity(String(item.availableQuantity ?? 0));
-      setQtyError('');
-      // Foco automático en el input al abrir
-      setTimeout(() => inputRef.current?.focus(), 80);
-    }
-  }, [item]);
-
-  if (!item) return null;
 
   const unit = item.unitOfMeasure ?? item.ingredientBaseUnit ?? '';
 
@@ -106,7 +95,7 @@ function EditIngredientModal({ item, onConfirm, onClose }) {
               </button>
 
               <input
-                ref={inputRef}
+                autoFocus
                 id="edit-modal-qty"
                 type="number"
                 className="EditModal-qtyInput"

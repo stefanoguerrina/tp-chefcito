@@ -7,13 +7,16 @@ import AddIngredientForm from '../components/AddIngredientForm.jsx';
 import InventoryList from '../components/InventoryList.jsx';
 import EditIngredientModal from '../components/EditIngredientModal.jsx';
 import DuplicateIngredientModal from '../components/DuplicateIngredientModal.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
 import '../styles/_inventory-page.scss';
 
 function InventoryPage() {
   const {
     items,
     isLoading,
-    error,
+    loadError,
+    actionError,
     allIngredients,
     ingredientsLoading,
     duplicateModal,
@@ -21,6 +24,7 @@ function InventoryPage() {
     handleUpdate,
     handleRemove,
     handleCloseDuplicateModal,
+    handleCloseActionError,
     reload,
   } = useInventory();
 
@@ -46,27 +50,29 @@ function InventoryPage() {
     return items.filter((it) => it.ingredientName.toLowerCase().includes(q));
   }, [items, searchQuery]);
 
-  // Wrapper de handleUpdate que además muestra el toast
+  // Wrappers de las acciones del hook: el toast de éxito solo se muestra si la acción
+  // salió bien (si falló, el hook ya dejó el error para mostrarlo en el modal de aviso).
   const handleUpdateWithToast = async (ingredientId, data) => {
-    await handleUpdate(ingredientId, data);
-    showToast('Inventario actualizado.');
+    const ok = await handleUpdate(ingredientId, data);
     setEditItem(null);
+    if (ok) showToast('Inventario actualizado.');
+    return ok;
   };
 
-  // Wrapper de handleRemove con toast
   const handleRemoveWithToast = async (ingredientId) => {
     const item = items.find((it) => it.idIngredient === ingredientId);
-    await handleRemove(ingredientId);
-    showToast(`${item?.ingredientName ?? 'Ingrediente'} eliminado de la despensa.`);
+    const ok = await handleRemove(ingredientId);
+    if (ok) showToast(`${item?.ingredientName ?? 'Ingrediente'} eliminado de la despensa.`);
   };
 
-  // Wrapper de handleAdd con toast y control del panel
+  // Si el ingrediente ya estaba, el hook abre el modal de duplicado y el toast se
+  // muestra recién al confirmar desde ese modal.
   const handleAddWithToast = async (ingredientId, quantity, unit) => {
-    await handleAdd(ingredientId, quantity, unit);
-    // Si no abrió el modal de duplicado, cierra el panel y muestra toast
-    // (si abrió el modal, el toast lo mostramos al confirmar desde ese modal)
-    showToast('Ingrediente agregado al inventario.');
-    setShowAddPanel(false);
+    const ok = await handleAdd(ingredientId, quantity, unit);
+    if (ok) {
+      showToast('Ingrediente agregado al inventario.');
+      setShowAddPanel(false);
+    }
   };
 
   const handleEditOpen = (item) => setEditItem(item);
@@ -114,9 +120,13 @@ function InventoryPage() {
         </div>
       </header>
 
-      {/* ---- Alerta de error global ---- */}
-      {error && (
-        <div className="InventoryPage-alert InventoryPage-alert--error">⚠ {error}</div>
+      {/* ---- Aviso cuando falla una acción (agregar, editar, quitar) ---- */}
+      {actionError && (
+        <AlertModal
+          title="No se pudo actualizar tu despensa"
+          message={actionError}
+          onClose={handleCloseActionError}
+        />
       )}
 
       {/* ---- Panel de agregar (colapsable) ---- */}
@@ -158,6 +168,8 @@ function InventoryPage() {
       {/* ---- Contenido principal ---- */}
       {isLoading ? (
         <p className="InventoryPage-loading">Cargando tu inventario…</p>
+      ) : loadError ? (
+        <ErrorState message={loadError} onRetry={reload} />
       ) : (
         <>
           {/* Sin resultados de búsqueda */}
@@ -198,7 +210,7 @@ function InventoryPage() {
       )}
 
       {/* ---- Banner de sugerencias (placeholder hasta T-5.1 IA) ---- */}
-      {!isLoading && items.length > 0 && (
+      {!isLoading && !loadError && items.length > 0 && (
         <div className="InventoryBanner">
           <div className="InventoryBanner-body">
             <div className="InventoryBanner-icon">
@@ -218,21 +230,27 @@ function InventoryPage() {
       )}
 
       {/* ---- Modal de edición completa ---- */}
-      <EditIngredientModal
-        item={editItem}
-        onConfirm={handleUpdateWithToast}
-        onClose={handleEditClose}
-      />
+      {editItem && (
+        <EditIngredientModal
+          key={editItem.idIngredient}
+          item={editItem}
+          onConfirm={handleUpdateWithToast}
+          onClose={handleEditClose}
+        />
+      )}
 
       {/* ---- Modal de ingrediente duplicado (POST → 409) ---- */}
-      <DuplicateIngredientModal
-        modal={duplicateModal}
-        onConfirm={async (id, data) => {
-          await handleUpdateWithToast(id, data);
-          handleCloseDuplicateModal();
-        }}
-        onClose={handleCloseDuplicateModal}
-      />
+      {duplicateModal && (
+        <DuplicateIngredientModal
+          modal={duplicateModal}
+          onConfirm={async (id, data) => {
+            await handleUpdateWithToast(id, data);
+            handleCloseDuplicateModal();
+            setShowAddPanel(false);
+          }}
+          onClose={handleCloseDuplicateModal}
+        />
+      )}
 
       {/* ---- Toast de notificación ---- */}
       <div className={`InventoryToast${toast.visible ? ' InventoryToast--visible' : ''}`}>

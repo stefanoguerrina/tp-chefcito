@@ -8,6 +8,10 @@ import {
   updateNutritionalValue,
   deleteNutritionalValue,
 } from '../../nutritionalValue/services/nutritionalValueService.js';
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
+import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
 import '../styles/_nutritional-value-panel.scss';
 
 // Formulario para crear o editar un valor nutricional.
@@ -109,26 +113,30 @@ function NutritionalValuePanel({ idIngredient }) {
   const [formMode, setFormMode] = useState(null);
   const [editingValue, setEditingValue] = useState(null);
   const [actionError, setActionError] = useState('');
+  // Valor nutricional que se pidió eliminar (se confirma en un modal) o null.
+  const [valueToDelete, setValueToDelete] = useState(null);
 
-  const loadValues = async () => {
+  // Pide los valores del ingrediente (un 404 = todavía no tiene ninguno).
+  // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
+  // llamar desde el useEffect sin renders en cascada.
+  const loadValues = () =>
+    fetchListOrEmpty(() => getNutritionalValuesByIngredient(idIngredient))
+      .then((data) => {
+        setValues(data);
+        setFetchError('');
+      })
+      .catch((err) => setFetchError(err.message))
+      .finally(() => setIsLoading(false));
+
+  // Reintento manual después de un error de carga.
+  const handleRetry = () => {
     setIsLoading(true);
-    setFetchError('');
-    try {
-      const data = await getNutritionalValuesByIngredient(idIngredient);
-      setValues(data);
-    } catch (err) {
-      if (err.message.includes('No se encontraron') || err.message.includes('404')) {
-        setValues([]);
-      } else {
-        setFetchError(err.message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    loadValues();
   };
 
   useEffect(() => {
     loadValues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idIngredient]);
 
   const handleCreate = async (data) => {
@@ -140,7 +148,6 @@ function NutritionalValuePanel({ idIngredient }) {
   const handleEdit = (nv) => {
     setEditingValue(nv);
     setFormMode('edit');
-    setActionError('');
   };
 
   const handleUpdate = async (data) => {
@@ -150,10 +157,10 @@ function NutritionalValuePanel({ idIngredient }) {
     await loadValues();
   };
 
-  const handleDelete = async (nv) => {
-    const confirmed = window.confirm(`¿Eliminar el valor nutricional "${nv.name}"?`);
-    if (!confirmed) return;
-    setActionError('');
+  // Elimina el valor confirmado en el modal. Si falla, se avisa en un modal.
+  const handleConfirmDelete = async () => {
+    const nv = valueToDelete;
+    setValueToDelete(null);
     try {
       await deleteNutritionalValue(idIngredient, nv.num);
       await loadValues();
@@ -167,7 +174,7 @@ function NutritionalValuePanel({ idIngredient }) {
       <h4 className="NutritionalValuePanel-title">Valores nutricionales</h4>
 
       {isLoading && <p className="NutritionalValuePanel-loading">Cargando...</p>}
-      {fetchError && <p className="NutritionalValuePanel-error">⚠ {fetchError}</p>}
+      {fetchError && <ErrorState message={fetchError} onRetry={handleRetry} />}
 
       {!isLoading && !fetchError && values.length === 0 && (
         <p className="NutritionalValuePanel-empty">Sin valores nutricionales cargados.</p>
@@ -194,7 +201,7 @@ function NutritionalValuePanel({ idIngredient }) {
                 <button
                   type="button"
                   className="NutritionalValuePanel-button NutritionalValuePanel-button--danger"
-                  onClick={() => handleDelete(nv)}
+                  onClick={() => setValueToDelete(nv)}
                 >
                   Eliminar
                 </button>
@@ -204,13 +211,30 @@ function NutritionalValuePanel({ idIngredient }) {
         </ul>
       )}
 
-      {actionError && <p className="NutritionalValuePanel-error">⚠ {actionError}</p>}
+      {valueToDelete && (
+        <ConfirmModal
+          title="Eliminar valor nutricional"
+          message={`¿Eliminar el valor nutricional "${valueToDelete.name}"?`}
+          confirmLabel="Eliminar"
+          danger
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setValueToDelete(null)}
+        />
+      )}
+
+      {actionError && (
+        <AlertModal
+          title="No se pudo eliminar"
+          message={actionError}
+          onClose={() => setActionError('')}
+        />
+      )}
 
       {formMode === null && (
         <button
           type="button"
           className="NutritionalValuePanel-button NutritionalValuePanel-button--add"
-          onClick={() => { setFormMode('create'); setActionError(''); }}
+          onClick={() => setFormMode('create')}
         >
           + Agregar valor nutricional
         </button>

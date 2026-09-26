@@ -16,6 +16,14 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister }) => {
     const [showPassword, setShowPassword] = useState(false);
     const handleToggleShowPassword = () => setShowPassword((prev) => !prev);
 
+    // Los inputs arrancan como readOnly para que el navegador no los autocomplete solo
+    // al abrir el modal (Chrome rellena de una los campos con autoComplete="username"/
+    // "current-password" apenas se montan, sin que el usuario haga nada). Se sacan al
+    // primer focus: ahí sí es el usuario quien decide tocar el campo y, si quiere, elegir
+    // una credencial guardada del desplegable nativo del navegador.
+    const [autofillLocked, setAutofillLocked] = useState(true);
+    const handleUnlockAutofill = () => setAutofillLocked(false);
+
     return (
         <div className="AuthModal-overlay" onClick={onClose}>
             <div
@@ -50,6 +58,8 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister }) => {
                         name="emailLogIn"
                         placeholder="Email o usuario"
                         autoComplete="username"
+                        readOnly={autofillLocked}
+                        onFocus={handleUnlockAutofill}
                         value={form.email}
                         onChange={(event) => handleInputChange(event, "email")}
                     />
@@ -62,6 +72,8 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister }) => {
                             id="passwordLogIn"
                             name="passwordLogIn"
                             autoComplete="current-password"
+                            readOnly={autofillLocked}
+                            onFocus={handleUnlockAutofill}
                             value={form.password}
                             onChange={(event) => handleInputChange(event, "password")}
                         />

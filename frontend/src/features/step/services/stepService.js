@@ -4,16 +4,9 @@
 // disponible es "reemplazar todo el set" (PUT), no un CRUD por paso individual.
 import { apiFetch } from '../../../shared/utils/apiFetch.js';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 // Trae los pasos de una receta, ya ordenados (lectura pública).
 export const getStepsByRecipe = async (idRecipe) => {
-  const response = await fetch(`${API_BASE_URL}/recipes/${idRecipe}/steps`);
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Error del servidor (${response.status}).`);
-  }
-  return await response.json();
+  return await apiFetch(`/recipes/${idRecipe}/steps`);
 };
 
 // Reemplaza por completo los pasos de una receta (requiere ser el dueño o admin).

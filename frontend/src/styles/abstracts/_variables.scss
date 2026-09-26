@@ -38,6 +38,16 @@ $color-outline-variant: #e1bfb6;
 
 $color-error: #ba1a1a;
 $color-on-error: #ffffff;
+$color-on-error-container: #93000a;
+
+// Tonos propios de la sección Inventario ("Mi despensa").
+$color-pantry-cream: #faf2eb;
+$color-pantry-lime: #a7c957;
+$color-pantry-lime-light: #f0f5d8;
+$color-pantry-green: #3f7d58;
+$color-pantry-warning: #ed8936;
+$color-pantry-muted: #9c8c80;
+$color-pantry-muted-light: #d5c9bd;
 
 $color-inverse-surface: #33302b;
 $color-inverse-on-surface: #f7f0e8;
@@ -69,3 +79,5 @@ $shadow-level-2: 0 8px 24px rgba(31, 27, 22, 0.12);
 // Muestra ícono + label de cada link (mismo patrón que AdminSidebar), por eso es más
 // ancha que un rail de solo íconos.
 $layout-sidebar-width: 232px;
+// Alto de la barra de navegación inferior que reemplaza a la sidebar en mobile.
+$layout-bottom-nav-height: 64px;

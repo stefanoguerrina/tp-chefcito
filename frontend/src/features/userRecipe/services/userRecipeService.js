@@ -2,6 +2,7 @@
 // consultar, actualizar y quitar recetas guardadas. Todas las rutas requieren
 // autenticación (apiFetch agrega el token JWT automáticamente).
 import { apiFetch } from '../../../shared/utils/apiFetch.js';
+import { ApiError } from '../../../shared/utils/ApiError.js';
 import { savedRecipeFromApi } from '../models/userRecipeModel.js';
 
 // Devuelve el estado de guardado del usuario autenticado para una receta, o null
@@ -11,7 +12,7 @@ export const getUserRecipe = async (idRecipe) => {
   try {
     return await apiFetch(`/recipes/${idRecipe}/save`);
   } catch (err) {
-    if (err.message.includes('No guardaste')) return null;
+    if (err instanceof ApiError && err.isNotFound) return null;
     throw err;
   }
 };

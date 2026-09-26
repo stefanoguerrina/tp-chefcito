@@ -1,32 +1,18 @@
 // Servicio de recetas: centraliza las llamadas HTTP al backend.
-// Usa apiFetch para rutas autenticadas (crear/editar/borrar) y fetch directo para
-// lecturas públicas (cualquiera puede ver recetas, solo el dueño o un admin puede
-// modificarlas o eliminarlas).
+// Las lecturas son públicas (cualquiera puede ver recetas); solo el dueño o un admin
+// puede modificarlas o eliminarlas. Todo pasa por apiFetch, que normaliza los errores.
 import { apiFetch } from '../../../shared/utils/apiFetch.js';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Trae todas las recetas con sus categorías, creador e imágenes (lectura pública).
 // Recibe: userId opcional para filtrar solo las recetas de ese usuario.
 // Devuelve el array de recetas o lanza un Error con el mensaje del backend.
 export const getAllRecipes = async (userId) => {
-  const url = userId ? `${API_BASE_URL}/recipes?userId=${userId}` : `${API_BASE_URL}/recipes`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Error del servidor (${response.status}).`);
-  }
-  return await response.json();
+  return await apiFetch(userId ? `/recipes?userId=${userId}` : '/recipes');
 };
 
 // Obtiene una receta por ID (lectura pública).
 export const getRecipeById = async (id) => {
-  const response = await fetch(`${API_BASE_URL}/recipes/${id}`);
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Error del servidor (${response.status}).`);
-  }
-  return await response.json();
+  return await apiFetch(`/recipes/${id}`);
 };
 
 // Crea una nueva receta para el usuario autenticado (requiere token).

@@ -5,6 +5,7 @@
 // pero solo su dueño o un admin puede modificarlas o eliminarlas.
 import { recipeRepository } from '../repository/recipeRepository.js';
 import type { CreateRecipeData, UpdateRecipeData } from '../models/recipeModel.js';
+import { deleteLocalUpload } from '../../../core/fileStorage.js';
 
 // Devuelve todas las recetas con sus categorías, creador e imágenes.
 export async function getAllRecipes() {
@@ -82,5 +83,9 @@ export async function deleteRecipe(
   }
 
   await recipeRepository.delete(id);
+
+  // Las filas de image se borran en cascada, pero los archivos subidos quedan en disco:
+  // se limpian acá para no acumular fotos de recetas que ya no existen.
+  await Promise.all(existing.image.map((img) => deleteLocalUpload(img.imageUrl)));
   return { ok: true };
 }

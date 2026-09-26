@@ -68,10 +68,9 @@ model donation {
 model image {
   idRecipe Int
   id       Int
-  // LongText en vez de VarChar(255): todavía no hay almacenamiento de archivos
-  // (bucket/disco) en el proyecto, así que por ahora se guarda acá la imagen
-  // como data URL (base64). LongText soporta hasta 4GB, de sobra para eso.
-  imageUrl String   @db.LongText
+  // Solo la ruta del archivo subido (ej. "/uploads/recipes/x.webp") o un link externo
+  // http(s). El archivo en sí vive en backend/uploads/, nunca en la base de datos.
+  imageUrl String   @db.VarChar(500)
   isMain   Boolean? @default(false)
   recipe   recipe   @relation(fields: [idRecipe], references: [id], onDelete: Cascade, map: "fk_image_recipe")
 

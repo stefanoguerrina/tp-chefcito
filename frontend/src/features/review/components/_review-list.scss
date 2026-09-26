@@ -3,12 +3,12 @@
 @use '../../../styles/abstracts' as *;
 
 .ReviewList {
-  padding: $spacing-lg $spacing-xl;
+  padding: $spacing-md;
   border-top: 1px solid $color-outline-variant;
   text-align: left;
 
-  @media (max-width: 576px) {
-    padding: $spacing-md $spacing-md;
+  @include respond-to(sm) {
+    padding: $spacing-lg $spacing-xl;
   }
 
   &-header {
@@ -74,13 +74,6 @@
   }
 
   &-error,
-  &-deleteError {
-    font-family: $font-body;
-    font-size: 13px;
-    color: $color-error;
-    margin: 0 0 $spacing-sm;
-  }
-
   &-list {
     list-style: none;
     margin: 0;

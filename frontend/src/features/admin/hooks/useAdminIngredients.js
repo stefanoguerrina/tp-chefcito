@@ -16,17 +16,7 @@ import {
   buildCategoryDistribution,
   buildCategoryColorMap,
 } from '../models/adminIngredientsModel.js';
-
-// Los listados del backend responden 404 ("No se encontraron ...") cuando todavía no hay
-// ningún registro cargado. Acá eso no es un error sino una lista vacía.
-const fetchListOrEmpty = async (fetchList) => {
-  try {
-    return await fetchList();
-  } catch (error) {
-    if (error.message.includes('No se encontraron')) return [];
-    throw error;
-  }
-};
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 
 export const useAdminIngredients = () => {
   const [ingredients, setIngredients] = useState([]);
@@ -38,27 +28,31 @@ export const useAdminIngredients = () => {
   const [error, setError] = useState('');
 
   // Pide en paralelo ingredientes, categorías (para el selector del formulario) y recetas
-  // (para calcular cuántas veces se usa cada ingrediente).
-  const fetchIngredients = async () => {
+  // (para calcular cuántas veces se usa cada ingrediente) y guarda el resultado.
+  // El estado se actualiza solo dentro de los callbacks de la promesa (nunca de forma
+  // sincrónica), así se puede llamar desde el useEffect sin renders en cascada.
+  const fetchIngredients = () =>
+    Promise.all([
+      fetchListOrEmpty(() => getAllIngredients()),
+      fetchListOrEmpty(() => getAllIngredientCategories()),
+      fetchListOrEmpty(() => getAllRecipes()),
+    ])
+      .then(([ingredientsData, categoriesData, recipesData]) => {
+        setIngredients(ingredientsData);
+        setCategories(categoriesData);
+        setUsageCountByIngredient(countIngredientUsage(recipesData));
+        setError('');
+      })
+      .catch((err) => setError(err.message || 'No pudimos cargar los ingredientes.'))
+      .finally(() => setIsLoading(false));
+
+  // Recarga manual (botón "Actualizar"): muestra el loading y vuelve a pedir todo.
+  const handleRefresh = async () => {
     setIsLoading(true);
-    setError('');
-    try {
-      const [ingredientsData, categoriesData, recipesData] = await Promise.all([
-        fetchListOrEmpty(() => getAllIngredients()),
-        fetchListOrEmpty(() => getAllIngredientCategories()),
-        fetchListOrEmpty(() => getAllRecipes()),
-      ]);
-      setIngredients(ingredientsData);
-      setCategories(categoriesData);
-      setUsageCountByIngredient(countIngredientUsage(recipesData));
-    } catch (err) {
-      console.error('[useAdminIngredients] Error al cargar ingredientes:', err);
-      setError(err.message || 'No pudimos cargar los ingredientes.');
-    } finally {
-      setIsLoading(false);
-    }
+    await fetchIngredients();
   };
 
+  // Carga inicial al montar (isLoading ya arranca en true).
   useEffect(() => {
     fetchIngredients();
   }, []);
@@ -114,7 +108,7 @@ export const useAdminIngredients = () => {
     colorIndexByCategoryId,
     isLoading,
     error,
-    handleRefresh: fetchIngredients,
+    handleRefresh,
     handleCreateIngredient,
     handleUpdateIngredient,
     handleDeleteIngredient,

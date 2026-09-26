@@ -1,8 +1,14 @@
 // Hook personalizado que gestiona el estado de autenticación y la lógica de navegación
 // entre el formulario de login y el de registro.
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuthContext } from "../../../app/AuthContext.jsx";
+import { USER_HOME_PATH, ADMIN_HOME_PATH } from "../../../app/ProtectedRoute.jsx";
 
-export const useAuth = ({ onLoginSuccess }) => {
+export const useAuth = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { login } = useAuthContext();
 
     // Controla la visibilidad del formulario de login.
     const [showLoginForm, setShowLoginForm] = useState(false);
@@ -16,11 +22,14 @@ export const useAuth = ({ onLoginSuccess }) => {
     const handleShowLoginForm = () => setShowLoginForm(true);
     const handleHideLoginForm = () => setShowLoginForm(false);
 
-    // Procesa la respuesta del backend tras un login exitoso.
-    // Guarda el token en localStorage y avisa al componente padre (App.jsx).
+    // Procesa la respuesta del backend tras un login exitoso: abre la sesión (AuthContext
+    // guarda el token) y lleva al usuario a la página que quería ver antes de loguearse
+    // (la guarda ProtectedRoute en location.state.from) o a su inicio según su rol.
     const handleLoginSessionSubmit = (backendResponse) => {
-        localStorage.setItem('token', backendResponse.token);
-        onLoginSuccess(backendResponse.isAdmin === true);
+        const ok = login(backendResponse.token);
+        if (!ok) return false;
+        const defaultPath = backendResponse.isAdmin === true ? ADMIN_HOME_PATH : USER_HOME_PATH;
+        navigate(location.state?.from ?? defaultPath, { replace: true });
         return true;
     };
 

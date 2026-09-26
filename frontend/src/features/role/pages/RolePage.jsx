@@ -12,6 +12,8 @@ import {
 import RoleFormModal from '../components/RoleFormModal.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import '../styles/_role-page.scss';
 
 function RolePage() {
@@ -28,27 +30,26 @@ function RolePage() {
   const [deleteFailure, setDeleteFailure] = useState(null);
   const [deletingRoleId, setDeletingRoleId] = useState(null);
 
-  // Carga (o recarga) la lista de roles desde el backend.
-  const loadRoles = async () => {
+  // Carga la lista de roles desde el backend (un 404 = todavía no hay roles).
+  // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
+  // llamar desde el useEffect sin renders en cascada.
+  const fetchRoles = () =>
+    fetchListOrEmpty(() => getAllRoles())
+      .then((data) => {
+        setRoles(data);
+        setFetchError('');
+      })
+      .catch((err) => setFetchError(err.message))
+      .finally(() => setIsLoading(false));
+
+  // Recarga manual (botón "Actualizar" o "Reintentar"), mostrando el loading.
+  const loadRoles = () => {
     setIsLoading(true);
-    setFetchError('');
-    try {
-      const data = await getAllRoles();
-      setRoles(data);
-    } catch (err) {
-      // El backend devuelve 404 cuando no hay roles cargados, no es un error crítico.
-      if (err.message.includes('No se encontraron')) {
-        setRoles([]);
-      } else {
-        setFetchError(err.message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    return fetchRoles();
   };
 
   useEffect(() => {
-    loadRoles();
+    fetchRoles();
   }, []);
 
   // Crea o edita un rol según qué haya en formTarget, y refresca la lista al terminar.
@@ -111,7 +112,7 @@ function RolePage() {
         </div>
       </header>
 
-      {fetchError && <p className="RolePage-status RolePage-status--error">⚠ {fetchError}</p>}
+      {fetchError && <ErrorState message={fetchError} onRetry={loadRoles} />}
 
       {isLoading && <p className="RolePage-status">Cargando roles...</p>}
 

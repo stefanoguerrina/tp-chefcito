@@ -3,8 +3,11 @@
 // abre ReviewModal solo si el usuario está autenticado y aún no reseñó la receta.
 import { useState, useEffect } from 'react';
 import { getReviewsByRecipe, deleteReview } from '../services/reviewService.js';
-import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
+import { useAuthContext } from '../../../app/AuthContext.jsx';
 import StarRating from '../../../core/components/StarRating.jsx';
+import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
 import ReviewModal from './ReviewModal.jsx';
 import { RECIPE_PLACEHOLDER_AVATAR } from '../../recipe/models/recipeModel.js';
 import './_review-list.scss';
@@ -15,7 +18,7 @@ import './_review-list.scss';
 //   onSaveRecipe   — handler para guardar/quitar la receta (bookmark)
 //   isSaved        — boolean: estado actual de guardado
 function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
-  const currentUserId = getCurrentUserId();
+  const { userId: currentUserId } = useAuthContext();
 
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(null);
@@ -23,22 +26,28 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
   const [fetchError, setFetchError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  // Reseña propia que se pidió eliminar (se confirma en un modal) o null.
+  const [reviewToDelete, setReviewToDelete] = useState(null);
 
   // La review del usuario actual, si existe (para ocultar el botón de reseñar).
   const userReview = reviews.find((r) => r.author.id === currentUserId) ?? null;
 
-  const loadReviews = async () => {
+  // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
+  // llamar desde el useEffect sin renders en cascada.
+  const loadReviews = () =>
+    getReviewsByRecipe(recipe.id)
+      .then((data) => {
+        setReviews(data.reviews);
+        setAverageRating(data.averageRating);
+        setFetchError('');
+      })
+      .catch((err) => setFetchError(err.message))
+      .finally(() => setIsLoading(false));
+
+  // Reintento manual después de un error de carga.
+  const handleRetry = () => {
     setIsLoading(true);
-    setFetchError('');
-    try {
-      const data = await getReviewsByRecipe(recipe.id);
-      setReviews(data.reviews);
-      setAverageRating(data.averageRating);
-    } catch (err) {
-      setFetchError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+    loadReviews();
   };
 
   useEffect(() => {
@@ -51,8 +60,10 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
     loadReviews();
   };
 
-  const handleDelete = async (review) => {
-    setDeleteError('');
+  // Elimina la reseña confirmada en el modal. Si falla, se avisa en un modal.
+  const handleConfirmDelete = async () => {
+    const review = reviewToDelete;
+    setReviewToDelete(null);
     try {
       await deleteReview(review.idRecipe, review.idReview);
       loadReviews();
@@ -95,12 +106,9 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
         </button>
       )}
 
-      {/* Error al eliminar */}
-      {deleteError && <p className="ReviewList-deleteError">⚠ {deleteError}</p>}
-
       {/* Estados de carga y error */}
       {isLoading && <p className="ReviewList-loading">Cargando reseñas...</p>}
-      {fetchError && <p className="ReviewList-error">⚠ {fetchError}</p>}
+      {fetchError && <ErrorState title="No pudimos cargar las reseñas" message={fetchError} onRetry={handleRetry} />}
 
       {/* Lista de reseñas */}
       {!isLoading && !fetchError && reviews.length === 0 && (
@@ -135,7 +143,7 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
                   <button
                     type="button"
                     className="ReviewItem-deleteBtn"
-                    onClick={() => handleDelete(review)}
+                    onClick={() => setReviewToDelete(review)}
                   >
                     Eliminar mi reseña
                   </button>
@@ -144,6 +152,25 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
             );
           })}
         </ul>
+      )}
+
+      {reviewToDelete && (
+        <ConfirmModal
+          title="Eliminar reseña"
+          message="¿Querés eliminar tu reseña de esta receta?"
+          confirmLabel="Eliminar"
+          danger
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setReviewToDelete(null)}
+        />
+      )}
+
+      {deleteError && (
+        <AlertModal
+          title="No se pudo eliminar la reseña"
+          message={deleteError}
+          onClose={() => setDeleteError('')}
+        />
       )}
 
       {/* Modal de nueva reseña */}

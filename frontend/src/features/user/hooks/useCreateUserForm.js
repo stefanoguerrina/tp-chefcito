@@ -61,7 +61,6 @@ export const useCreateUserForm = ({ onUserCreated }) => {
             // Notifica al componente padre para que actualice la lista de usuarios.
             onUserCreated(newUser);
         } catch (err) {
-            console.error('[useCreateUserForm] Error al crear usuario:', err);
             setError(err.message || 'Error al crear el usuario. Intentá de nuevo.');
         } finally {
             setIsLoading(false);

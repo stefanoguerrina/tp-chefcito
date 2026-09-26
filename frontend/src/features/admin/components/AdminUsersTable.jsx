@@ -8,7 +8,7 @@ import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import AdminUserRolesModal from './AdminUserRolesModal.jsx';
 import { formatRecipesCount, formatReviewsCount } from '../models/adminDashboardModel.js';
-import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
+import { useAuthContext } from '../../../app/AuthContext.jsx';
 import '../styles/_admin-users-table.scss';
 
 // Filtros del control segmentado, con la condición que aplica cada uno y el título que
@@ -57,7 +57,7 @@ function AdminUsersTable({
   // El admin logueado no puede darse de baja a sí mismo ni cambiarse sus propios roles
   // (podría sacarse el rol de admin y quedar afuera del panel). Se compara contra esto
   // para deshabilitar su propia fila en esas dos acciones.
-  const currentAdminId = getCurrentUserId();
+  const { userId: currentAdminId } = useAuthContext();
 
   // Usuario que se está editando en este momento (raw completo) o null si el modal está cerrado.
   const [editingUser, setEditingUser] = useState(null);

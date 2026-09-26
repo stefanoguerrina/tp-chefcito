@@ -3,15 +3,19 @@
 // A diferencia de "Mis recetas", acá no hay botón de agregar: una receta guardada
 // se guarda desde su card en otro lado (feed de la home, detalle), no desde este panel.
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getSavedRecipesByUser, deleteUserRecipe } from '../services/userRecipeService.js';
-import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
+import { useAuthContext } from '../../../app/AuthContext.jsx';
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import '../styles/_saved-recipes-page.scss';
 
-// Recibe: onRecipeClick — handler que recibe el idRecipe para abrir su detalle.
-// onExploreClick — handler del CTA del estado vacío, vuelve a la home para explorar recetas.
-function SavedRecipesPage({ onRecipeClick, onExploreClick }) {
-  const currentUserId = getCurrentUserId();
+// Ruta: /guardadas. Al tocar una card abre su detalle (/recetas/:id).
+function SavedRecipesPage() {
+  const navigate = useNavigate();
+  const { userId: currentUserId } = useAuthContext();
 
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,17 +24,22 @@ function SavedRecipesPage({ onRecipeClick, onExploreClick }) {
   // Texto de búsqueda sobre las recetas ya guardadas (mismo patrón que Mis recetas/Inventario).
   const [searchQuery, setSearchQuery] = useState('');
 
-  const loadSavedRecipes = async () => {
+  // Pide las recetas guardadas (un 404 = todavía no guardó ninguna).
+  // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
+  // llamar desde el useEffect sin renders en cascada.
+  const loadSavedRecipes = () =>
+    fetchListOrEmpty(() => getSavedRecipesByUser(currentUserId))
+      .then((data) => {
+        setSavedRecipes(data);
+        setFetchError('');
+      })
+      .catch((err) => setFetchError(err.message))
+      .finally(() => setIsLoading(false));
+
+  // Reintento manual después de un error de carga.
+  const handleRetry = () => {
     setIsLoading(true);
-    setFetchError('');
-    try {
-      const data = await getSavedRecipesByUser(currentUserId);
-      setSavedRecipes(data);
-    } catch (err) {
-      setFetchError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+    loadSavedRecipes();
   };
 
   useEffect(() => {
@@ -46,7 +55,6 @@ function SavedRecipesPage({ onRecipeClick, onExploreClick }) {
   }, [savedRecipes, searchQuery]);
 
   const handleRemove = async (idRecipe) => {
-    setActionError('');
     try {
       await deleteUserRecipe(idRecipe);
       setSavedRecipes((prev) => prev.filter((item) => item.idRecipe !== idRecipe));
@@ -80,7 +88,13 @@ function SavedRecipesPage({ onRecipeClick, onExploreClick }) {
         </div>
       </header>
 
-      {actionError && <div className="SavedRecipesPage-alert">⚠ {actionError}</div>}
+      {actionError && (
+        <AlertModal
+          title="No se pudo quitar la receta"
+          message={actionError}
+          onClose={() => setActionError('')}
+        />
+      )}
 
       {savedRecipes.length > 0 && (
         <div className="SavedRecipesSearch">
@@ -109,7 +123,7 @@ function SavedRecipesPage({ onRecipeClick, onExploreClick }) {
       )}
 
       {isLoading && <p className="SavedRecipesPage-loading">Cargando recetas guardadas...</p>}
-      {fetchError && <p className="SavedRecipesPage-error">⚠ {fetchError}</p>}
+      {fetchError && <ErrorState message={fetchError} onRetry={handleRetry} />}
 
       {!isLoading && !fetchError && (
         <>
@@ -134,12 +148,10 @@ function SavedRecipesPage({ onRecipeClick, onExploreClick }) {
               <p className="SavedRecipesEmpty-text">
                 Guardá las recetas que te gusten desde su card para encontrarlas acá.
               </p>
-              {onExploreClick && (
-                <button type="button" className="SavedRecipesEmpty-cta" onClick={onExploreClick}>
-                  <span className="material-symbols-outlined">explore</span>
-                  Explorar recetas
-                </button>
-              )}
+              <button type="button" className="SavedRecipesEmpty-cta" onClick={() => navigate('/')}>
+                <span className="material-symbols-outlined">explore</span>
+                Explorar recetas
+              </button>
             </div>
           )}
 
@@ -150,7 +162,7 @@ function SavedRecipesPage({ onRecipeClick, onExploreClick }) {
                 <RecipeCard
                   key={item.idRecipe}
                   recipe={item.recipe}
-                  onClick={() => onRecipeClick?.(item.idRecipe)}
+                  onClick={() => navigate(`/recetas/${item.idRecipe}`)}
                   isSaved
                   onToggleSave={() => handleRemove(item.idRecipe)}
                 />
