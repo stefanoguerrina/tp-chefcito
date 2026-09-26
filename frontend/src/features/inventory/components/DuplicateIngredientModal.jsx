@@ -1,7 +1,7 @@
 // Modal que se muestra cuando el usuario intenta agregar un ingrediente
 // que ya está en su inventario. Le muestra la cantidad actual y le permite
 // actualizarla con un stepper o cancelar la operación.
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import '../styles/_duplicate-ingredient-modal.scss';
 
 // Recibe:
@@ -9,19 +9,10 @@ import '../styles/_duplicate-ingredient-modal.scss';
 //   - onConfirm(ingredientId, { availableQuantity, unitOfMeasure }): callback al confirmar
 //   - onClose: callback al cancelar
 function DuplicateIngredientModal({ modal, onConfirm, onClose }) {
-  const [quantity, setQuantity] = useState('0');
+  // Arranca con la cantidad que ya hay en el inventario. El padre monta el modal solo
+  // cuando hay un duplicado para mostrar, así que no hace falta sincronizarlo en un efecto.
+  const [quantity, setQuantity] = useState(String(modal.current?.availableQuantity ?? 0));
   const [error, setError] = useState('');
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    if (modal) {
-      setQuantity(String(modal.current?.availableQuantity ?? 0));
-      setError('');
-      setTimeout(() => inputRef.current?.focus(), 80);
-    }
-  }, [modal]);
-
-  if (!modal) return null;
 
   const unit = modal.current?.unitOfMeasure ?? '';
   const numValue = Number(quantity);
@@ -105,7 +96,7 @@ function DuplicateIngredientModal({ modal, onConfirm, onClose }) {
               </button>
 
               <input
-                ref={inputRef}
+                autoFocus
                 id="dup-modal-qty"
                 type="number"
                 className="DuplicateModal-qtyInput"

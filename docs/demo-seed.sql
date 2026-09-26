@@ -2,9 +2,10 @@
 -- Chefcito — Seed de datos de demo
 -- =====================================================================
 -- Para qué sirve: cargar de una sola pasada datos de prueba realistas
--- (categorías, ingredientes con valores nutricionales, usuarios, recetas
--- completas con pasos/ingredientes/imagen, guardados y reseñas) para
--- poder mostrarle al profesor la app funcionando sin cargar todo a mano.
+-- (categorías, ingredientes con valores nutricionales, usuarios, un
+-- usuario administrador, recetas completas con pasos/ingredientes/imagen,
+-- guardados y reseñas) para poder mostrarle al profesor la app
+-- funcionando sin cargar todo a mano.
 --
 -- Cómo usarlo:
 --   1. Abrí MySQL Workbench, conectate a la base de Chefcito (la misma
@@ -22,21 +23,35 @@
 -- Si eso pasa y ya tenías estos datos de una corrida anterior, no hace
 -- falta correrlo de nuevo.
 --
--- Contraseña de todos los usuarios de prueba: Chefcito123
--- (hasheada con bcrypt, igual que hace el backend al registrarse)
+-- Contraseña de TODOS los usuarios de prueba, incluido el administrador: 123456
+-- (hasheada con bcrypt — 10 salt rounds —, igual que hace el backend al registrarse)
 -- =====================================================================
 
 START TRANSACTION;
 
 -- ---------------------------------------------------------------------
--- 0. Rol "Usuario" (el backend lo crea solo al registrarse si no existe,
---    pero como acá insertamos usuarios directo por SQL, sin pasar por el
---    endpoint de registro, hace falta asegurarlo antes).
+-- 0. Roles "Usuario" y "Admin" (el backend crea "Usuario" solo al
+--    registrarse si no existe, pero como acá insertamos usuarios directo
+--    por SQL, sin pasar por el endpoint de registro, hace falta asegurar
+--    los dos antes).
+--
+--    OJO con el id del rol "Admin": backend/src/features/user/models/
+--    userModel.ts define ADMIN_ROLE_ID = 1 HARDCODEADO (el login decide
+--    isAdmin mirando si el usuario tiene el rol con id=1, no por nombre).
+--    Por eso acá se fuerza id=1 al crear "Admin": en una base recién
+--    creada con `prisma db push` la tabla role está vacía, así que es
+--    el primer id disponible. Si en algún momento cambiás el orden de
+--    este script o ADMIN_ROLE_ID deja de ser 1, hay que actualizar esto.
 -- ---------------------------------------------------------------------
+INSERT INTO role (id, name, description)
+SELECT 1, 'Admin', 'Administrador con acceso completo al manejo de usuario, ingredientes, categorias.'
+WHERE NOT EXISTS (SELECT 1 FROM role WHERE name = 'Admin');
+
 INSERT INTO role (name, description)
 SELECT 'Usuario', 'Rol asignado por defecto a todo usuario que se registra.'
 WHERE NOT EXISTS (SELECT 1 FROM role WHERE name = 'Usuario');
 
+SET @rol_admin   := (SELECT id FROM role WHERE name = 'Admin' LIMIT 1);
 SET @rol_usuario := (SELECT id FROM role WHERE name = 'Usuario' LIMIT 1);
 
 -- ---------------------------------------------------------------------
@@ -155,14 +170,14 @@ SET @rc_postres   := (SELECT id FROM category WHERE name = 'Postres' LIMIT 1);
 SET @rc_guisos    := (SELECT id FROM category WHERE name = 'Guisos y Sopas' LIMIT 1);
 
 -- ---------------------------------------------------------------------
--- 4. Usuarios de prueba (todos con contraseña: Chefcito123)
+-- 4. Usuarios de prueba (todos con contraseña: 123456)
 -- ---------------------------------------------------------------------
 INSERT INTO user (username, password, name, lastName, email, phone, bio, specialty, location, birthDate, createdAt) VALUES
-  ('juanperez', '$2b$10$5b3lLn2fjGA9lTLQmPySveop6DxgmfYO1VzVlzxJmlNM6y5UxWTxS', 'Juan', 'Pérez', 'juan.perez.demo@chefcito.com', '+54 341 555-0101', 'Me encanta cocinar platos caseros de toda la vida.', 'Cocina casera', 'Rosario, Santa Fe', '1990-04-12', DATE_SUB(NOW(), INTERVAL 60 DAY)),
-  ('mariagomez', '$2b$10$5b3lLn2fjGA9lTLQmPySveop6DxgmfYO1VzVlzxJmlNM6y5UxWTxS', 'María', 'Gómez', 'maria.gomez.demo@chefcito.com', '+54 341 555-0102', 'Fan de las pastas caseras y las tartas.', 'Pastas caseras', 'Buenos Aires', '1995-08-23', DATE_SUB(NOW(), INTERVAL 45 DAY)),
-  ('carlosdiaz', '$2b$10$5b3lLn2fjGA9lTLQmPySveop6DxgmfYO1VzVlzxJmlNM6y5UxWTxS', 'Carlos', 'Díaz', 'carlos.diaz.demo@chefcito.com', '+54 341 555-0103', 'Siempre con un guiso en el fuego.', 'Guisos y platos de cuchara', 'Córdoba', '1988-01-30', DATE_SUB(NOW(), INTERVAL 30 DAY)),
-  ('luciafernandez', '$2b$10$5b3lLn2fjGA9lTLQmPySveop6DxgmfYO1VzVlzxJmlNM6y5UxWTxS', 'Lucía', 'Fernández', 'lucia.fernandez.demo@chefcito.com', '+54 341 555-0104', 'Amante de los postres caseros.', 'Repostería', 'Mendoza', '1998-11-05', DATE_SUB(NOW(), INTERVAL 20 DAY)),
-  ('martinlopez', '$2b$10$5b3lLn2fjGA9lTLQmPySveop6DxgmfYO1VzVlzxJmlNM6y5UxWTxS', 'Martín', 'López', 'martin.lopez.demo@chefcito.com', '+54 341 555-0105', 'Cocino simple, rápido y sabroso.', 'Comidas rápidas', 'La Plata', '1992-06-17', DATE_SUB(NOW(), INTERVAL 10 DAY));
+  ('juanperez', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Juan', 'Pérez', 'juan.perez.demo@chefcito.com', '+54 341 555-0101', 'Me encanta cocinar platos caseros de toda la vida.', 'Cocina casera', 'Rosario, Santa Fe', '1990-04-12', DATE_SUB(NOW(), INTERVAL 60 DAY)),
+  ('mariagomez', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'María', 'Gómez', 'maria.gomez.demo@chefcito.com', '+54 341 555-0102', 'Fan de las pastas caseras y las tartas.', 'Pastas caseras', 'Buenos Aires', '1995-08-23', DATE_SUB(NOW(), INTERVAL 45 DAY)),
+  ('carlosdiaz', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Carlos', 'Díaz', 'carlos.diaz.demo@chefcito.com', '+54 341 555-0103', 'Siempre con un guiso en el fuego.', 'Guisos y platos de cuchara', 'Córdoba', '1988-01-30', DATE_SUB(NOW(), INTERVAL 30 DAY)),
+  ('luciafernandez', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Lucía', 'Fernández', 'lucia.fernandez.demo@chefcito.com', '+54 341 555-0104', 'Amante de los postres caseros.', 'Repostería', 'Mendoza', '1998-11-05', DATE_SUB(NOW(), INTERVAL 20 DAY)),
+  ('martinlopez', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Martín', 'López', 'martin.lopez.demo@chefcito.com', '+54 341 555-0105', 'Cocino simple, rápido y sabroso.', 'Comidas rápidas', 'La Plata', '1992-06-17', DATE_SUB(NOW(), INTERVAL 10 DAY));
 
 SET @user_juan   := (SELECT id FROM user WHERE username = 'juanperez' LIMIT 1);
 SET @user_maria  := (SELECT id FROM user WHERE username = 'mariagomez' LIMIT 1);
@@ -176,6 +191,19 @@ INSERT INTO userrole (UserId, RoleId) VALUES
   (@user_carlos, @rol_usuario),
   (@user_lucia, @rol_usuario),
   (@user_martin, @rol_usuario);
+
+-- ---------------------------------------------------------------------
+-- 4.1 Usuario administrador de prueba (rol Admin): para que el profesor
+--     pueda entrar al panel de administración sin usar una cuenta real
+--     del equipo. Misma contraseña que el resto: 123456.
+-- ---------------------------------------------------------------------
+INSERT INTO user (username, password, name, lastName, email, phone, bio, specialty, location, birthDate, createdAt) VALUES
+  ('admindemo', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Admin', 'Chefcito', 'admin.demo@chefcito.com', '+54 341 555-0100', 'Cuenta de administrador para pruebas y demostración.', NULL, NULL, NULL, DATE_SUB(NOW(), INTERVAL 60 DAY));
+
+SET @user_admin := (SELECT id FROM user WHERE username = 'admindemo' LIMIT 1);
+
+INSERT INTO userrole (UserId, RoleId) VALUES
+  (@user_admin, @rol_admin);
 
 -- ---------------------------------------------------------------------
 -- 5. Recetas (con imagen de portada, categoría, ingredientes y pasos)
@@ -379,16 +407,19 @@ COMMIT;
 --   - 5 categorías de ingredientes + 18 ingredientes (con vínculo y
 --     valores nutricionales para los más usados)
 --   - 5 categorías de recetas
---   - 5 usuarios de prueba (contraseña Chefcito123 para todos):
+--   - 5 usuarios comunes de prueba (contraseña 123456 para todos):
 --       juanperez, mariagomez, carlosdiaz, luciafernandez, martinlopez
+--   - 1 usuario administrador de prueba (contraseña 123456 también):
+--       admindemo
 --   - 10 recetas completas (imagen, categoría, ingredientes y pasos),
---     repartidas entre esos 5 usuarios
+--     repartidas entre los 5 usuarios comunes
 --   - Guardados + reseñas cruzadas entre usuarios, para ver ratings,
 --     "recetas destacadas" y contador de guardados con datos reales
 --   - Inventario de ejemplo para juanperez
 --
--- Iniciá sesión como cualquiera de esos usuarios (o como tu propio admin)
--- para recorrer la home, "Mis recetas", "Recetas guardadas", el perfil
--- propio y el de otro usuario (tocando su nombre desde el detalle de una
--- receta), y el panel de admin para ver ingredientes/categorías/roles.
+-- Iniciá sesión como cualquiera de los usuarios comunes para recorrer la
+-- home, "Mis recetas", "Recetas guardadas", el perfil propio y el de
+-- otro usuario (tocando su nombre desde el detalle de una receta), o
+-- como admindemo (contraseña 123456) para entrar al panel de admin y ver
+-- usuarios, ingredientes, categorías y roles.
 -- =====================================================================

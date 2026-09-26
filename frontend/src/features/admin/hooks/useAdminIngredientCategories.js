@@ -15,17 +15,7 @@ import {
   buildTopCategoriesByIngredientCount,
   buildCategoriesDistribution,
 } from '../models/adminIngredientCategoriesModel.js';
-
-// Los listados del backend responden 404 ("No se encontraron ...") cuando todavía no hay
-// ningún registro cargado. Acá eso no es un error sino una lista vacía.
-const fetchListOrEmpty = async (fetchList) => {
-  try {
-    return await fetchList();
-  } catch (error) {
-    if (error.message.includes('No se encontraron')) return [];
-    throw error;
-  }
-};
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 
 export const useAdminIngredientCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -39,25 +29,29 @@ export const useAdminIngredientCategories = () => {
 
   // Pide en paralelo categorías e ingredientes (para calcular cuántos ingredientes tiene
   // cada categoría a partir del ingredientcategoryingredient[] ya embebido).
-  const fetchCategories = async () => {
+  // El estado se actualiza solo dentro de los callbacks de la promesa (nunca de forma
+  // sincrónica), así se puede llamar desde el useEffect sin renders en cascada.
+  const fetchCategories = () =>
+    Promise.all([
+      fetchListOrEmpty(() => getAllIngredientCategories()),
+      fetchListOrEmpty(() => getAllIngredients()),
+    ])
+      .then(([categoriesData, ingredientsData]) => {
+        setCategories(categoriesData);
+        setIngredientsCount(ingredientsData.length);
+        setIngredientCountByCategory(countIngredientsByCategory(ingredientsData));
+        setError('');
+      })
+      .catch((err) => setError(err.message || 'No pudimos cargar las categorías de ingrediente.'))
+      .finally(() => setIsLoading(false));
+
+  // Recarga manual (botón "Actualizar"): muestra el loading y vuelve a pedir todo.
+  const handleRefresh = async () => {
     setIsLoading(true);
-    setError('');
-    try {
-      const [categoriesData, ingredientsData] = await Promise.all([
-        fetchListOrEmpty(() => getAllIngredientCategories()),
-        fetchListOrEmpty(() => getAllIngredients()),
-      ]);
-      setCategories(categoriesData);
-      setIngredientsCount(ingredientsData.length);
-      setIngredientCountByCategory(countIngredientsByCategory(ingredientsData));
-    } catch (err) {
-      console.error('[useAdminIngredientCategories] Error al cargar categorías:', err);
-      setError(err.message || 'No pudimos cargar las categorías de ingrediente.');
-    } finally {
-      setIsLoading(false);
-    }
+    await fetchCategories();
   };
 
+  // Carga inicial al montar (isLoading ya arranca en true).
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -101,7 +95,7 @@ export const useAdminIngredientCategories = () => {
     categoriesDistribution,
     isLoading,
     error,
-    handleRefresh: fetchCategories,
+    handleRefresh,
     handleCreateCategory,
     handleUpdateCategory,
     handleDeleteCategory,

@@ -15,17 +15,7 @@ import {
   buildTopCategoriesByRecipeCount,
   buildCategoriesDistribution,
 } from '../models/adminRecipeCategoriesModel.js';
-
-// Los listados del backend responden 404 ("No se encontraron ...") cuando todavía no hay
-// ningún registro cargado. Acá eso no es un error sino una lista vacía.
-const fetchListOrEmpty = async (fetchList) => {
-  try {
-    return await fetchList();
-  } catch (error) {
-    if (error.message.includes('No se encontraron')) return [];
-    throw error;
-  }
-};
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 
 export const useAdminRecipeCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -39,25 +29,29 @@ export const useAdminRecipeCategories = () => {
 
   // Pide en paralelo categorías y recetas (para calcular cuántas recetas tiene cada
   // categoría a partir del recipecategory[] ya embebido).
-  const fetchCategories = async () => {
+  // El estado se actualiza solo dentro de los callbacks de la promesa (nunca de forma
+  // sincrónica), así se puede llamar desde el useEffect sin renders en cascada.
+  const fetchCategories = () =>
+    Promise.all([
+      fetchListOrEmpty(() => getAllCategories()),
+      fetchListOrEmpty(() => getAllRecipes()),
+    ])
+      .then(([categoriesData, recipesData]) => {
+        setCategories(categoriesData);
+        setRecipesCount(recipesData.length);
+        setRecipeCountByCategory(countRecipesByCategory(recipesData));
+        setError('');
+      })
+      .catch((err) => setError(err.message || 'No pudimos cargar las categorías de receta.'))
+      .finally(() => setIsLoading(false));
+
+  // Recarga manual (botón "Actualizar"): muestra el loading y vuelve a pedir todo.
+  const handleRefresh = async () => {
     setIsLoading(true);
-    setError('');
-    try {
-      const [categoriesData, recipesData] = await Promise.all([
-        fetchListOrEmpty(() => getAllCategories()),
-        fetchListOrEmpty(() => getAllRecipes()),
-      ]);
-      setCategories(categoriesData);
-      setRecipesCount(recipesData.length);
-      setRecipeCountByCategory(countRecipesByCategory(recipesData));
-    } catch (err) {
-      console.error('[useAdminRecipeCategories] Error al cargar categorías:', err);
-      setError(err.message || 'No pudimos cargar las categorías de receta.');
-    } finally {
-      setIsLoading(false);
-    }
+    await fetchCategories();
   };
 
+  // Carga inicial al montar (isLoading ya arranca en true).
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -102,7 +96,7 @@ export const useAdminRecipeCategories = () => {
     categoriesDistribution,
     isLoading,
     error,
-    handleRefresh: fetchCategories,
+    handleRefresh,
     handleCreateCategory,
     handleUpdateCategory,
     handleDeleteCategory,

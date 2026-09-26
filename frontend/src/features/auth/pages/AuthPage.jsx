@@ -1,12 +1,17 @@
 // Authentication page component managing login and register forms.
 import { useAuth } from "../hooks/useAuth"
+import { useAuthContext } from "../../../app/AuthContext.jsx";
+import AlertModal from "../../../core/components/AlertModal.jsx";
 import LandingPage from "../../landing/pages/LandingPage.jsx";
 import LoginForm from "../components/LoginForm.jsx";
 import RegisterForm from "../components/RegisterForm.jsx";
 import AuthGateModal from "../components/AuthGateModal.jsx";
 
 
-const AuthPage = ({ onLoginSuccess }) => {
+const AuthPage = () => {
+    // Si la sesión se cerró sola (token vencido), se avisa antes de volver a pedir el login.
+    const { sessionExpired, dismissSessionExpired } = useAuthContext();
+
     // Custom hook to manage authentication state (which form to show, submit handlers).
     const {
         showLoginForm,
@@ -24,7 +29,12 @@ const AuthPage = ({ onLoginSuccess }) => {
         handleHideAuthGate,
         handleAuthGateLogin,
         handleAuthGateRegister
-    } = useAuth({ onLoginSuccess });
+    } = useAuth();
+
+    const handleCloseSessionExpired = () => {
+        dismissSessionExpired();
+        handleShowLoginForm();
+    };
 
     return (
         <div className="App">
@@ -35,6 +45,14 @@ const AuthPage = ({ onLoginSuccess }) => {
                 onRequireAuth={handleShowAuthGate}
             />
 
+            {sessionExpired && (
+                <AlertModal
+                    title="Tu sesión expiró"
+                    message="Por seguridad, las sesiones duran 8 horas. Volvé a iniciar sesión para seguir."
+                    closeLabel="Iniciar sesión"
+                    onClose={handleCloseSessionExpired}
+                />
+            )}
             {showAuthGate && (
                 <AuthGateModal
                     onClose={handleHideAuthGate}

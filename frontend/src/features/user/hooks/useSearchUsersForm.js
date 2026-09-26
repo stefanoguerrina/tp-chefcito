@@ -7,33 +7,36 @@ import { restoreUserService } from '../services/restoreUserService.js';
 export const useSearchUsersForm = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [users, setUsers] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     // true cuando el panel está mostrando usuarios inactivos (dados de baja).
     const [showInactive, setShowInactive] = useState(false);
     // ID del usuario que está siendo eliminado en este momento (para mostrar estado de carga por fila).
     const [deletingUserId, setDeletingUserId] = useState(null);
-    const [deleteError, setDeleteError] = useState('');
     // ID del usuario que está siendo restaurado en este momento.
     const [restoringUserId, setRestoringUserId] = useState(null);
-    const [restoreError, setRestoreError] = useState('');
+    // Error de la última acción (baja o reactivación): se muestra en un modal de aviso.
+    const [actionError, setActionError] = useState('');
 
-    // Solicita la lista de usuarios al backend (activos o inactivos según showInactive).
-    const fetchUsers = async (inactive = showInactive) => {
+    // Solicita la lista de usuarios al backend (activos o inactivos).
+    // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
+    // llamar desde el useEffect sin renders en cascada.
+    const fetchUsers = (inactive) =>
+        searchUsersService({ inactive })
+            .then((data) => {
+                setUsers(data);
+                setError('');
+            })
+            .catch((err) => setError(err.message || 'Error al cargar la lista de usuarios.'))
+            .finally(() => setIsLoading(false));
+
+    // Recarga la lista mostrando el loading (botón "Refrescar", cambio activos/inactivos).
+    const reloadUsers = (inactive) => {
         setIsLoading(true);
-        setError('');
-        try {
-            const data = await searchUsersService({ inactive });
-            setUsers(data);
-        } catch (err) {
-            console.error('[useSearchUsersForm] Error al obtener usuarios:', err);
-            setError(err.message || 'Error al cargar la lista de usuarios.');
-        } finally {
-            setIsLoading(false);
-        }
+        return fetchUsers(inactive);
     };
 
-    // Carga la lista de usuarios cuando el componente se monta.
+    // Carga la lista de usuarios activos cuando el componente se monta.
     useEffect(() => {
         fetchUsers(false);
     }, []);
@@ -45,20 +48,18 @@ export const useSearchUsersForm = () => {
         const nextInactive = !showInactive;
         setShowInactive(nextInactive);
         setSearchTerm('');
-        fetchUsers(nextInactive);
+        reloadUsers(nextInactive);
     };
 
     // Envía la petición de baja lógica y elimina el usuario del estado local al completarse.
     const handleDeleteUser = async (userId) => {
-        setDeleteError('');
         setDeletingUserId(userId);
         try {
             await deleteUserService(userId);
             // Actualización optimista: saca el usuario de la lista local sin esperar otro fetch.
             setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
         } catch (err) {
-            console.error('[useSearchUsersForm] Error al eliminar usuario:', err);
-            setDeleteError(err.message || 'Error al dar de baja al usuario.');
+            setActionError(err.message || 'Error al dar de baja al usuario.');
         } finally {
             setDeletingUserId(null);
         }
@@ -66,15 +67,13 @@ export const useSearchUsersForm = () => {
 
     // Envía la petición de reactivación y quita al usuario de la lista de inactivos al completarse.
     const handleRestoreUser = async (userId) => {
-        setRestoreError('');
         setRestoringUserId(userId);
         try {
             await restoreUserService(userId);
             // Actualización optimista: saca el usuario de la lista de inactivos local.
             setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userId));
         } catch (err) {
-            console.error('[useSearchUsersForm] Error al restaurar usuario:', err);
-            setRestoreError(err.message || 'Error al restaurar al usuario.');
+            setActionError(err.message || 'Error al restaurar al usuario.');
         } finally {
             setRestoringUserId(null);
         }
@@ -106,11 +105,11 @@ export const useSearchUsersForm = () => {
         error,
         showInactive,
         deletingUserId,
-        deleteError,
         restoringUserId,
-        restoreError,
+        actionError,
+        handleCloseActionError: () => setActionError(''),
         handleSearchChange,
-        handleRefresh: () => fetchUsers(showInactive),
+        handleRefresh: () => reloadUsers(showInactive),
         handleToggleInactive,
         handleDeleteUser,
         handleRestoreUser,

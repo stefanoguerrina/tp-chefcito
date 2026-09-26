@@ -1,76 +1,87 @@
-// Página de detalle de una receta: muestra imagen principal, metadatos, descripción,
-// ingredientes, pasos y la sección de reseñas (ReviewList).
-// Se monta como panel dentro de HomePage (igual que RecipePage, IngredientPage, etc.)
-// y recibe el id de la receta seleccionada. Al pulsar "Volver" avisa al padre.
+// Página de detalle de una receta (ruta /recetas/:recipeId): muestra imagen principal,
+// metadatos, descripción, ingredientes, pasos y la sección de reseñas (ReviewList).
+// Toma el id de la URL, así el detalle se puede recargar o compartir como link.
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getRecipeById } from '../services/recipeService.js';
-import { RECIPE_PLACEHOLDER_IMAGE, RECIPE_PLACEHOLDER_AVATAR } from '../models/recipeModel.js';
+import { getRecipeImageUrl, RECIPE_PLACEHOLDER_AVATAR } from '../models/recipeModel.js';
 import ReviewList from '../../review/components/ReviewList.jsx';
-import StarRating from '../../../core/components/StarRating.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
-import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
+import ErrorState from '../../../core/components/ErrorState.jsx';
+import { useAuthContext } from '../../../app/AuthContext.jsx';
+import { useSavedRecipes } from '../../userRecipe/hooks/useSavedRecipes.js';
 import '../styles/_recipe-detail-page.scss';
 
-// Recibe:
-//   recipeId      — id de la receta a mostrar
-//   onBack        — handler para volver al listado
-//   onAuthorClick — handler opcional que recibe el id del creador, para abrir su
-//                   perfil de solo lectura (ver ProfilePage/HomePage)
-//   isLoggedIn    — para mostrar u ocultar el botón de reseñar/guardar
-//   isSaved       — si la receta ya está guardada por el usuario autenticado
-//   onToggleSave  — handler para guardar/quitar la receta (recibe recipeId).
-//                  El estado de guardado vive en HomePage (isSaved/onToggleSave)
-//                  para que quede sincronizado con el listón de la card en el
-//                  feed: si se guarda desde acá y se vuelve, la card ya lo refleja.
-function RecipeDetailPage({ recipeId, onBack, onAuthorClick, isLoggedIn, isSaved, onToggleSave }) {
-  const currentUserId = getCurrentUserId();
+function RecipeDetailPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const recipeId = Number(useParams().recipeId);
+  const { userId: currentUserId, isLoggedIn } = useAuthContext();
+  // Mismo estado de guardado que el feed de la home (ver useSavedRecipes).
+  const { savedRecipeIds, handleToggleSave, saveError, clearSaveError } = useSavedRecipes();
+  const isSaved = savedRecipeIds.has(recipeId);
 
   const [recipe, setRecipe] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
-  const [saveError, setSaveError] = useState('');
   // Muestra el aviso "Próximamente" al tocar "Donar" (la CRUD de donaciones todavía no existe).
   const [showDonationSoon, setShowDonationSoon] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      setIsLoading(true);
-      setFetchError('');
-      try {
-        const data = await getRecipeById(recipeId);
+  // Pide la receta completa. El estado se actualiza solo dentro de los callbacks de la
+  // promesa, así se puede llamar desde el useEffect sin renders en cascada.
+  const loadRecipe = () =>
+    getRecipeById(recipeId)
+      .then((data) => {
         setRecipe(data);
-      } catch (err) {
-        setFetchError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
+        setFetchError('');
+      })
+      .catch((err) => setFetchError(err.message))
+      .finally(() => setIsLoading(false));
+
+  // Reintento manual después de un error de carga.
+  const handleRetry = () => {
+    setIsLoading(true);
+    loadRecipe();
+  };
+
+  useEffect(() => {
+    loadRecipe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipeId]);
 
   // Guarda o quita el guardado de la receta para el usuario autenticado.
-  const handleSaveRecipe = async () => {
-    setSaveError('');
-    try {
-      await onToggleSave(recipeId);
-    } catch (err) {
-      setSaveError(err.message);
-    }
-  };
+  const handleSaveRecipe = () => handleToggleSave(recipeId);
+
+  // Vuelve a la pantalla anterior; si se entró directo por link (sin historial), a la home.
+  // (location.key vale 'default' cuando esta es la primera página que se abrió).
+  const handleBack = () => (location.key !== 'default' ? navigate(-1) : navigate('/'));
+
+  const handleAuthorClick = (authorId) =>
+    navigate(authorId === currentUserId ? '/perfil' : `/usuarios/${authorId}`);
 
   if (isLoading) return <p className="RecipeDetailPage-status">Cargando receta...</p>;
-  if (fetchError) return <p className="RecipeDetailPage-status RecipeDetailPage-status--error">⚠ {fetchError}</p>;
+  if (fetchError) {
+    return (
+      <div className="RecipeDetailPage">
+        <button type="button" className="RecipeDetailPage-backBtn" onClick={handleBack}>
+          <span className="material-symbols-outlined">arrow_back</span>
+          Volver
+        </button>
+        <ErrorState title="No pudimos cargar la receta" message={fetchError} onRetry={handleRetry} />
+      </div>
+    );
+  }
   if (!recipe) return null;
 
-  const mainImage = recipe.image?.find((img) => img.isMain) ?? recipe.image?.[0] ?? null;
-  const imageUrl = mainImage?.imageUrl ?? RECIPE_PLACEHOLDER_IMAGE;
+  const imageUrl = getRecipeImageUrl(recipe);
   const categoryName = recipe.recipecategory?.[0]?.category?.name;
 
   return (
     <article className="RecipeDetailPage">
       {/* Botón volver */}
-      <button type="button" className="RecipeDetailPage-backBtn" onClick={onBack}>
+      <button type="button" className="RecipeDetailPage-backBtn" onClick={handleBack}>
         <span className="material-symbols-outlined">arrow_back</span>
-        Volver al explorador
+        Volver
       </button>
 
       {/* Imagen portada */}
@@ -87,11 +98,11 @@ function RecipeDetailPage({ recipeId, onBack, onAuthorClick, isLoggedIn, isSaved
       {/* Encabezado */}
       <div className="RecipeDetailPage-header">
         <div className="RecipeDetailPage-headerMain">
-          {onAuthorClick && recipe.user?.id ? (
+          {recipe.user?.id ? (
             <button
               type="button"
               className="RecipeDetailPage-author RecipeDetailPage-author--clickable"
-              onClick={() => onAuthorClick(recipe.user.id)}
+              onClick={() => handleAuthorClick(recipe.user.id)}
             >
               <img
                 className="RecipeDetailPage-authorAvatar"
@@ -146,7 +157,13 @@ function RecipeDetailPage({ recipeId, onBack, onAuthorClick, isLoggedIn, isSaved
         )}
       </div>
 
-      {saveError && <p className="RecipeDetailPage-status RecipeDetailPage-status--error">⚠ {saveError}</p>}
+      {saveError && (
+        <AlertModal
+          title="No se pudo guardar la receta"
+          message={saveError}
+          onClose={clearSaveError}
+        />
+      )}
 
       {/* Descripción */}
       {recipe.description && (

@@ -83,7 +83,7 @@
   gap: $spacing-sm;
   padding: 0 $spacing-md;
   height: 52px;
-  background: #fff;
+  background: $color-surface-container-lowest;
   border: 1px solid $color-outline-variant;
   border-radius: $radius-lg;
   box-shadow: $shadow-level-1;
@@ -155,7 +155,7 @@
   }
 
   &:hover {
-    background: color.adjust(#4b6400, $lightness: -8%);
+    background: color.adjust($color-primary, $lightness: -8%);
   }
 }
 
@@ -179,7 +179,7 @@
   display: flex;
   align-items: center;
   gap: $spacing-sm;
-  background: #fff;
+  background: $color-surface-container-lowest;
   border: 1px solid $color-outline-variant;
   border-radius: $radius-lg;
   padding: $spacing-xs $spacing-sm;
@@ -242,7 +242,7 @@
 .InventoryEmpty {
   text-align: center;
   padding: $spacing-xl * 1.5 $spacing-md;
-  background: #fff;
+  background: $color-surface-container-lowest;
   border: 1px solid $color-outline-variant;
   border-radius: $radius-lg;
   margin-bottom: $spacing-md;
@@ -287,7 +287,7 @@
 
 // ---- Card de ingrediente ----
 .IngredientCard {
-  background: #fff;
+  background: $color-surface-container-lowest;
   border: 1px solid $color-outline-variant;
   border-radius: $radius-lg * 1.3; // ~16px
   padding: $spacing-md;
@@ -299,7 +299,7 @@
 
   &:hover {
     box-shadow: $shadow-level-2;
-    border-color: color.adjust(#e1bfb6, $lightness: -5%);
+    border-color: color.adjust($color-outline-variant, $lightness: -5%);
   }
 
   @include respond-to(md) {
@@ -406,8 +406,8 @@
   }
 
   &--lowStock {
-    background: rgba(#ED8936, 0.12);
-    color: #ED8936;
+    background: rgba($color-pantry-warning, 0.12);
+    color: $color-pantry-warning;
   }
 
   &--noStock {
@@ -448,7 +448,7 @@
   line-height: 1;
 
   &--normal  { color: $color-primary; }
-  &--low     { color: #ED8936; }
+  &--low     { color: $color-pantry-warning; }
   &--none    { color: $color-error; }
 }
 
@@ -491,7 +491,7 @@
   height: 32px;
   border-radius: 6px;
   border: none;
-  background: #fff;
+  background: $color-surface-container-lowest;
   color: $color-on-surface;
   cursor: pointer;
   display: flex;
@@ -546,7 +546,7 @@
   height: 40px;
   border-radius: $radius-md;
   border: 1px solid $color-outline-variant;
-  background: #fff;
+  background: $color-surface-container-lowest;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -571,11 +571,11 @@
   &--delete {
     background: $color-error;
     border-color: $color-error;
-    color: #fff;
+    color: $color-on-primary;
 
     &:hover {
-      background: color.adjust(#ba1a1a, $lightness: -10%);
-      border-color: color.adjust(#ba1a1a, $lightness: -10%);
+      background: color.adjust($color-error, $lightness: -10%);
+      border-color: color.adjust($color-error, $lightness: -10%);
     }
 
     &:active { transform: scale(0.93); }
@@ -700,7 +700,7 @@
     display: flex;
     align-items: center;
     height: 42px;
-    background: #FAF2EB;
+    background: $color-pantry-cream;
     border: 1px solid rgba(234, 223, 211, 0.95);
     border-radius: 12px;
     padding: 3px 4px;
@@ -712,7 +712,7 @@
     height: 34px;
     border-radius: 8px;
     border: none;
-    background: #ffffff;
+    background: $color-surface-container-lowest;
     color: $color-on-background;
     cursor: pointer;
     display: flex;
@@ -727,7 +727,7 @@
     }
 
     &:hover:not(:disabled) {
-      background: #F0F5D8;
+      background: $color-pantry-lime-light;
       color: $color-primary;
     }
 
@@ -773,7 +773,7 @@
     display: flex;
     align-items: center;
     padding: 0 14px;
-    background: #FAF2EB;
+    background: $color-pantry-cream;
     border: 1px solid rgba(234, 223, 211, 0.95);
     border-radius: 12px;
     font-size: 14px;
@@ -844,7 +844,7 @@
 }
 
 .EditModal {
-  background: #fff;
+  background: $color-surface-container-lowest;
   border: 1px solid $color-outline-variant;
   border-radius: $radius-lg * 1.3;
   padding: $spacing-lg;
@@ -941,7 +941,7 @@
   padding: 9px 12px;
   border-radius: $radius-md;
   border: 1px solid $color-outline-variant;
-  background: #fff;
+  background: $color-surface-container-lowest;
   color: $color-on-surface;
   font-size: 14px;
   font-family: $font-body;
@@ -1031,7 +1031,7 @@
 
   .material-symbols-outlined {
     font-size: 18px;
-    color: #A7C957;
+    color: $color-pantry-lime;
   }
 
   &--visible {
@@ -1069,7 +1069,7 @@
   height: 40px;
   border-radius: 50%;
   background: $color-primary;
-  color: #fff;
+  color: $color-on-primary;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1111,20 +1111,6 @@
 }
 
 // ---- Mensajes globales ----
-.InventoryPage-alert {
-  padding: 12px $spacing-md;
-  border-radius: $radius-md;
-  margin-bottom: $spacing-md;
-  font-size: 14px;
-  font-family: $font-body;
-
-  &--error {
-    background: rgba($color-error, 0.08);
-    border: 1px solid rgba($color-error, 0.3);
-    color: $color-error;
-  }
-}
-
 .InventoryPage-loading {
   text-align: center;
   padding: $spacing-xl * 1.5;

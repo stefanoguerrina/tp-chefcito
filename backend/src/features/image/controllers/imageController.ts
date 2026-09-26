@@ -5,6 +5,19 @@ import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import * as imageService from '../services/imageService.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
+import { deleteLocalUpload, toPublicPath } from '../../../core/fileStorage.js';
+import { RECIPE_IMAGES_FOLDER } from '../middleware/imageUploadMiddleware.js';
+
+// Si la request trajo un archivo (multipart), devuelve su ruta pública; si no, el link
+// que vino en el body (o undefined si no vino ninguno).
+const resolveImageUrl = (req: AuthRequest): string | undefined =>
+  req.file ? toPublicPath(RECIPE_IMAGES_FOLDER, req.file.filename) : req.body.imageUrl;
+
+// Borra el archivo recién subido cuando la operación no se completó (receta inexistente,
+// sin permisos, error inesperado), para no dejar archivos huérfanos en el disco.
+const discardUploadedFile = (req: AuthRequest): void => {
+  if (req.file) void deleteLocalUpload(toPublicPath(RECIPE_IMAGES_FOLDER, req.file.filename));
+};
 
 // Devuelve las imágenes de una receta (la principal primero).
 // GET /api/recipes/:idRecipe/images
@@ -31,7 +44,8 @@ export const searchImagesByRecipe = async (req: AuthRequest, res: Response): Pro
 };
 
 // Agrega una nueva imagen a una receta (solo su dueño o un admin).
-// Body: { imageUrl, isMain? }. Si isMain=true, reemplaza a la imagen principal anterior.
+// Body: multipart con el archivo en "image", o JSON { imageUrl } con un link externo;
+// isMain opcional. Si isMain=true, reemplaza a la imagen principal anterior.
 // POST /api/recipes/:idRecipe/images
 export const createImage = async (req: AuthRequest, res: Response): Promise<void> => {
   const errors = validationResult(req);
@@ -45,11 +59,13 @@ export const createImage = async (req: AuthRequest, res: Response): Promise<void
 
   try {
     const idRecipe = Number(req.params.idRecipe);
-    const { imageUrl, isMain } = req.body;
+    const imageUrl = resolveImageUrl(req) as string;
+    const { isMain } = req.body;
 
     const result = await imageService.addImage(idRecipe, req.user!.id, req.user!.isAdmin, { imageUrl, isMain });
 
     if (!result.ok) {
+      discardUploadedFile(req);
       if (result.reason === 'not_found') {
         res.status(404).json({ message: 'Receta no encontrada.' });
         return;
@@ -60,6 +76,7 @@ export const createImage = async (req: AuthRequest, res: Response): Promise<void
 
     res.status(201).json(result.image);
   } catch (error) {
+    discardUploadedFile(req);
     console.error('[createImage] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
@@ -80,11 +97,13 @@ export const updateImageById = async (req: AuthRequest, res: Response): Promise<
   try {
     const idRecipe = Number(req.params.idRecipe);
     const id = Number(req.params.id);
-    const { imageUrl, isMain } = req.body;
+    const imageUrl = resolveImageUrl(req);
+    const { isMain } = req.body;
 
     const result = await imageService.updateImage(idRecipe, id, req.user!.id, req.user!.isAdmin, { imageUrl, isMain });
 
     if (!result.ok) {
+      discardUploadedFile(req);
       if (result.reason === 'not_found') {
         res.status(404).json({ message: 'Imagen no encontrada.' });
         return;
@@ -95,6 +114,7 @@ export const updateImageById = async (req: AuthRequest, res: Response): Promise<
 
     res.status(200).json(result.image);
   } catch (error) {
+    discardUploadedFile(req);
     console.error('[updateImageById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }

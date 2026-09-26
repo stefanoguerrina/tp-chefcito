@@ -1,21 +1,35 @@
-// Estilos de la sidebar fija de las páginas autenticadas (features/user/components/Sidebar).
-// Cada link muestra ícono + texto (sin tooltip al hover): mismo patrón que AdminSidebar.
+// Estilos de la navegación de las páginas autenticadas (features/user/components/Sidebar).
+// Mobile-first: en celular es una barra fija abajo, solo con íconos (como las apps
+// móviles); desde $breakpoint-md pasa a ser la sidebar vertical con ícono + texto,
+// mismo patrón que AdminSidebar.
 @use '../../../styles/abstracts' as *;
 
 .Sidebar {
   position: fixed;
   left: 0;
-  top: 0;
-  height: 100vh;
-  width: $layout-sidebar-width;
+  right: 0;
+  bottom: 0;
+  height: $layout-bottom-nav-height;
   background: $color-surface-container-low;
-  border-right: 1px solid $color-outline-variant;
+  border-top: 1px solid $color-outline-variant;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   z-index: 50;
 
+  @include respond-to(md) {
+    right: auto;
+    top: 0;
+    height: 100vh;
+    width: $layout-sidebar-width;
+    border-top: none;
+    border-right: 1px solid $color-outline-variant;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  // La marca solo entra en la sidebar de escritorio: en la barra de abajo no hay lugar.
   &-brand {
-    display: flex;
+    display: none;
     align-items: center;
     gap: $spacing-sm;
     height: 64px;
@@ -26,6 +40,10 @@
     padding: 0 $spacing-md;
     text-decoration: none;
     flex-shrink: 0;
+
+    @include respond-to(md) {
+      display: flex;
+    }
   }
 
   &-brandIcon {
@@ -50,19 +68,27 @@
 
   &-nav {
     flex: 1;
+    min-width: 0;
     min-height: 0;
-    overflow-y: auto;
     display: flex;
-    flex-direction: column;
+    justify-content: space-around;
     gap: $spacing-xs;
-    padding: $spacing-md;
+    padding: 0 $spacing-xs;
+
+    @include respond-to(md) {
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow-y: auto;
+      padding: $spacing-md;
+    }
   }
 
   &-link {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: $spacing-sm;
-    padding: $spacing-sm $spacing-md;
+    padding: $spacing-sm;
     border: none;
     border-radius: $radius-md;
     background: transparent;
@@ -71,9 +97,15 @@
     font-size: 14px;
     font-weight: 500;
     text-align: left;
+    text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
+
+    @include respond-to(md) {
+      justify-content: flex-start;
+      padding: $spacing-sm $spacing-md;
+    }
 
     .material-symbols-outlined {
       font-size: 22px;
@@ -104,9 +136,31 @@
     }
   }
 
+  // Accesos "próximamente": en la barra de mobile no entran, solo se muestran en desktop.
+  &-link--pending {
+    display: none;
+
+    @include respond-to(md) {
+      display: flex;
+    }
+  }
+
+  // En mobile el texto se oculta visualmente pero sigue ahí para lectores de pantalla.
   &-linkLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
     overflow: hidden;
-    text-overflow: ellipsis;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+
+    @include respond-to(md) {
+      position: static;
+      width: auto;
+      height: auto;
+      clip: auto;
+      text-overflow: ellipsis;
+    }
   }
 
   // Fila inferior fija: identidad del usuario logueado (avatar + nombre + username)
@@ -118,14 +172,23 @@
     align-items: center;
     justify-content: space-between;
     gap: $spacing-xs;
-    padding: $spacing-md;
+    padding: 0 $spacing-sm;
+
+    @include respond-to(md) {
+      padding: $spacing-md;
+    }
   }
 
+  // Los datos de la cuenta solo se muestran en desktop; en mobile queda el botón de salir.
   &-account {
-    display: flex;
+    display: none;
     align-items: center;
     gap: $spacing-sm;
     min-width: 0;
+
+    @include respond-to(md) {
+      display: flex;
+    }
   }
 
   &-avatar {

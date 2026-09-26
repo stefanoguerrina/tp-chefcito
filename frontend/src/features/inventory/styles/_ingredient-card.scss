@@ -3,7 +3,7 @@
 @use '../../../styles/abstracts/variables' as *;
 
 .IngredientCard {
-  background: #ffffff;
+  background: $color-surface-container-lowest;
   border: 1px solid rgba(234, 223, 211, 0.9);
   border-radius: 16px;
   padding: 16px;
@@ -16,7 +16,7 @@
 
   &:hover {
     box-shadow: 0 6px 20px rgba(31, 27, 22, 0.09);
-    border-color: #d5c9bd;
+    border-color: $color-pantry-muted-light;
   }
 }
 
@@ -26,7 +26,7 @@
   height: 64px;
   border-radius: 12px;
   overflow: hidden;
-  background: #FAF2EB;
+  background: $color-pantry-cream;
   border: 1px solid rgba(234, 223, 211, 0.7);
   flex-shrink: 0;
   display: flex;
@@ -47,7 +47,7 @@
 
 .IngredientCard-thumbIcon {
   font-size: 28px;
-  color: #9c8c80;
+  color: $color-pantry-muted;
   user-select: none;
 }
 
@@ -89,7 +89,7 @@
 
   &--in {
     background: rgba(63, 125, 88, 0.1);
-    color: #3F7D58;
+    color: $color-pantry-green;
   }
 
   &--out {
@@ -129,7 +129,7 @@
   height: 38px;
   border-radius: 10px;
   border: 1px solid rgba(234, 223, 211, 0.9);
-  background: #ffffff;
+  background: $color-surface-container-lowest;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -145,7 +145,7 @@
     color: $color-primary;
 
     &:hover {
-      background: #F0F5D8;
+      background: $color-pantry-lime-light;
     }
 
     &:active {
@@ -159,8 +159,8 @@
     color: $color-on-error;
 
     &:hover {
-      background: #93000a;
-      border-color: #93000a;
+      background: $color-on-error-container;
+      border-color: $color-on-error-container;
     }
 
     &:active {

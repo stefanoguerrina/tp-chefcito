@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { useSearchUsersForm } from '../hooks/useSearchUsersForm.js';
 import CreateUserForm from './CreateUserForm.jsx';
 import UserRolesPanel from '../../role/components/UserRolesPanel.jsx';
-import '../styles/admin-panel.css';
+import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
+import '../styles/_admin-panel.scss';
 
 // Formatea una fecha ISO (YYYY-MM-DD o DateTime) a formato legible DD/MM/AAAA.
 const formatDate = (dateValue) => {
@@ -23,9 +26,9 @@ const SearchUsersForm = () => {
         error,
         showInactive,
         deletingUserId,
-        deleteError,
         restoringUserId,
-        restoreError,
+        actionError,
+        handleCloseActionError,
         handleSearchChange,
         handleRefresh,
         handleToggleInactive,
@@ -43,22 +46,22 @@ const SearchUsersForm = () => {
         setExpandedRolesUserId((prev) => (prev === userId ? null : userId));
     };
 
-    // Pide confirmación antes de eliminar — evita bajas accidentales.
-    const handleDeleteClick = (user) => {
-        const confirmed = window.confirm(
-            `¿Estás seguro de que querés eliminar al usuario "@${user.username}" (${user.name} ${user.lastName})?\n\nEsta acción no se puede deshacer.`
-        );
-        if (confirmed) {
-            handleDeleteUser(user.id);
-        }
-    };
+    // Acción pendiente de confirmar en el modal: { user, action: 'delete' | 'restore' } o null.
+    const [pendingAction, setPendingAction] = useState(null);
 
-    // Pide confirmación antes de restaurar.
-    const handleRestoreClick = (user) => {
-        const confirmed = window.confirm(
-            `¿Querés reactivar la cuenta de "@${user.username}" (${user.name} ${user.lastName})?`
-        );
-        if (confirmed) {
+    // Pide confirmación antes de dar de baja — evita bajas accidentales.
+    const handleDeleteClick = (user) => setPendingAction({ user, action: 'delete' });
+
+    // Pide confirmación antes de reactivar.
+    const handleRestoreClick = (user) => setPendingAction({ user, action: 'restore' });
+
+    // Ejecuta la acción que se confirmó en el modal.
+    const handleConfirmPendingAction = () => {
+        const { user, action } = pendingAction;
+        setPendingAction(null);
+        if (action === 'delete') {
+            handleDeleteUser(user.id);
+        } else {
             handleRestoreUser(user.id);
         }
     };
@@ -123,15 +126,30 @@ const SearchUsersForm = () => {
                 />
             )}
 
-            {/* Error global del fetch */}
-            {error && (
-                <div className="admin-panel__alert admin-panel__alert--error">⚠ {error}</div>
+            {/* Error al cargar la lista */}
+            {error && <ErrorState message={error} onRetry={handleRefresh} />}
+
+            {pendingAction && (
+                <ConfirmModal
+                    title={pendingAction.action === 'delete' ? 'Dar de baja usuario' : 'Reactivar usuario'}
+                    message={
+                        pendingAction.action === 'delete'
+                            ? `¿Querés dar de baja a "@${pendingAction.user.username}" (${pendingAction.user.name} ${pendingAction.user.lastName})? Podés reactivarlo después desde "Ver inactivos".`
+                            : `¿Querés reactivar la cuenta de "@${pendingAction.user.username}" (${pendingAction.user.name} ${pendingAction.user.lastName})?`
+                    }
+                    confirmLabel={pendingAction.action === 'delete' ? 'Dar de baja' : 'Reactivar'}
+                    danger={pendingAction.action === 'delete'}
+                    onConfirm={handleConfirmPendingAction}
+                    onCancel={() => setPendingAction(null)}
+                />
             )}
-            {deleteError && (
-                <div className="admin-panel__alert admin-panel__alert--error">⚠ {deleteError}</div>
-            )}
-            {restoreError && (
-                <div className="admin-panel__alert admin-panel__alert--error">⚠ {restoreError}</div>
+
+            {actionError && (
+                <AlertModal
+                    title="No se pudo completar la acción"
+                    message={actionError}
+                    onClose={handleCloseActionError}
+                />
             )}
 
             {isLoading && (

@@ -6,8 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Chefcito ("tp-chefcito") is a university full-stack project (DSW course): a recipe web app where
 users plan meals from available ingredients and nutritional needs, create/save/review recipes, and
-donate to recipe creators. See [docs/proposal.md](docs/proposal.md) for functional scope and
-[docs/chefcito-database.sql](docs/chefcito-database.sql) for the reference schema.
+donate to recipe creators. See [docs/proposal.md](docs/proposal.md) for functional scope,
+[backend/prisma/schema.prisma](backend/prisma/schema.prisma) for the reference schema, and
+[docs/guia-profesor.md](docs/guia-profesor.md) + [docs/demo-seed.sql](docs/demo-seed.sql) for how
+to set up a local DB with demo data (incl. a ready-to-use admin account) to try the app.
 
 The repo is a two-package monorepo, agnostic frontend/backend communicating over a REST API:
 - `backend/` — Express 5 + TypeScript + Prisma (MySQL)
@@ -47,6 +49,11 @@ There is no automated test suite in either package currently.
 `src/app.ts` builds the Express app, applies `cors`/`express.json`, and mounts everything under
 `/api` via `src/routes/apiRouter.ts`, which in turn mounts one router per feature
 (`src/features/<feature>/routes/*Router.ts`, e.g. `/api/auth`, `/api/users`, `/api/database`).
+
+Recipe images are uploaded as files with `multer` (`features/image/middleware/imageUploadMiddleware.ts`)
+into `backend/uploads/recipes/` (gitignored, served statically at `/uploads`); the DB column
+`image.imageUrl` stores only the public path or an external http(s) link — never base64.
+`core/fileStorage.ts` resolves upload paths and deletes orphaned files.
 
 Each feature under `src/features/<name>/` follows the same internal layering — new features should
 mirror this shape:
@@ -94,10 +101,14 @@ extensions on relative imports since output is compiled to `dist/`).
 
 ### Frontend: feature-sliced React app
 
-`src/main.jsx` renders `src/app/App.jsx`, which owns top-level auth state (`isAppLoggedIn`,
-`isAdmin`) and switches between `AuthPage` (logged out) and a `BrowserRouter`-wrapped route tree
-(logged in). There's no client-side route protection yet beyond this boolean gate — new authed
-routes should read `isAdmin`/pass auth state down the same way `HomePage` does.
+`src/main.jsx` renders `src/app/App.jsx`, which wraps everything in `AuthProvider`
+(`src/app/AuthContext.jsx`: session state via Context API + `useReducer`, read with
+`useAuthContext()`) and defines the full React Router tree. Access is enforced by
+`src/app/ProtectedRoute.jsx` (`allow="guest" | "user" | "admin"`): guests live at `/bienvenida`
+(`AuthPage`), common users under `UserLayout` (sidebar + `<Outlet />`: `/`, `/recetas/:id`,
+`/mis-recetas[/nueva|/:id/editar]`, `/perfil`, `/usuarios/:id`, `/inventario`, `/guardadas`),
+admins at `/admin/:section?`. New pages should be routes (read params with `useParams`,
+navigate with `useNavigate`), not panels toggled by local state.
 
 Each feature under `src/features/<name>/` mirrors a slice of the backend's shape:
 - `pages/` — route-level components
@@ -111,14 +122,24 @@ Each feature under `src/features/<name>/` mirrors a slice of the backend's shape
 - `models/` — plain JS shapes for request/response data (no framework logic).
 - `styles/` — feature-scoped CSS.
 
-`src/shared/utils/apiFetch.js` is the authenticated fetch helper for calls that need the JWT
-(reads `token` from `localStorage`, sets `Authorization: Bearer <token>` and `Content-Type`, throws
-on non-OK responses using the backend's `message` field). Prefer `apiFetch` for any new
-authenticated call to `/api/users/*`-style endpoints; unauthenticated endpoints (login/register)
-call `fetch` directly against `API_BASE_URL` as the existing services do.
+`src/shared/utils/apiFetch.js` is the single HTTP helper for every service (public or
+authenticated): it adds the JWT if present, sends JSON (or `FormData` for file uploads), and
+throws an `ApiError` (`shared/utils/ApiError.js`, with `status`, `isNotFound`, `isConflict`,
+`fieldErrors`) whose message is already user-friendly (validation field messages, offline,
+etc.). A 401 with a token fires `SESSION_EXPIRED_EVENT`, which `AuthContext` handles by logging
+out. Use `fetchListOrEmpty()` for list endpoints that answer 404 when empty — never compare
+error message strings. UI error convention: field errors inline under the field; failed actions
+→ `AlertModal`; failed section loads → `ErrorState` (core/components) with a retry button;
+destructive actions → `ConfirmModal`. Never use `window.alert/confirm` or `console.error`.
+Data loading inside `useEffect` must only set state inside promise callbacks
+(`.then/.catch/.finally`), otherwise the `react-hooks/set-state-in-effect` lint rule fails.
+Recipe images: `shared/utils/compressImage.js` (canvas → WebP) before upload and
+`shared/utils/imageUrl.js` (`resolveImageUrl`) to turn `/uploads/...` paths into full URLs.
 
-`src/core/` mirrors the backend's `core/` (shared, not feature-specific) but is currently mostly
-empty scaffolding (`.gitkeep`) — cross-feature UI primitives belong there as the app grows.
+`src/core/components/` holds cross-feature UI primitives (`ConfirmModal`, `AlertModal`,
+`ErrorState`, `RecipeCard`, `MasonryGrid`, `StarRating`, ...); reuse them instead of duplicating.
+Styles are mobile-first SASS: use `@include respond-to(sm|md|lg)` and the variables in
+`src/styles/abstracts/_variables.scss` — no `max-width` media queries, no hardcoded colors.
 
 ## Documentation conventions (course requirement)
 

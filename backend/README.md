@@ -64,6 +64,7 @@ backend/
 │   ├── database.ts            # Pool directo de mysql2 (queries raw si fuera necesario)
 │   ├── core/
 │   │   ├── prismaClient.ts    # Singleton de PrismaClient — importar desde acá siempre
+│   │   ├── fileStorage.ts     # Carpeta uploads/: rutas públicas y borrado de archivos subidos
 │   │   └── middleware/
 │   │       └── authMiddleware.ts  # verifyToken / verifyAdmin / verifyOwnerOrAdmin
 │   ├── routes/
@@ -71,10 +72,20 @@ backend/
 │   └── features/
 │       ├── auth/              # Login y registro
 │       ├── user/              # CRUD de usuarios + panel admin
+│       ├── rol/               # CRUD de roles y asignación a usuarios
 │       ├── ingredient/        # CRUD de ingredientes
 │       ├── ingredientCategory/ # CRUD de categorías de ingredientes
 │       ├── nutritionalValue/  # CRUD de valores nutricionales
+│       ├── category/          # CRUD de categorías de receta
+│       ├── recipe/            # CRUD de recetas
+│       ├── recipeIngredient/  # Ingredientes de una receta
+│       ├── step/              # Pasos de una receta
+│       ├── image/             # Imágenes de una receta (subida con multer)
+│       ├── review/            # Reseñas de recetas
+│       ├── userRecipe/        # Recetas guardadas
+│       ├── inventory/         # Inventario de ingredientes del usuario
 │       └── database/          # Endpoint de inicialización/seed (solo dev)
+├── uploads/                   # Imágenes subidas (se crea sola, no se commitea)
 ```
 
 ### Estructura interna de cada feature
@@ -284,6 +295,24 @@ Input del usuario
 | `500 Internal Server Error` | Errores inesperados del servidor |
 
 > Los controllers nunca devuelven errores crudos de Prisma o JS al cliente. Siempre mensajes amigables en español.
+
+---
+
+## 9.1 Imágenes de recetas (subida de archivos)
+
+Las fotos **no se guardan en la base de datos**. `POST/PATCH /api/recipes/:idRecipe/images`
+aceptan dos formatos:
+
+- **Archivo** (`multipart/form-data`, campo `image`): lo procesa `multer`
+  (`features/image/middleware/imageUploadMiddleware.ts`), que valida tipo (JPG, PNG, WEBP,
+  GIF) y tamaño (máx. 2 MB) y lo guarda en `backend/uploads/recipes/` con un nombre único.
+- **Link externo** (JSON, campo `imageUrl`): debe empezar con `http://` o `https://`.
+  Ya no se aceptan data URLs en base64.
+
+En la columna `image.imageUrl` (`VARCHAR(500)`) queda solo la ruta pública
+(ej. `/uploads/recipes/recipe-123.webp`) o el link. Express sirve la carpeta en `/uploads`.
+Al reemplazar o borrar una imagen, o al borrar la receta, el archivo se elimina del disco.
+El frontend comprime la foto (WebP, máx. 1280px) antes de subirla.
 
 ---
 

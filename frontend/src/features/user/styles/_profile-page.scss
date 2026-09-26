@@ -71,7 +71,7 @@
     border-radius: $radius-full;
     border: 1px solid rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.2);
-    color: #fff;
+    color: $color-on-primary;
     font-family: $font-body;
     font-size: 12px;
     font-weight: 600;
@@ -166,7 +166,7 @@
     font-size: 20px;
     line-height: 1.2;
     font-weight: 700;
-    color: #fff;
+    color: $color-on-primary;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 
     @include respond-to(md) {
@@ -222,7 +222,7 @@
     inset: 4px;
     border-radius: $radius-full;
     background: rgba(0, 0, 0, 0.45);
-    color: #fff;
+    color: $color-on-primary;
     display: flex;
     flex-direction: column;
     align-items: center;

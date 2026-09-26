@@ -1,15 +1,13 @@
-/* Admin panel styles for the user management section.
-   Paleta fija tomada de styles/abstracts/_variables.scss (identidad visual de Chefcito:
-   fondo cálido claro + acento oliva). No usa las variables de index.css porque esas
-   cambian con el modo oscuro del sistema operativo y quedaban en contraste con el resto
-   de la página, que siempre es clara. Este archivo es .css (no .scss) así que los valores
-   van hardcodeados, pero deben coincidir con los de _variables.scss si esa paleta cambia. */
+// Estilos del panel de gestión de usuarios (SearchUsersForm, CreateUserForm).
+// Mobile-first: en mobile cada usuario se apila en columna y los botones ocupan todo el
+// ancho; desde $breakpoint-sm vuelve la fila con acciones a la derecha.
+@use '../../../styles/abstracts' as *;
 
 .admin-panel {
     max-width: 760px;
     margin: 28px auto;
     text-align: left;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: $font-body;
 }
 
 /* ---- Header ---- */
@@ -23,13 +21,14 @@
 
 .admin-panel__title {
     margin: 0;
+    font-family: $font-body;
     font-size: 20px;
-    color: #1e1b17;
+    color: $color-on-background;
 }
 
 .admin-panel__count {
     font-size: 13px;
-    color: #4b6400;
+    color: $color-primary;
     background: rgba(75, 100, 0, 0.08);
     border: 1px solid rgba(75, 100, 0, 0.3);
     padding: 2px 10px;
@@ -48,17 +47,17 @@
     flex: 1;
     padding: 10px 14px;
     border-radius: 8px;
-    border: 1px solid #e1bfb6;
-    background: #fff;
-    color: #1e1b17;
+    border: 1px solid $color-outline-variant;
+    background: $color-surface-container-lowest;
+    color: $color-on-background;
     font-size: 15px;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: $font-body;
     outline: none;
     transition: border-color 0.2s;
 }
 
 .admin-panel__search:focus {
-    border-color: #4b6400;
+    border-color: $color-primary;
 }
 
 /* ---- Buttons ---- */
@@ -66,7 +65,7 @@
     padding: 10px 16px;
     border-radius: 999px;
     font-size: 14px;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: $font-body;
     font-weight: 500;
     cursor: pointer;
     border: 1px solid transparent;
@@ -81,61 +80,66 @@
 .admin-panel__btn--refresh {
     background: rgba(75, 100, 0, 0.08);
     border-color: rgba(75, 100, 0, 0.3);
-    color: #4b6400;
+    color: $color-primary;
     white-space: nowrap;
 }
 
 .admin-panel__btn--refresh:hover:not(:disabled) {
-    background: #4b6400;
-    color: #fff;
+    background: $color-primary;
+    color: $color-on-primary;
 }
 
 .admin-panel__btn--delete {
+    width: 100%;
     background: transparent;
-    border-color: #ba1a1a;
-    color: #ba1a1a;
+    border-color: $color-error;
+    color: $color-error;
     font-size: 13px;
     padding: 7px 14px;
     flex-shrink: 0;
+
+    @include respond-to(sm) {
+        width: auto;
+    }
 }
 
 .admin-panel__btn--delete:hover:not(:disabled) {
-    background: #ba1a1a;
-    color: #fff;
+    background: $color-error;
+    color: $color-on-primary;
 }
 
 .admin-panel__btn--restore {
     background: transparent;
-    border-color: #2b6a47;
-    color: #2b6a47;
+    border-color: $color-secondary;
+    color: $color-secondary;
     font-size: 13px;
     padding: 7px 14px;
     flex-shrink: 0;
 }
 
 .admin-panel__btn--restore:hover:not(:disabled) {
-    background: #2b6a47;
-    color: #fff;
+    background: $color-secondary;
+    color: $color-on-primary;
 }
 
 .admin-panel__btn--edit {
     background: transparent;
     border-color: rgba(75, 100, 0, 0.3);
-    color: #4b6400;
+    color: $color-primary;
     font-size: 13px;
     padding: 7px 14px;
     flex-shrink: 0;
 }
 
 .admin-panel__btn--edit:hover:not(:disabled) {
-    background: #4b6400;
-    color: #fff;
+    background: $color-primary;
+    color: $color-on-primary;
 }
 
 .admin-panel__btn--toggle-inactive {
     background: transparent;
-    border-color: #e1bfb6;
-    color: #59413b;
+    border-color: $color-outline-variant;
+    color: $color-on-surface-variant;
     white-space: nowrap;
 }
 
@@ -147,7 +151,7 @@
 .admin-panel__btn--toggle-active {
     background: rgba(75, 100, 0, 0.08);
     border-color: rgba(75, 100, 0, 0.3);
-    color: #4b6400;
+    color: $color-primary;
     white-space: nowrap;
 }
 
@@ -156,9 +160,9 @@
 }
 
 .admin-panel__btn--new {
-    background: #4b6400;
-    border-color: #4b6400;
-    color: #fff;
+    background: $color-primary;
+    border-color: $color-primary;
+    color: $color-on-primary;
     white-space: nowrap;
 }
 
@@ -167,9 +171,9 @@
 }
 
 .admin-panel__btn--create {
-    background: #4b6400;
-    border-color: #4b6400;
-    color: #fff;
+    background: $color-primary;
+    border-color: $color-primary;
+    color: $color-on-primary;
 }
 
 .admin-panel__btn--create:hover:not(:disabled) {
@@ -178,8 +182,8 @@
 
 .admin-panel__btn--cancel {
     background: transparent;
-    border-color: #e1bfb6;
-    color: #59413b;
+    border-color: $color-outline-variant;
+    color: $color-on-surface-variant;
 }
 
 .admin-panel__btn--cancel:hover:not(:disabled) {
@@ -197,19 +201,19 @@
 .admin-panel__alert--error {
     background: rgba(186, 26, 26, 0.08);
     border: 1px solid rgba(186, 26, 26, 0.35);
-    color: #ba1a1a;
+    color: $color-error;
 }
 
 .admin-panel__alert--success {
     background: rgba(43, 106, 71, 0.08);
     border: 1px solid rgba(43, 106, 71, 0.35);
-    color: #2b6a47;
+    color: $color-secondary;
 }
 
 /* ---- State messages ---- */
 .admin-panel__loading,
 .admin-panel__empty {
-    color: #59413b;
+    color: $color-on-surface-variant;
     font-size: 15px;
     text-align: center;
     padding: 24px 0;
@@ -227,15 +231,21 @@
 
 .admin-panel__item {
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
     padding: 14px 18px;
-    border: 1px solid #e1bfb6;
+    border: 1px solid $color-outline-variant;
     border-radius: 10px;
-    background: #fff;
+    background: $color-surface-container-lowest;
     transition: border-color 0.15s;
+
+    @include respond-to(sm) {
+        flex-direction: row;
+        align-items: center;
+    }
 }
 
 .admin-panel__item:hover {
@@ -250,7 +260,7 @@
 
 .admin-panel__item--inactive:hover {
     opacity: 1;
-    border-color: #2b6a47;
+    border-color: $color-secondary;
 }
 
 /* Contenedor del botón de acción (eliminar o restaurar) */
@@ -261,7 +271,22 @@
 /* Variante con varios botones en fila (ej: Roles + Eliminar) */
 .admin-panel__item-actions--group {
     display: flex;
+    flex-direction: column;
+    width: 100%;
     gap: 8px;
+
+    .admin-panel__btn {
+        width: 100%;
+    }
+
+    @include respond-to(sm) {
+        flex-direction: row;
+        width: auto;
+
+        .admin-panel__btn {
+            width: auto;
+        }
+    }
 }
 
 .admin-panel__item-info {
@@ -275,12 +300,12 @@
 
 .admin-panel__item-username {
     font-weight: 600;
-    color: #4b6400;
+    color: $color-primary;
     font-size: 15px;
 }
 
 .admin-panel__item-fullname {
-    color: #1e1b17;
+    color: $color-on-background;
     font-size: 15px;
 }
 
@@ -288,19 +313,19 @@
 .admin-panel__item-phone,
 .admin-panel__item-birthdate {
     font-size: 13px;
-    color: #59413b;
+    color: $color-on-surface-variant;
 }
 
 .admin-panel__item-deleted-at {
     font-size: 12px;
-    color: #ba1a1a;
+    color: $color-error;
     font-style: italic;
 }
 
 .admin-panel__item-id {
     font-size: 12px;
-    color: #59413b;
-    background: #f4ede5;
+    color: $color-on-surface-variant;
+    background: $color-surface-container;
     padding: 2px 7px;
     border-radius: 4px;
     font-family: ui-monospace, Consolas, monospace;
@@ -318,14 +343,18 @@
 .admin-panel__create-form-title {
     margin: 0 0 16px;
     font-size: 17px;
-    color: #1e1b17;
+    color: $color-on-background;
 }
 
 .admin-panel__form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 12px;
     margin-bottom: 12px;
+
+    @include respond-to(sm) {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 .admin-panel__form-group {
@@ -336,18 +365,18 @@
 
 .admin-panel__form-group label {
     font-size: 13px;
-    color: #59413b;
+    color: $color-on-surface-variant;
     font-weight: 500;
 }
 
 .admin-panel__input {
     padding: 9px 12px;
     border-radius: 8px;
-    border: 1px solid #e1bfb6;
-    background: #fff;
-    color: #1e1b17;
+    border: 1px solid $color-outline-variant;
+    background: $color-surface-container-lowest;
+    color: $color-on-background;
     font-size: 14px;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: $font-body;
     outline: none;
     transition: border-color 0.2s;
     width: 100%;
@@ -355,7 +384,7 @@
 }
 
 .admin-panel__input:focus {
-    border-color: #4b6400;
+    border-color: $color-primary;
 }
 
 .admin-panel__form-group--checkbox {
@@ -369,7 +398,7 @@
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #1e1b17;
+    color: $color-on-background;
     cursor: pointer;
     user-select: none;
 }
@@ -378,46 +407,22 @@
     width: 16px;
     height: 16px;
     cursor: pointer;
-    accent-color: #4b6400;
+    accent-color: $color-primary;
 }
 
 .admin-panel__form-actions {
     display: flex;
+    flex-direction: column;
     gap: 10px;
     margin-top: 4px;
+
+    @include respond-to(sm) {
+        flex-direction: row;
+    }
 }
 
 .admin-panel__form-hint {
     margin: 10px 0 0;
     font-size: 12px;
-    color: #59413b;
-}
-
-/* ---- Responsive ---- */
-@media (max-width: 576px) {
-    .admin-panel__item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .admin-panel__btn--delete {
-        width: 100%;
-    }
-
-    .admin-panel__item-actions--group {
-        width: 100%;
-        flex-direction: column;
-    }
-
-    .admin-panel__item-actions--group .admin-panel__btn {
-        width: 100%;
-    }
-
-    .admin-panel__form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .admin-panel__form-actions {
-        flex-direction: column;
-    }
+    color: $color-on-surface-variant;
 }

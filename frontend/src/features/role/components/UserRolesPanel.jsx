@@ -5,6 +5,8 @@
 import { useState, useEffect } from 'react';
 import { getAllRoles, getRolesByUser, assignRoleToUser, removeRoleFromUser } from '../services/roleService.js';
 import ConfirmRoleModal from './ConfirmRoleModal.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import '../styles/_user-roles-panel.scss';
 
 // Recibe: userId (número), username (para el mensaje del modal de confirmación).
@@ -17,25 +19,23 @@ function UserRolesPanel({ userId, username }) {
   // Rol sobre el que se pidió confirmación: { role, action: 'assign' | 'remove' } o null.
   const [pendingAction, setPendingAction] = useState(null);
 
-  const loadData = async () => {
+  // Pide todos los roles (un 404 = todavía no hay roles creados) y los del usuario.
+  // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
+  // llamar desde el useEffect sin renders en cascada.
+  const loadData = () =>
+    Promise.all([fetchListOrEmpty(() => getAllRoles()), getRolesByUser(userId)])
+      .then(([rolesData, userRolesData]) => {
+        setAllRoles(rolesData);
+        setAssignedRoleIds(userRolesData.map((r) => r.id));
+        setError('');
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setIsLoading(false));
+
+  // Reintento manual después de un error de carga.
+  const handleRetry = () => {
     setIsLoading(true);
-    setError('');
-    try {
-      const [rolesData, userRolesData] = await Promise.all([
-        getAllRoles().catch((err) => {
-          // El backend devuelve 404 cuando no hay roles cargados — no es un error crítico.
-          if (err.message.includes('No se encontraron')) return [];
-          throw err;
-        }),
-        getRolesByUser(userId),
-      ]);
-      setAllRoles(rolesData);
-      setAssignedRoleIds(userRolesData.map((r) => r.id));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+    loadData();
   };
 
   useEffect(() => {
@@ -68,7 +68,7 @@ function UserRolesPanel({ userId, username }) {
 
       {isLoading && <p className="UserRolesPanel-status">Cargando roles...</p>}
 
-      {error && <p className="UserRolesPanel-status UserRolesPanel-status--error">⚠ {error}</p>}
+      {error && <ErrorState title="No pudimos cargar los roles" message={error} onRetry={handleRetry} />}
 
       {!isLoading && allRoles.length === 0 && !error && (
         <p className="UserRolesPanel-status">

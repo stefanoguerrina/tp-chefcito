@@ -1,34 +1,26 @@
-// Panel "Mis recetas". Permite a cualquier usuario autenticado listar sus propias
-// recetas y abrir el wizard (RecipeEditorPage) para crear o editar una. A diferencia
-// de IngredientPage (catálogo global, solo admin), acá cada usuario solo ve y
-// gestiona las recetas que él creó (el backend además valida la propiedad en
-// cada operación de escritura).
+// Página "Mis recetas" (ruta /mis-recetas). Lista las recetas propias del usuario y
+// lleva al wizard (RecipeEditorPage, rutas /mis-recetas/nueva y /mis-recetas/:id/editar)
+// para crear o editar una. Cada usuario solo ve y gestiona las recetas que él creó (el
+// backend además valida la propiedad en cada operación de escritura).
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAllRecipes, deleteRecipe } from '../services/recipeService.js';
-import { getAllCategories } from '../../category/services/categoryService.js';
-import { getAllIngredients } from '../../ingredient/services/ingredientService.js';
-import { getCurrentUserId } from '../../../shared/utils/decodeToken.js';
+import { useAuthContext } from '../../../app/AuthContext.jsx';
+import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import { recipeToCardProps } from '../models/recipeModel.js';
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
-import RecipeEditorPage from './RecipeEditorPage.jsx';
+import AlertModal from '../../../core/components/AlertModal.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
 import '../styles/_recipe-page.scss';
 
-// Recibe: initialEditorTarget opcional ('create', un id de receta, o null) para abrir
-// el wizard directo al montar — usado cuando se llega desde el panel de Perfil — y
-// onEditorExit opcional, que avisa cuando se cierra el wizard (tanto al guardar como
-// al cancelar) para que quien lo abrió pueda devolver al usuario a su vista.
-function RecipePage({ initialEditorTarget = null, onEditorExit }) {
-  const currentUserId = getCurrentUserId();
+function RecipePage() {
+  const navigate = useNavigate();
+  const { userId: currentUserId } = useAuthContext();
 
   const [recipes, setRecipes] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [ingredientsCatalog, setIngredientsCatalog] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
-
-  // null = viendo la lista; 'create' = wizard en modo alta; un id = wizard editando esa receta.
-  const [editorTarget, setEditorTarget] = useState(initialEditorTarget);
   // Receta que se está por borrar (null = no hay ningún modal de confirmación abierto).
   const [recipePendingDelete, setRecipePendingDelete] = useState(null);
 
@@ -36,35 +28,22 @@ function RecipePage({ initialEditorTarget = null, onEditorExit }) {
   // Texto de búsqueda sobre las recetas propias ya cargadas (mismo patrón que InventoryPage).
   const [searchQuery, setSearchQuery] = useState('');
 
-  const loadData = async () => {
+  // Carga las recetas propias (un 404 = todavía no creó ninguna).
+  // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
+  // llamar desde el useEffect sin renders en cascada.
+  const loadData = () =>
+    fetchListOrEmpty(() => getAllRecipes(currentUserId))
+      .then((recipesData) => {
+        setRecipes(recipesData);
+        setFetchError('');
+      })
+      .catch((err) => setFetchError(err.message))
+      .finally(() => setIsLoading(false));
+
+  // Reintento manual después de un error de carga.
+  const handleRetry = () => {
     setIsLoading(true);
-    setFetchError('');
-    try {
-      // Carga en paralelo las recetas propias, las categorías y el catálogo de
-      // ingredientes disponibles para los selectores del wizard.
-      const [recipesData, categoriesData, ingredientsData] = await Promise.all([
-        getAllRecipes(currentUserId).catch((err) => {
-          // El backend devuelve 404 cuando el usuario todavía no tiene recetas.
-          if (err.message.includes('No se encontraron')) return [];
-          throw err;
-        }),
-        getAllCategories().catch((err) => {
-          if (err.message.includes('No se encontraron')) return [];
-          throw err;
-        }),
-        getAllIngredients().catch((err) => {
-          if (err.message.includes('No se encontraron')) return [];
-          throw err;
-        }),
-      ]);
-      setRecipes(recipesData);
-      setCategories(categoriesData);
-      setIngredientsCatalog(ingredientsData);
-    } catch (err) {
-      setFetchError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+    loadData();
   };
 
   useEffect(() => {
@@ -79,26 +58,9 @@ function RecipePage({ initialEditorTarget = null, onEditorExit }) {
     return recipes.filter((recipe) => recipe.name.toLowerCase().includes(q));
   }, [recipes, searchQuery]);
 
-  const handleEditorDone = async () => {
-    setEditorTarget(null);
-    // Si el wizard lo abrió otra vista (ej. Perfil), es esa la que decide a dónde
-    // volver: recargar la lista de acá sería al pedo porque no se va a mostrar.
-    if (onEditorExit) {
-      onEditorExit();
-      return;
-    }
-    await loadData();
-  };
-
-  const handleEditorCancel = () => {
-    setEditorTarget(null);
-    if (onEditorExit) onEditorExit();
-  };
-
   const handleConfirmDelete = async () => {
     const recipe = recipePendingDelete;
     setRecipePendingDelete(null);
-    setActionError('');
     try {
       await deleteRecipe(recipe.id);
       await loadData();
@@ -106,18 +68,6 @@ function RecipePage({ initialEditorTarget = null, onEditorExit }) {
       setActionError(err.message);
     }
   };
-
-  if (editorTarget !== null) {
-    return (
-      <RecipeEditorPage
-        recipeId={editorTarget === 'create' ? null : editorTarget}
-        categories={categories}
-        ingredientsCatalog={ingredientsCatalog}
-        onDone={handleEditorDone}
-        onCancel={handleEditorCancel}
-      />
-    );
-  }
 
   return (
     <div className="RecipePage">
@@ -147,7 +97,7 @@ function RecipePage({ initialEditorTarget = null, onEditorExit }) {
           <button
             type="button"
             className="RecipePage-addBtn"
-            onClick={() => { setEditorTarget('create'); setActionError(''); }}
+            onClick={() => navigate('/mis-recetas/nueva')}
           >
             <span className="material-symbols-outlined">add</span>
             Nueva receta
@@ -156,7 +106,11 @@ function RecipePage({ initialEditorTarget = null, onEditorExit }) {
       </header>
 
       {actionError && (
-        <div className="RecipePage-alert">⚠ {actionError}</div>
+        <AlertModal
+          title="No se pudo eliminar la receta"
+          message={actionError}
+          onClose={() => setActionError('')}
+        />
       )}
 
       <div className="RecipeSearch">
@@ -184,7 +138,7 @@ function RecipePage({ initialEditorTarget = null, onEditorExit }) {
       </div>
 
       {isLoading && <p className="RecipePage-loading">Cargando recetas...</p>}
-      {fetchError && <p className="RecipePage-error">⚠ {fetchError}</p>}
+      {fetchError && <ErrorState message={fetchError} onRetry={handleRetry} />}
 
       {!isLoading && !fetchError && (
         <>
@@ -219,7 +173,9 @@ function RecipePage({ initialEditorTarget = null, onEditorExit }) {
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipeToCardProps(recipe)}
-                  onEdit={() => setEditorTarget(recipe.id)}
+                  showSaveButton={false}
+                  onClick={() => navigate(`/recetas/${recipe.id}`)}
+                  onEdit={() => navigate(`/mis-recetas/${recipe.id}/editar`)}
                   onDelete={() => setRecipePendingDelete(recipe)}
                 />
               ))}

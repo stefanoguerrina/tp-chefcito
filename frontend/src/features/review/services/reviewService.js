@@ -1,19 +1,12 @@
 // Servicio de reviews: centraliza las llamadas HTTP al backend para la feature review.
-// Las lecturas son públicas (fetch directo); crear, editar y borrar usan apiFetch (token JWT).
+// Las lecturas son públicas; crear, editar y borrar requieren token (apiFetch lo agrega).
 import { apiFetch } from '../../../shared/utils/apiFetch.js';
 import { reviewFromApi } from '../models/reviewModel.js';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Devuelve { reviews, averageRating } de la receta indicada (lectura pública).
 // Recibe: idRecipe (number).
 export const getReviewsByRecipe = async (idRecipe) => {
-  const response = await fetch(`${API_BASE_URL}/recipes/${idRecipe}/reviews`);
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || `Error del servidor (${response.status}).`);
-  }
-  const data = await response.json();
+  const data = await apiFetch(`/recipes/${idRecipe}/reviews`);
   return {
     reviews: (data.reviews ?? []).map(reviewFromApi),
     averageRating: data.averageRating,

@@ -14,7 +14,7 @@ import './_recipe-card.scss';
 // el listón de arriba a la derecha se vuelve funcional y guarda/quita la receta
 // en vez de mostrarse como un corazón decorativo.
 function RecipeCard({ recipe, onClick, onEdit, onDelete, showSaveButton = true, isSaved, onToggleSave }) {
-  const { title, author, image, rating, reviewsCount, timeMinutes, difficulty, badge } = recipe;
+  const { title, author, image, rating, reviewsCount, timeMinutes, difficulty } = recipe;
   const canManage = Boolean(onEdit || onDelete);
 
   return (

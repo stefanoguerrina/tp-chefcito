@@ -299,6 +299,12 @@
     color: $color-on-surface-variant;
   }
 
+  &-error {
+    margin: $spacing-xs 0 0;
+    font-size: 13px;
+    color: $color-error;
+  }
+
   &-actions {
     padding-top: $spacing-sm;
     border-top: 1px solid $color-outline-variant;
