@@ -2,7 +2,6 @@
 // _recipe-editor-page.scss. Header, buscador y estado vacío replican a propósito
 // la misma estructura visual que InventoryPage (_inventory-page.scss): mismo
 // patrón de badge + contador + botón de agregar + buscador en toda la app.
-@use 'sass:color';
 @use '../../../styles/abstracts' as *;
 
 .RecipePage {
@@ -29,25 +28,6 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-xs;
-  }
-
-  &-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: $radius-full;
-    background: rgba($color-primary, 0.1);
-    color: $color-primary;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    width: fit-content;
-
-    .material-symbols-outlined {
-      font-size: 14px;
-    }
   }
 
   &-title {
@@ -88,7 +68,7 @@
     width: 36px;
     height: 36px;
     border-radius: $radius-md;
-    background: rgba($color-secondary, 0.12);
+    background: with-opacity($color-secondary, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -148,7 +128,7 @@
     }
 
     &:hover {
-      background: color.adjust($color-primary, $lightness: -8%);
+      background: shade($color-primary, 8%);
     }
   }
 
@@ -156,12 +136,12 @@
   &-grid {
     margin-top: $spacing-lg;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: $spacing-xl;
   }
 
   &-alert {
-    background: rgba($color-error, 0.1);
+    background: with-opacity($color-error, 0.1);
     color: $color-error;
     border-radius: $radius-md;
     padding: $spacing-sm $spacing-md;
@@ -197,7 +177,7 @@
 
   &:focus-within {
     border-color: $color-primary;
-    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
+    box-shadow: 0 0 0 3px with-opacity($color-primary, 0.12);
   }
 
   &-icon {

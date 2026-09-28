@@ -8,6 +8,8 @@ import {
   restoreUserById,
   updateUserById,
   changeUserPassword,
+  uploadUserImageHandler,
+  deleteUserImageHandler,
 } from '../controllers/userController.js';
 import { verifyToken, verifyAdmin, verifyOwnerOrAdmin } from '../../../core/middleware/authMiddleware.js';
 import {
@@ -16,6 +18,7 @@ import {
   validateChangePassword,
   handleValidationErrors,
 } from '../middleware/userValidationMiddleware.js';
+import { uploadUserImage } from '../middleware/userImageUploadMiddleware.js';
 
 const userRouter = Router();
 
@@ -42,5 +45,17 @@ userRouter.patch('/:id', verifyToken, verifyOwnerOrAdmin, validateUpdateUser, ha
 
 // PATCH /api/users/:id/password — cambia la contraseña del usuario (el propio usuario o admin)
 userRouter.patch('/:id/password', verifyToken, verifyOwnerOrAdmin, validateChangePassword, handleValidationErrors, changeUserPassword);
+
+// Fotos del perfil: una sola de cada una por usuario, subida como archivo (multipart,
+// campo "image") y guardada en backend/uploads/users/. Reemplazar o quitar una foto borra
+// el archivo anterior del disco. Solo el propio usuario o un admin.
+// PATCH  /api/users/:id/avatar — sube o reemplaza la foto de perfil
+// DELETE /api/users/:id/avatar — quita la foto de perfil
+// PATCH  /api/users/:id/cover  — sube o reemplaza la foto de portada
+// DELETE /api/users/:id/cover  — quita la foto de portada
+userRouter.patch('/:id/avatar', verifyToken, verifyOwnerOrAdmin, uploadUserImage, uploadUserImageHandler('avatarUrl'));
+userRouter.delete('/:id/avatar', verifyToken, verifyOwnerOrAdmin, deleteUserImageHandler('avatarUrl'));
+userRouter.patch('/:id/cover', verifyToken, verifyOwnerOrAdmin, uploadUserImage, uploadUserImageHandler('coverUrl'));
+userRouter.delete('/:id/cover', verifyToken, verifyOwnerOrAdmin, deleteUserImageHandler('coverUrl'));
 
 export { userRouter };

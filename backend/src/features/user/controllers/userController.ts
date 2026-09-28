@@ -4,8 +4,10 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import * as userService from '../services/userService.js';
-import { toPublicProfile } from '../models/userModel.js';
+import { toPublicProfile, type UserImageField } from '../models/userModel.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
+import { deleteLocalUpload, toPublicPath } from '../../../core/fileStorage.js';
+import { USER_IMAGES_FOLDER } from '../middleware/userImageUploadMiddleware.js';
 
 // Devuelve la lista de usuarios sin sus contraseñas.
 // Cualquier usuario autenticado puede consultar los activos.
@@ -177,6 +179,55 @@ export const updateUserById = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
+
+// Arma el handler que sube (o reemplaza) una foto del perfil. Se usa dos veces en el router:
+// una para el avatar y otra para la portada, que funcionan exactamente igual.
+// Recibe: field ('avatarUrl' | 'coverUrl'). Body: multipart con el archivo en "image".
+// PATCH /api/users/:id/avatar  y  PATCH /api/users/:id/cover
+export const uploadUserImageHandler = (field: UserImageField) =>
+  async (req: Request, res: Response): Promise<void> => {
+    if (!req.file) {
+      res.status(422).json({
+        message: 'Error de validación. Revisá los campos enviados.',
+        errors: [{ campo: 'image', mensaje: 'Tenés que enviar una imagen.' }],
+      });
+      return;
+    }
+
+    const imageUrl = toPublicPath(USER_IMAGES_FOLDER, req.file.filename);
+    try {
+      const result = await userService.setUserImage(Number(req.params.id), field, imageUrl);
+      if (!result.ok) {
+        // No se guardó en ningún lado: se borra para no dejar un archivo huérfano.
+        await deleteLocalUpload(imageUrl);
+        res.status(404).json({ message: 'Usuario no encontrado.' });
+        return;
+      }
+      res.status(200).json(result.user);
+    } catch (error) {
+      await deleteLocalUpload(imageUrl);
+      console.error(`[uploadUserImage:${field}] Error inesperado:`, error);
+      res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+  };
+
+// Arma el handler que quita una foto del perfil (deja el avatar o la portada vacíos).
+// Recibe: field ('avatarUrl' | 'coverUrl').
+// DELETE /api/users/:id/avatar  y  DELETE /api/users/:id/cover
+export const deleteUserImageHandler = (field: UserImageField) =>
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await userService.removeUserImage(Number(req.params.id), field);
+      if (!result.ok) {
+        res.status(404).json({ message: 'Usuario no encontrado.' });
+        return;
+      }
+      res.status(200).json(result.user);
+    } catch (error) {
+      console.error(`[deleteUserImage:${field}] Error inesperado:`, error);
+      res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+  };
 
 // Cambia la contraseña de un usuario, verificando primero la contraseña actual.
 // Solo el propio usuario o un admin puede realizar esta acción (controlado por verifyOwnerOrAdmin).

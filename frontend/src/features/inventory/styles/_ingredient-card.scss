@@ -1,10 +1,11 @@
 // Estilos de la tarjeta individual del inventario.
 // Mobile-first. Paleta oliva + cálida de Chefcito.
 @use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/functions' as *;
 
 .IngredientCard {
   background: $color-surface-container-lowest;
-  border: 1px solid rgba(234, 223, 211, 0.9);
+  border: 1px solid with-opacity($color-surface-container-highest, 0.9);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -27,7 +28,7 @@
   border-radius: 12px;
   overflow: hidden;
   background: $color-pantry-cream;
-  border: 1px solid rgba(234, 223, 211, 0.7);
+  border: 1px solid with-opacity($color-surface-container-highest, 0.7);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -88,12 +89,12 @@
   flex-shrink: 0;
 
   &--in {
-    background: rgba(63, 125, 88, 0.1);
+    background: with-opacity($color-pantry-green, 0.1);
     color: $color-pantry-green;
   }
 
   &--out {
-    background: rgba(186, 26, 26, 0.08);
+    background: with-opacity($color-error, 0.08);
     color: $color-error;
   }
 }
@@ -128,7 +129,7 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  border: 1px solid rgba(234, 223, 211, 0.9);
+  border: 1px solid with-opacity($color-surface-container-highest, 0.9);
   background: $color-surface-container-lowest;
   cursor: pointer;
   display: flex;

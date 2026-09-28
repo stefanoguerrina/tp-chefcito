@@ -1,26 +1,21 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Variables base del template de Vite (títulos, bordes, <code>): apuntan a la paleta
+     del tema activo (ver styles/_themes.scss), así también cambian en modo oscuro. */
+  --text: var(--color-on-surface-variant);
+  --text-h: var(--color-on-surface);
+  --bg: var(--color-background);
+  --border: var(--color-outline-variant);
+  --code-bg: var(--color-surface-container);
 
-  /* Misma familia tipográfica que $font-body/$font-headline en styles/abstracts/_variables.scss:
-     estas variables son el fallback para cualquier elemento sin estilo propio (ver index.html
-     para los <link> de Google Fonts que cargan ambas). */
-  --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --heading: 'Playfair Display', serif;
+  /* Misma familia tipográfica que $font-body/$font-headline en styles/abstracts/_variables.scss
+     (Inter, cargada en index.html): estas variables son el fallback para cualquier elemento
+     sin estilo propio. */
+  --sans: 'Inter', system-ui, sans-serif;
+  --heading: 'Inter', system-ui, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 16px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -34,28 +29,20 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+/* Red de seguridad: ningún elemento debería desbordar el ancho de la página (convención
+   "sin scroll horizontal" del proyecto), pero un carrusel mal contenido en un layout flex
+   puede llegar a hacerlo. Esto no afecta el scroll propio de un carrusel (su
+   overflow-x: auto sigue funcionando igual), solo evita que ESE desborde se filtre hasta
+   la página entera. Va en <html> y no en <body>: poner overflow en <body> puede romper el
+   position: sticky de sus descendientes (Navbar de la landing, barra de acciones del
+   wizard de recetas), porque cambia cuál es su "ancestro con scroll" de referencia. */
+html {
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
+  background: var(--color-background);
 }
 
 /* Los controles de formulario (button, input, select, textarea) NO heredan font-family
@@ -161,9 +148,9 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #fff8f1 inset;
-  box-shadow: 0 0 0 1000px #fff8f1 inset;
-  -webkit-text-fill-color: #1e1b17;
-  caret-color: #1e1b17;
+  -webkit-box-shadow: 0 0 0 1000px var(--color-background) inset;
+  box-shadow: 0 0 0 1000px var(--color-background) inset;
+  -webkit-text-fill-color: var(--color-on-surface);
+  caret-color: var(--color-on-surface);
   transition: background-color 600000s 0s, color 600000s 0s;
 }

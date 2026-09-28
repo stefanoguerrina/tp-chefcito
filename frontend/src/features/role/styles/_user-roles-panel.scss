@@ -58,7 +58,7 @@
     }
 
     &:hover:not(:disabled) {
-      border-color: rgba($color-primary, 0.35);
+      border-color: with-opacity($color-primary, 0.35);
     }
 
     &:disabled {
@@ -69,8 +69,8 @@
     // Rol ya asignado al usuario: mismo verde oliva ($color-primary) que el resto de
     // las acciones "activas" del panel de administración.
     &--assigned {
-      background: rgba($color-primary, 0.1);
-      border-color: rgba($color-primary, 0.3);
+      background: with-opacity($color-primary, 0.1);
+      border-color: with-opacity($color-primary, 0.3);
       color: $color-primary;
       font-weight: 700;
     }

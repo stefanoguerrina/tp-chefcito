@@ -15,17 +15,23 @@ export interface CreateUserData {
   birthDate?: Date | null;
 }
 
-// Campos que el usuario puede modificar en su perfil.
+// Campos que el usuario puede modificar en su perfil. coverUrl solo cambia subiendo o
+// quitando la foto de portada (PATCH/DELETE /:id/cover), no por el PATCH de datos.
 export interface UpdateUserData {
   name?: string;
   lastName?: string;
   phone?: string | null;
   avatarUrl?: string | null;
+  coverUrl?: string | null;
   bio?: string | null;
   specialty?: string | null;
   location?: string | null;
   birthDate?: Date | null;
 }
+
+// Las dos fotos del perfil que se suben como archivo (una sola de cada una por usuario):
+// el nombre es la columna de la tabla user donde se guarda su ruta pública.
+export type UserImageField = 'avatarUrl' | 'coverUrl';
 
 // Elimina la contraseña de un objeto usuario antes de enviarlo en una respuesta HTTP.
 export function toPublic<T extends { password: string }>(user: T): Omit<T, 'password'> {
@@ -42,11 +48,12 @@ export function toPublicProfile<T extends {
   name: string;
   lastName: string;
   avatarUrl?: string | null;
+  coverUrl?: string | null;
   bio?: string | null;
   specialty?: string | null;
   location?: string | null;
   createdAt?: Date | null;
 }>(user: T) {
-  const { id, username, name, lastName, avatarUrl, bio, specialty, location, createdAt } = user;
-  return { id, username, name, lastName, avatarUrl, bio, specialty, location, createdAt };
+  const { id, username, name, lastName, avatarUrl, coverUrl, bio, specialty, location, createdAt } = user;
+  return { id, username, name, lastName, avatarUrl, coverUrl, bio, specialty, location, createdAt };
 }

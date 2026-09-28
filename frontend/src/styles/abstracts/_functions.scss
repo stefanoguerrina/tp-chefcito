@@ -1,0 +1,15 @@
+// Funciones de color compartidas. Reemplazan a rgba($color, x) y color.adjust() de SASS,
+// que no sirven con los colores del tema porque son variables CSS (se resuelven en el
+// navegador, no al compilar). color-mix() es CSS nativo, así que sí funciona con var().
+
+// Recibe: un color (puede ser una variable del tema) y una opacidad entre 0 y 1.
+// Devuelve: ese mismo color con transparencia. Ej: with-opacity($color-primary, 0.1).
+@function with-opacity($color, $opacity) {
+  @return color-mix(in srgb, #{$color} #{$opacity * 100%}, transparent);
+}
+
+// Recibe: un color y un porcentaje. Devuelve: el color oscurecido mezclándolo con negro
+// en ese porcentaje (se usa para el hover de los botones). Ej: shade($color-primary, 8%).
+@function shade($color, $amount) {
+  @return color-mix(in srgb, #{$color}, black #{$amount});
+}

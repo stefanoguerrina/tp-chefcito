@@ -471,6 +471,7 @@ Base: `/api`. **Público** = sin token · **Token** = cualquier usuario logueado
 | Usuarios | `GET /users` (`?inactive=true` solo admin) · `GET /users/:id` | Token |
 | | `POST /users` · `PATCH /users/:id/restore` | Admin |
 | | `PATCH /users/:id` · `PATCH /users/:id/password` · `DELETE /users/:id` (baja lógica) | Dueño/Admin |
+| | `PATCH` / `DELETE /users/:id/avatar` · `PATCH` / `DELETE /users/:id/cover` (foto de perfil y portada, archivo multipart en `image`) | Dueño/Admin |
 | Inventario | `GET`, `POST /users/:userId/inventory` · `PATCH`, `DELETE /users/:userId/inventory/:ingredientId` | Dueño/Admin |
 | Roles | `GET`, `POST /roles` · `GET`, `PATCH`, `DELETE /roles/:id` · `GET /roles/users/:userId` · `GET`, `POST /roles/:id/users` · `DELETE /roles/:id/users/:userId` | Admin |
 | Categorías de receta | `GET /categories` · `GET /categories/name/:name` | Token |
@@ -496,7 +497,7 @@ Base: `/api`. **Público** = sin token · **Token** = cualquier usuario logueado
 | Guardado | `GET`, `POST`, `PATCH`, `DELETE /recipes/:idRecipe/save` | Token (usuario del token) |
 | | `GET /saved-recipes/:idUser` | Dueño/Admin |
 | Salud | `GET /database/health` | Público |
-| Archivos | `GET /uploads/recipes/<archivo>` (estático, fuera de `/api`) | Público |
+| Archivos | `GET /uploads/recipes/<archivo>` · `GET /uploads/users/<archivo>` (estático, fuera de `/api`) | Público |
 | **Donaciones** | — | **No existe todavía** |
 
 ## Anexo B — Verificaciones hechas para este análisis

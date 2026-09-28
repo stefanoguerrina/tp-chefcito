@@ -165,7 +165,7 @@
   transition: border-color 0.15s ease;
 
   &:hover {
-    border-color: rgba($color-primary, 0.35);
+    border-color: with-opacity($color-primary, 0.35);
   }
 
   input[type='checkbox'] {

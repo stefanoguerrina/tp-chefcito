@@ -2,7 +2,6 @@
 // de grilla que _recipe-page.scss ("Mis recetas"), y el mismo patrón de
 // header + buscador + estado vacío que esa página e InventoryPage — sin botón
 // de agregar, porque acá no se crean recetas, solo se guardan desde otro lado.
-@use 'sass:color';
 @use '../../../styles/abstracts' as *;
 
 .SavedRecipesPage {
@@ -29,25 +28,6 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-xs;
-  }
-
-  &-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: $radius-full;
-    background: rgba($color-primary, 0.1);
-    color: $color-primary;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    width: fit-content;
-
-    .material-symbols-outlined {
-      font-size: 14px;
-    }
   }
 
   &-title {
@@ -81,7 +61,7 @@
     width: 36px;
     height: 36px;
     border-radius: $radius-md;
-    background: rgba($color-secondary, 0.12);
+    background: with-opacity($color-secondary, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -121,12 +101,12 @@
   &-grid {
     margin-top: $spacing-lg;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: $spacing-xl;
   }
 
   &-alert {
-    background: rgba($color-error, 0.1);
+    background: with-opacity($color-error, 0.1);
     color: $color-error;
     border-radius: $radius-md;
     padding: $spacing-sm $spacing-md;
@@ -162,7 +142,7 @@
 
   &:focus-within {
     border-color: $color-primary;
-    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
+    box-shadow: 0 0 0 3px with-opacity($color-primary, 0.12);
   }
 
   &-icon {

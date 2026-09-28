@@ -1,0 +1,144 @@
+// Estilos de los ingredientes del detalle de receta (components/RecipeIngredientsPanel).
+// La tarjeta base y su encabezado vienen de .RecipeDetailCard.
+@use '../../../styles/abstracts' as *;
+
+.RecipeIngredientsPanel {
+  // Contador "Cantidades: − ×1 +".
+  &-multiplier {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: 4px 10px;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+
+    button {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid $color-outline-variant;
+      border-radius: 4px;
+      background: $color-surface-container-lowest;
+      color: $color-on-surface;
+      font-family: $font-body;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+
+      &:hover:not(:disabled) {
+        background: with-opacity($color-primary, 0.12);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  &-multiplierLabel {
+    font-size: 11px;
+    font-weight: 500;
+    color: $color-on-surface-variant;
+  }
+
+  &-multiplierValue {
+    min-width: 22px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-primary;
+  }
+
+  // Una columna en celular; dos desde sm.
+  &-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: $spacing-sm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include respond-to(sm) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding: $spacing-sm;
+    border: 1px solid with-opacity($color-outline-variant, 0.6);
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+    font-size: 12px;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+
+    &:hover {
+      background: $color-surface-container;
+    }
+
+    // Ya tildado: se atenúa y se tacha el nombre.
+    &--checked {
+      opacity: 0.6;
+
+      .RecipeIngredientsPanel-name {
+        text-decoration: line-through;
+        color: $color-on-surface-variant;
+      }
+    }
+  }
+
+  // Todo el nombre es clickeable (el <label> envuelve al checkbox).
+  &-check {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+    cursor: pointer;
+    user-select: none;
+
+    input {
+      flex: none;
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: $color-primary;
+      cursor: pointer;
+    }
+  }
+
+  &-name {
+    font-weight: 500;
+    color: $color-on-surface;
+    overflow-wrap: anywhere;
+  }
+
+  &-right {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &-quantity {
+    font-weight: 700;
+    color: $color-primary;
+    white-space: nowrap;
+  }
+
+  // "Despensa": el usuario ya tiene este ingrediente en su inventario.
+  &-pantry {
+    padding: 1px 6px;
+    border-radius: $radius-full;
+    background: $color-secondary-container;
+    color: $color-on-secondary-container;
+    font-size: 9px;
+    font-weight: 600;
+  }
+}

@@ -1,6 +1,7 @@
 // Modelo de dominio de la feature Review: mapea la forma cruda del backend
 // a la forma que usan los componentes del frontend.
 // Factory functions simples, sin clases ni TypeScript.
+import { resolveImageUrl } from '../../../shared/utils/imageUrl.js';
 
 // Convierte una review cruda del backend a la forma que usan los componentes.
 // Recibe el objeto review con su userrecipe.user anidado.
@@ -17,7 +18,8 @@ export const reviewFromApi = (raw) => ({
     username: raw.userrecipe?.user?.username ?? 'Usuario',
     name: raw.userrecipe?.user?.name ?? '',
     lastName: raw.userrecipe?.user?.lastName ?? '',
-    avatarUrl: raw.userrecipe?.user?.avatarUrl ?? null,
+    // Puede ser una foto subida ("/uploads/users/..."): se completa con el origen del backend.
+    avatarUrl: resolveImageUrl(raw.userrecipe?.user?.avatarUrl),
   },
 });
 

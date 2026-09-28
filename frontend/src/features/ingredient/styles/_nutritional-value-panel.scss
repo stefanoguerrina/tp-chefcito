@@ -79,20 +79,20 @@
     }
 
     &--danger {
-      border-color: rgba($color-error, 0.3);
+      border-color: with-opacity($color-error, 0.3);
       color: $color-error;
 
       &:hover:not(:disabled) {
-        background: rgba($color-error, 0.08);
+        background: with-opacity($color-error, 0.08);
       }
     }
 
     &--add {
-      border-color: rgba($color-primary, 0.3);
+      border-color: with-opacity($color-primary, 0.3);
       color: $color-primary;
 
       &:hover:not(:disabled) {
-        background: rgba($color-primary, 0.08);
+        background: with-opacity($color-primary, 0.08);
       }
     }
   }

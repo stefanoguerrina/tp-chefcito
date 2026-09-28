@@ -47,21 +47,21 @@
     }
 
     &--secondary {
-      border-color: rgba($color-secondary, 0.3);
+      border-color: with-opacity($color-secondary, 0.3);
       .material-symbols-outlined {
         color: $color-secondary;
       }
     }
 
     &--tertiary {
-      border-color: rgba($color-tertiary, 0.3);
+      border-color: with-opacity($color-tertiary, 0.3);
       .material-symbols-outlined {
         color: $color-tertiary;
       }
     }
 
     &--primary {
-      border-color: rgba($color-primary, 0.3);
+      border-color: with-opacity($color-primary, 0.3);
       .material-symbols-outlined {
         color: $color-primary;
       }

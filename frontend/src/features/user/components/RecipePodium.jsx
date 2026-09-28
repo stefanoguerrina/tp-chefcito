@@ -48,6 +48,9 @@ function RecipePodium({ recipes, reviewStatsByRecipe, onEditRecipe }) {
               }}
               onClick={() => onEditRecipe(recipe.id)}
               showSaveButton={false}
+              // Las reseñas ya las resume la base del podio (abajo): la card va limpia.
+              showAuthor={false}
+              showRating={false}
             />
 
             <footer className="RecipePodium-base">

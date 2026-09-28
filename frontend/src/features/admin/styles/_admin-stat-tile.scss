@@ -24,7 +24,7 @@
     height: 40px;
     flex-shrink: 0;
     border-radius: $radius-md;
-    background: rgba($color-primary, 0.1);
+    background: with-opacity($color-primary, 0.1);
     color: $color-primary;
     display: flex;
     align-items: center;

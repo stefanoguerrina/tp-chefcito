@@ -148,14 +148,13 @@ function RecipeCardStage({
         <RecipeCard
           recipe={{
             title: values.name.trim() || 'Título de tu receta',
+            description: values.description.trim() || null,
             author: authorUsername,
             image: values.coverImagePreview || RECIPE_PLACEHOLDER_IMAGE,
-            rating: 0,
-            reviewsCount: 0,
-            timeMinutes: values.preparationTime || '—',
-            difficulty: values.difficulty || 'Sin definir',
-            badge: previewCategoryName ? { label: previewCategoryName, icon: 'sell' } : null,
+            timeMinutes: values.preparationTime || null,
+            categories: previewCategoryName ? [previewCategoryName] : [],
           }}
+          showSaveButton={false}
         />
         <p className="RecipeCardStage-previewNote">
           Previsualización en vivo: así van a ver tu receta los demás cocineros en el explorador.

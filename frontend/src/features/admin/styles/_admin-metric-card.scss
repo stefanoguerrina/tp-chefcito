@@ -36,12 +36,12 @@
     font-weight: 700;
     padding: 2px $spacing-sm;
     border-radius: $radius-full;
-    background: rgba($color-primary, 0.1);
+    background: with-opacity($color-primary, 0.1);
     color: $color-primary;
   }
 
   &--secondary &-badge {
-    background: rgba($color-tertiary, 0.12);
+    background: with-opacity($color-tertiary, 0.12);
     color: $color-tertiary;
   }
 
@@ -55,7 +55,7 @@
   }
 
   &-value {
-    // Todo el panel usa una sola familia de fuentes (ver AdminPage), sin Playfair Display.
+    // $font-body: toda la app usa una sola familia de fuentes (Inter).
     font-family: $font-body;
     font-size: 40px;
     font-weight: 700;

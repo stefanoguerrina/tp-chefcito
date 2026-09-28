@@ -38,7 +38,7 @@
     font-size: 12px;
     font-weight: 700;
     color: $color-primary;
-    background: rgba($color-primary, 0.1);
+    background: with-opacity($color-primary, 0.1);
     padding: 2px $spacing-sm;
     border-radius: $radius-full;
     white-space: nowrap;
@@ -204,11 +204,11 @@
     }
 
     &--danger {
-      border-color: rgba($color-error, 0.3);
+      border-color: with-opacity($color-error, 0.3);
       color: $color-error;
 
       &:hover:not(:disabled) {
-        background: rgba($color-error, 0.08);
+        background: with-opacity($color-error, 0.08);
       }
     }
   }

@@ -2,6 +2,7 @@
 // Mobile-first. Paleta oliva + cálida de Chefcito.
 // Diseño fluido, simétrico, homogéneo y con ritmo vertical cuidado.
 @use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/functions' as *;
 
 /* ---- Overlay ---- */
 .DuplicateModal-overlay {
@@ -26,7 +27,7 @@
 /* ---- Panel ---- */
 .DuplicateModal {
   background: $color-surface-container-lowest;
-  border: 1px solid rgba(234, 223, 211, 0.95);
+  border: 1px solid with-opacity($color-surface-container-highest, 0.95);
   border-radius: 20px;
   padding: 28px 24px 22px;
   max-width: 350px;
@@ -120,7 +121,7 @@
   align-items: center;
   height: 42px;
   background: $color-pantry-cream;
-  border: 1px solid rgba(234, 223, 211, 0.95);
+  border: 1px solid with-opacity($color-surface-container-highest, 0.95);
   border-radius: 12px;
   padding: 3px 4px;
   width: 170px;
@@ -252,7 +253,7 @@
 
   &--cancel {
     background: transparent;
-    border-color: rgba(234, 223, 211, 0.95);
+    border-color: with-opacity($color-surface-container-highest, 0.95);
     color: $color-on-surface-variant;
 
     &:hover {

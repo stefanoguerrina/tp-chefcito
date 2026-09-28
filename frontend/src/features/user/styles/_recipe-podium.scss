@@ -101,7 +101,7 @@
       }
 
       .RecipePodium-baseSubtitle {
-        color: rgba(255, 255, 255, 0.85);
+        color: with-opacity($color-on-primary, 0.85);
       }
     }
 
@@ -160,8 +160,6 @@
   &-basePlace {
     font-family: $font-body;
     font-size: 30px;
-    // 700 es el peso más alto que se carga de Plus Jakarta Sans (ver index.html):
-    // pedir 800 haría que el navegador falsee la negrita.
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.04em;

@@ -8,11 +8,11 @@ import { resolveImageUrl } from '../../../shared/utils/imageUrl.js';
 // de backend/src/features/recipe/models/recipeModel.ts).
 export const RECIPE_DIFFICULTIES = ['Fácil', 'Media', 'Avanzada'];
 
+// Ícono (Material Symbols) con el que se muestra la dificultad en el detalle de receta.
+export const RECIPE_DIFFICULTY_ICON = 'signal_cellular_alt';
+
 // Imagen de reemplazo para recetas sin foto de portada todavía.
 export const RECIPE_PLACEHOLDER_IMAGE = 'https://placehold.co/480x360/f9f3eb/8d7169?text=Sin+foto';
-
-// Avatar de reemplazo para autores sin foto de perfil todavía.
-export const RECIPE_PLACEHOLDER_AVATAR = 'https://placehold.co/48x48/e1bfb6/59413b?text=%20';
 
 // Devuelve la imagen principal de una receta cruda (la marcada isMain o, si no hay, la
 // primera), o null si todavía no tiene ninguna.
@@ -24,39 +24,24 @@ export const getRecipeImageUrl = (recipe) =>
   resolveImageUrl(getMainImage(recipe)?.imageUrl) ?? RECIPE_PLACEHOLDER_IMAGE;
 
 // Convierte una receta cruda del backend a las props que espera RecipeCard
-// (core/components), usado tanto en "Mis recetas" como en la previsualización
-// en vivo del wizard.
-export const recipeToCardProps = (recipe) => {
-  const categoryName = recipe.recipecategory?.[0]?.category?.name;
-  return {
-    title: recipe.name,
-    author: recipe.user?.username ?? '',
-    image: getRecipeImageUrl(recipe),
-    rating: 0,
-    reviewsCount: 0,
-    timeMinutes: recipe.preparationTime ?? '—',
-    difficulty: recipe.difficulty ?? 'Sin definir',
-    badge: categoryName ? { label: categoryName, icon: 'sell' } : null,
-  };
-};
-
-// Convierte una receta cruda del backend a las props que espera HomeRecipeCard
-// (features/recipe/components), usado en el feed de recetas de la comunidad
-// de la home.
-export const recipeToHomeCardProps = (recipe) => {
-  const categoryName = recipe.recipecategory?.[0]?.category?.name;
-  return {
-    id: recipe.id,
-    title: recipe.name,
-    image: getRecipeImageUrl(recipe),
-    badge: categoryName ? { label: categoryName } : null,
-    description: null,
-    time: recipe.preparationTime != null ? `${recipe.preparationTime} min` : '—',
-    difficulty: recipe.difficulty ?? 'Sin definir',
-    author: recipe.user?.username ?? null,
-    authorAvatar: recipe.user?.avatarUrl ?? RECIPE_PLACEHOLDER_AVATAR,
-  };
-};
+// (core/components). Es la única forma de card de receta de la app: la usan "Mis
+// recetas", la home, el perfil, "Recetas guardadas" y la vista previa del wizard.
+// rating/reviewsCount no vienen en la receta: quien los tenga (ej. el perfil o
+// useRecipeReviewStats, con las estadísticas de reseñas) los agrega encima; si no,
+// la card muestra "Sin reseñas".
+export const recipeToCardProps = (recipe) => ({
+  id: recipe.id,
+  title: recipe.name,
+  description: recipe.description ?? null,
+  image: getRecipeImageUrl(recipe),
+  author: recipe.user?.username ?? '',
+  // El avatar puede ser una foto subida ("/uploads/users/..."): se completa con el origen del backend.
+  authorAvatar: resolveImageUrl(recipe.user?.avatarUrl),
+  categories: (recipe.recipecategory ?? [])
+    .map((link) => link.category?.name)
+    .filter(Boolean),
+  timeMinutes: recipe.preparationTime ?? null,
+});
 
 // Arma el estado inicial en blanco del formulario (Etapa 1) para crear una receta nueva.
 export const createEmptyRecipeDraft = () => ({

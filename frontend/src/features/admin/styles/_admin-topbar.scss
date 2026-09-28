@@ -1,10 +1,7 @@
 // Barra superior de contenido del panel admin (features/admin/components/AdminTopbar).
-// No confundir con la barra de navegación fija en mobile (_admin-sidebar.scss): esta va
+// No confundir con la barra fija de mobile (core/components/CollapsibleSidebar): esta va
 // dentro de AdminPage-content, debajo de aquella.
 @use '../../../styles/abstracts' as *;
-// Trae el alto compartido con la marca de la sidebar (ver ese partial), para que las
-// dos líneas de separación queden a la misma altura en desktop.
-@use './admin-sidebar' as adminSidebar;
 
 .AdminTopbar {
   display: flex;
@@ -16,15 +13,17 @@
   background: $color-surface-container-lowest;
   border-bottom: 1px solid $color-outline-variant;
 
-  @include respond-to(lg) {
-    height: adminSidebar.$admin-header-height;
+  // $layout-header-height es el mismo alto que la marca de la sidebar: así las dos líneas
+  // de separación quedan a la misma altura en desktop.
+  @include respond-to(md) {
+    height: $layout-header-height;
     box-sizing: border-box;
     padding: 0 $spacing-gutter-desktop;
   }
 
   &-title {
     margin: 0;
-    // Todo el panel usa una sola familia de fuentes (ver AdminPage), sin Playfair Display.
+    // $font-body: toda la app usa una sola familia de fuentes (Inter).
     font-family: $font-body;
     font-size: 22px;
     font-weight: 700;

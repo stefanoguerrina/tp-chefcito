@@ -131,6 +131,9 @@ function ProfileRecipeGallery({ recipes, recipeReviewStats, isOwnProfile, ownerN
               }}
               onClick={() => onRecipeClick(recipe.id)}
               showSaveButton={false}
+              // En el perfil propio la card abre el editor: sin autor (sos vos) ni reseñas.
+              showAuthor={!isOwnProfile}
+              showRating={!isOwnProfile}
             />
           );
         })}

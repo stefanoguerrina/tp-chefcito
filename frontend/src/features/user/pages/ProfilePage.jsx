@@ -14,10 +14,11 @@ import { useAuthContext } from '../../../app/AuthContext.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
 import EditProfileModal from '../components/EditProfileModal.jsx';
-import ProfileHeader from '../components/ProfileHeader.jsx';
-import ProfileMetrics from '../components/ProfileMetrics.jsx';
+import ProfileCard from '../components/ProfileCard.jsx';
+import ProfileStats from '../components/ProfileStats.jsx';
 import ProfileRecipeGallery from '../components/ProfileRecipeGallery.jsx';
 import RecipePodium from '../components/RecipePodium.jsx';
+import { PROFILE_UPDATED_EVENT } from '../hooks/useSidebarProfile.js';
 import '../styles/_profile-page.scss';
 
 // Rutas: /perfil (perfil propio) y /usuarios/:userId (perfil de otro usuario).
@@ -68,8 +69,8 @@ function ProfilePage() {
 
   return (
     <div className="ProfilePage">
-      {/* Solo el perfil ajeno tiene "Volver": el propio es una sección fija de la
-          sidebar, no hay a dónde volver. */}
+      {/* Solo el perfil ajeno tiene "Volver": al propio se entra desde la cuenta del
+          pie de la sidebar, no hay a dónde volver. */}
       {!isOwnProfile && (
         <button type="button" className="ProfilePage-backBtn" onClick={handleBack}>
           <span className="material-symbols-outlined">arrow_back</span>
@@ -77,7 +78,7 @@ function ProfilePage() {
         </button>
       )}
 
-      <ProfileHeader
+      <ProfileCard
         key={user.avatarUrl ?? 'sin-avatar'}
         user={user}
         recipesCount={recipes.length}
@@ -86,7 +87,7 @@ function ProfilePage() {
         onDonate={() => setShowDonationSoon(true)}
       />
 
-      <ProfileMetrics recipes={recipes} reviewStats={reviewStats} isOwnProfile={isOwnProfile} />
+      <ProfileStats recipes={recipes} reviewStats={reviewStats} />
 
       {/* Solo "Recetas Publicadas" está implementado; borradores y preferencias quedan
           visibles pero inertes hasta que existan esas features (mismo criterio
@@ -159,6 +160,8 @@ function ProfilePage() {
           onSaved={(updatedUser) => {
             setUser(updatedUser);
             setIsEditingProfile(false);
+            // Avisa a la sidebar (useSidebarProfile) para que actualice su foto y nombre.
+            window.dispatchEvent(new CustomEvent(PROFILE_UPDATED_EVENT, { detail: updatedUser }));
           }}
         />
       )}

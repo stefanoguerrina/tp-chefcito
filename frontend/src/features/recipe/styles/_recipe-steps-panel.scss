@@ -1,0 +1,217 @@
+// Estilos de los pasos del detalle de receta (components/RecipeStepsPanel).
+// La tarjeta base y su encabezado vienen de .RecipeDetailCard.
+@use '../../../styles/abstracts' as *;
+
+.RecipeStepsPanel {
+  // Píldoras "01 02 03...": si hay muchos pasos, se desplazan de costado.
+  &-pills {
+    display: flex;
+    gap: 6px;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  &-pill {
+    flex: none;
+    padding: 4px 12px;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: with-opacity($color-primary, 0.12);
+    }
+
+    &--active,
+    &--active:hover {
+      border-color: $color-primary;
+      background: $color-primary;
+      color: $color-on-primary;
+      font-weight: 700;
+    }
+  }
+
+  // Barra de progreso: un segmento por paso (grid-template-columns lo pone el JSX).
+  &-progress {
+    display: grid;
+    gap: $spacing-sm;
+  }
+
+  &-segment {
+    height: 6px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    background: $color-surface-container-high;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &--done {
+      background: $color-primary;
+    }
+
+    &--current {
+      box-shadow: 0 0 0 2px with-opacity($color-primary, 0.35);
+    }
+  }
+
+  // Paso actual: panel con el número grande + el texto. Apilados en celular.
+  &-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: $spacing-md;
+    padding: $spacing-md;
+    border: 1px solid $color-surface-container-highest;
+    border-radius: $radius-lg;
+    background: with-opacity($color-surface-container-low, 0.6);
+
+    @include respond-to(sm) {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      min-height: 190px;
+    }
+  }
+
+  // Ocupa el lugar de la foto del diseño de referencia (los pasos no tienen foto propia).
+  &-visual {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: $spacing-md;
+    border-radius: $radius-md;
+    background: linear-gradient(135deg, with-opacity($color-primary, 0.16), with-opacity($color-secondary, 0.1));
+  }
+
+  &-bigNumber {
+    font-size: 56px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: $color-primary;
+  }
+
+  &-ofTotal {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+  }
+
+  &-duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: $spacing-sm;
+    padding: 4px 10px;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    font-size: 11px;
+    font-weight: 700;
+    color: $color-on-surface;
+
+    .material-symbols-outlined {
+      font-size: 15px;
+      color: $color-primary;
+    }
+  }
+
+  &-text {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    min-width: 0;
+  }
+
+  &-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $color-primary;
+  }
+
+  &-instruction {
+    flex: 1;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: $color-on-surface;
+    overflow-wrap: anywhere;
+  }
+
+  &-hint {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined {
+      font-size: 14px;
+      color: $color-primary;
+    }
+  }
+
+  &-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding-top: $spacing-sm;
+    border-top: 1px solid $color-surface-container-high;
+  }
+
+  &-navBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &--primary {
+      border-color: $color-primary;
+      background: $color-primary;
+      color: $color-on-primary;
+      font-weight: 700;
+
+      &:hover:not(:disabled) {
+        background: shade($color-primary, 12%);
+      }
+
+      // "¡Receta lista!": se ve completo (no apagado) aunque ya no avance.
+      &:disabled {
+        opacity: 1;
+        cursor: default;
+      }
+    }
+  }
+}

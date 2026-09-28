@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSavedRecipesByUser, deleteUserRecipe } from '../services/userRecipeService.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
+import { useRecipeReviewStats } from '../../review/hooks/useRecipeReviewStats.js';
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
@@ -23,6 +24,8 @@ function SavedRecipesPage() {
   const [actionError, setActionError] = useState('');
   // Texto de búsqueda sobre las recetas ya guardadas (mismo patrón que Mis recetas/Inventario).
   const [searchQuery, setSearchQuery] = useState('');
+  // Promedio de valoraciones + cantidad de reseñas de cada receta, para su card.
+  const reviewStatsByRecipe = useRecipeReviewStats(savedRecipes.map((item) => item.idRecipe));
 
   // Pide las recetas guardadas (un 404 = todavía no guardó ninguna).
   // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
@@ -67,11 +70,7 @@ function SavedRecipesPage() {
     <div className="SavedRecipesPage">
       <header className="SavedRecipesPage-header">
         <div className="SavedRecipesPage-titleGroup">
-          <span className="SavedRecipesPage-badge">
-            <span className="material-symbols-outlined">bookmark</span>
-            Recetas guardadas
-          </span>
-          <h1 className="SavedRecipesPage-title">Tu selección de recetas</h1>
+          <h1 className="SavedRecipesPage-title">Recetas guardadas</h1>
         </div>
 
         <div className="SavedRecipesPage-counter">
@@ -161,7 +160,11 @@ function SavedRecipesPage() {
               {filteredSavedRecipes.map((item) => (
                 <RecipeCard
                   key={item.idRecipe}
-                  recipe={item.recipe}
+                  recipe={{
+                    ...item.recipe,
+                    rating: reviewStatsByRecipe[item.idRecipe]?.averageRating,
+                    reviewsCount: reviewStatsByRecipe[item.idRecipe]?.reviewsCount,
+                  }}
                   onClick={() => navigate(`/recetas/${item.idRecipe}`)}
                   isSaved
                   onToggleSave={() => handleRemove(item.idRecipe)}

@@ -212,7 +212,6 @@ function RecipeEditorPage() {
     <div className="RecipeEditorPage">
       <div className="RecipeEditorPage-banner">
         <div>
-          <span className="RecipeEditorPage-eyebrow">Taller Culinario Chefcito</span>
           <h1>{isEditing ? 'Editar receta' : 'Crear una nueva receta'}</h1>
           <p>Diseñá la ficha visual y detallá el paso a paso para que la comunidad pueda replicarla.</p>
         </div>
