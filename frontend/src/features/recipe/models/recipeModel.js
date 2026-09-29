@@ -11,6 +11,12 @@ export const RECIPE_DIFFICULTIES = ['Fácil', 'Media', 'Avanzada'];
 // Ícono (Material Symbols) con el que se muestra la dificultad en el detalle de receta.
 export const RECIPE_DIFFICULTY_ICON = 'signal_cellular_alt';
 
+// Límites reales de columnas del backend (recipe.name VarChar(150), recipe.description
+// Text con tope de 2000 en la validación): el editor los usa tal cual, sin inventar
+// otros más cortos.
+export const RECIPE_NAME_MAX_LENGTH = 150;
+export const RECIPE_DESCRIPTION_MAX_LENGTH = 2000;
+
 // Imagen de reemplazo para recetas sin foto de portada todavía.
 export const RECIPE_PLACEHOLDER_IMAGE = 'https://placehold.co/480x360/f9f3eb/8d7169?text=Sin+foto';
 
@@ -43,45 +49,38 @@ export const recipeToCardProps = (recipe) => ({
   timeMinutes: recipe.preparationTime ?? null,
 });
 
-// Arma el estado inicial en blanco del formulario (Etapa 1) para crear una receta nueva.
+// Arma el estado inicial en blanco del formulario para crear una receta nueva. Las
+// fotos NO viven acá: las administra su propio hook (useRecipePhotos), igual que
+// ingredientes y pasos tienen su propio array en RecipeEditorPage.
+// preparationTime y difficulty tampoco viven acá: el tiempo se calcula solo a partir de
+// los pasos (ver computePreparationTimeFromSteps) y la dificultad ya no se carga desde
+// el editor (sigue existiendo en el modelo para las recetas viejas que ya la tenían).
 export const createEmptyRecipeDraft = () => ({
   name: '',
   description: '',
-  preparationTime: '',
-  difficulty: '',
-  categoryId: '',
-  // Lo que se muestra en la vista previa de la portada: la foto ya guardada, una vista
-  // previa local (blob:) de la foto elegida o el link pegado.
-  coverImagePreview: null,
-  // Foto nueva elegida desde el dispositivo (File ya comprimido), o null.
-  coverImageFile: null,
-  // Link externo pegado por el usuario en lugar de subir una foto ('' si no hay).
-  coverImageLink: '',
-  // id de la imagen principal ya guardada en el backend (null si todavía no tiene).
-  // Se usa para saber si hay que crear una imagen nueva o actualizar la existente.
-  mainImageId: null,
+  // Una receta puede tener varias categorías (recipecategory es N a N): array de ids
+  // en string, para que el picker los compare igual que <option value>.
+  categoryIds: [],
 });
 
-// Convierte una receta cruda del backend (con su recipecategory[] e image[]) al
-// estado que espera el formulario de edición. Solo toma la primera categoría
-// vinculada, ya que el selector de la Etapa 1 es de una sola categoría a la vez.
-export const recipeToDraft = (recipe) => {
-  const mainImage = getMainImage(recipe);
-  return {
-    name: recipe.name ?? '',
-    description: recipe.description ?? '',
-    preparationTime: recipe.preparationTime != null ? String(recipe.preparationTime) : '',
-    difficulty: recipe.difficulty ?? '',
-    categoryId: recipe.recipecategory?.[0]?.idCategory != null ? String(recipe.recipecategory[0].idCategory) : '',
-    coverImagePreview: resolveImageUrl(mainImage?.imageUrl),
-    coverImageFile: null,
-    coverImageLink: '',
-    mainImageId: mainImage?.id ?? null,
-  };
+// Convierte una receta cruda del backend al estado que espera el formulario de edición.
+export const recipeToDraft = (recipe) => ({
+  name: recipe.name ?? '',
+  description: recipe.description ?? '',
+  categoryIds: (recipe.recipecategory ?? []).map((link) => String(link.idCategory)),
+});
+
+// Suma el tiempo estimado de cada paso para que sea el tiempo de preparación de la
+// receta: el editor ya no lo pide a mano. Devuelve null si ningún paso tiene tiempo
+// cargado (en vez de 0), así una edición que borra todos los tiempos también limpia el
+// tiempo de preparación de la receta en vez de dejar guardado un valor viejo.
+export const computePreparationTimeFromSteps = (steps) => {
+  const total = steps.reduce((sum, step) => sum + (Number(step.estimatedTime) || 0), 0);
+  return total > 0 ? total : null;
 };
 
 // Convierte los pasos crudos del backend (step[]) al estado que espera
-// RecipeStepsStage: solo instruction y estimatedTime como string editable.
+// RecipeStepsEditorStage: solo instruction y estimatedTime como string editable.
 export const stepsToDraft = (steps) =>
   (steps ?? []).map((step) => ({
     instruction: step.instruction ?? '',
@@ -96,13 +95,30 @@ export const recipeIngredientsToDraft = (recipeIngredients) =>
     quantity: item.requiredQuantity != null ? String(item.requiredQuantity) : '',
   }));
 
+// Convierte las imágenes crudas de una receta (image[]) al estado que administra
+// useRecipePhotos: una "foto" por elemento, con su id real (para poder actualizarla o
+// borrarla) y originalIsMain (para no mandar un PATCH de más si no cambió nada).
+// La principal queda primero, así es la que se ve al abrir el editor.
+export const recipeImagesToDraft = (images) =>
+  (images ?? [])
+    .slice()
+    .sort((a, b) => Number(b.isMain) - Number(a.isMain) || a.id - b.id)
+    .map((image) => ({
+      key: `existing-${image.id}`,
+      existingImageId: image.id,
+      file: null,
+      previewUrl: resolveImageUrl(image.imageUrl),
+      isMain: Boolean(image.isMain),
+      originalIsMain: Boolean(image.isMain),
+    }));
+
 // Arma el body para POST/PATCH /api/recipes a partir del estado del formulario.
+// preparationTime no viene del draft: RecipeEditorPage lo suma con
+// computePreparationTimeFromSteps y lo agrega antes de mandar el pedido.
 export const draftToRecipePayload = (draft) => ({
   name: draft.name.trim(),
   description: draft.description.trim() || undefined,
-  preparationTime: draft.preparationTime ? Number(draft.preparationTime) : undefined,
-  difficulty: draft.difficulty || undefined,
-  categoryIds: draft.categoryId ? [Number(draft.categoryId)] : [],
+  categoryIds: draft.categoryIds.map(Number),
 });
 
 // Arma el array de pasos para PUT /api/recipes/:id/steps a partir del estado del formulario.
@@ -119,12 +135,3 @@ export const recipeIngredientsToPayload = (ingredients) =>
     idIngredient: Number(item.idIngredient),
     requiredQuantity: item.quantity ? Number(item.quantity) : undefined,
   }));
-
-// Arma los datos de la portada para createImage/updateImage según lo que eligió el
-// usuario: la foto subida tiene prioridad sobre un link pegado.
-// Recibe: el draft. Devuelve: { file } | { imageUrl }, o null si no hay nada nuevo.
-export const draftToCoverImagePayload = (draft) => {
-  if (draft.coverImageFile) return { file: draft.coverImageFile, isMain: true };
-  if (draft.coverImageLink.trim()) return { imageUrl: draft.coverImageLink.trim(), isMain: true };
-  return null;
-};

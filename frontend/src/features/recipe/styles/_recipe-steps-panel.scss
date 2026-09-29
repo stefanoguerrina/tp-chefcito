@@ -62,53 +62,41 @@
     }
   }
 
-  // Paso actual: panel con el número grande + el texto. Apilados en celular.
+  // Paso actual: un bloque de texto simple (tag + tiempo, y la instrucción abajo).
+  // Sin ninguna caja decorativa a un costado: los pasos no tienen foto propia.
   &-content {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
     padding: $spacing-md;
     border: 1px solid $color-surface-container-highest;
     border-radius: $radius-lg;
     background: with-opacity($color-surface-container-low, 0.6);
-
-    @include respond-to(sm) {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      min-height: 190px;
-    }
+    min-height: 120px;
   }
 
-  // Ocupa el lugar de la foto del diseño de referencia (los pasos no tienen foto propia).
-  &-visual {
+  &-contentHeader {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    gap: 2px;
-    padding: $spacing-md;
-    border-radius: $radius-md;
-    background: linear-gradient(135deg, with-opacity($color-primary, 0.16), with-opacity($color-secondary, 0.1));
+    justify-content: space-between;
+    gap: $spacing-sm;
   }
 
-  &-bigNumber {
-    font-size: 56px;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.04em;
+  &-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: $color-primary;
   }
 
-  &-ofTotal {
-    font-size: 12px;
-    font-weight: 600;
-    color: $color-on-surface-variant;
-  }
-
+  // Tiempo estimado de ESTE paso puntual (no un total de la receta): se omite por
+  // completo si ese paso no tiene tiempo cargado (es un campo opcional).
   &-duration {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-top: $spacing-sm;
     padding: 4px 10px;
     border: 1px solid $color-outline-variant;
     border-radius: $radius-md;
@@ -123,21 +111,6 @@
     }
   }
 
-  &-text {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-sm;
-    min-width: 0;
-  }
-
-  &-tag {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: $color-primary;
-  }
-
   &-instruction {
     flex: 1;
     margin: 0;
@@ -145,19 +118,6 @@
     line-height: 1.6;
     color: $color-on-surface;
     overflow-wrap: anywhere;
-  }
-
-  &-hint {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    color: $color-on-surface-variant;
-
-    .material-symbols-outlined {
-      font-size: 14px;
-      color: $color-primary;
-    }
   }
 
   &-nav {

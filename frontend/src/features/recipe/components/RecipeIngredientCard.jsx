@@ -1,111 +1,83 @@
-// Tarjeta de un ingrediente de receta dentro del wizard (Etapa 2). Antes de
-// elegir un ingrediente muestra una barra de búsqueda sobre el catálogo ya
-// cargado; una vez elegido, muestra su nombre y pide la cantidad, aclarando
-// la unidad de medida propia de ese ingrediente (no se guarda una unidad
-// aparte por receta: es la que ya tiene el ingrediente en el catálogo).
+// Tarjeta compacta de un ingrediente ya elegido para la receta (el ingrediente en sí se
+// elige desde AddIngredientModal, no acá). Muestra su nombre y cantidad; la cantidad es
+// texto de solo lectura hasta que se toca "Editar", que la vuelve un campo editable (no
+// se puede escribir tocándola directamente, para no confundirla con texto suelto). No se
+// guarda una unidad aparte por receta: es la que ya tiene el ingrediente en el catálogo.
 import { useState } from 'react';
-import '../styles/_recipe-editor-page.scss';
 
-const MAX_SEARCH_RESULTS = 8;
+// Recibe: item ({ idIngredient, quantity }), ingredientsCatalog (para mostrar nombre y
+// unidad), canDelete, onChange (cambios de cantidad) y onDelete.
+function RecipeIngredientCard({ item, ingredientsCatalog, canDelete, onChange, onDelete }) {
+  const ingredient = ingredientsCatalog.find((ing) => String(ing.id) === item.idIngredient);
+  // Si todavía no tiene cantidad (recién agregado desde el modal), arranca directamente
+  // en modo edición: no tiene sentido obligar a tocar "Editar" antes de poder escribirla.
+  const [isEditingQuantity, setIsEditingQuantity] = useState(!item.quantity);
 
-// Recibe: item ({ idIngredient, quantity }), index, ingredientsCatalog (array
-// completo de ingredientes disponibles), excludedIngredientIds (Set de ids ya
-// elegidos en OTRAS tarjetas, para no poder duplicarlos), canDelete, onChange
-// (campos modificados), onDelete. Devuelve la tarjeta completa.
-function RecipeIngredientCard({ item, index, ingredientsCatalog, excludedIngredientIds, canDelete, onChange, onDelete }) {
-  const [searchTerm, setSearchTerm] = useState('');
+  // Puede pasar en el instante entre elegirlo en el modal y que llegue el catálogo
+  // actualizado; no debería quedar así, pero mejor no romper el render.
+  if (!ingredient) return null;
 
-  const selectedIngredient = ingredientsCatalog.find((ing) => String(ing.id) === item.idIngredient);
+  const handleToggleEdit = () => setIsEditingQuantity((value) => !value);
 
-  const searchResults = searchTerm.trim()
-    ? ingredientsCatalog
-        .filter((ing) => !excludedIngredientIds.has(ing.id))
-        .filter((ing) => ing.name.toLowerCase().includes(searchTerm.trim().toLowerCase()))
-        .slice(0, MAX_SEARCH_RESULTS)
-    : [];
-
-  const handleSelect = (ingredient) => {
-    onChange({ idIngredient: String(ingredient.id) });
-    setSearchTerm('');
+  // Enter confirma y vuelve al texto (el valor ya se guardó en cada tecla via onChange).
+  const handleQuantityKeyDown = (event) => {
+    if (event.key === 'Enter') setIsEditingQuantity(false);
   };
 
-  const handleChangeIngredient = () => {
-    onChange({ idIngredient: '', quantity: '' });
-    setSearchTerm('');
-  };
+  const quantityText = item.quantity
+    ? `${item.quantity}${ingredient.unitOfMeasure ? ` ${ingredient.unitOfMeasure}` : ''}`
+    : 'Sin cantidad cargada';
 
   return (
     <div className="RecipeIngredientCard">
-      <div className="RecipeIngredientCard-header">
-        <span className="RecipeIngredientCard-number">{index + 1}</span>
+      <div className="RecipeIngredientCard-info">
+        <span className="RecipeIngredientCard-dot" />
+        <div className="RecipeIngredientCard-details">
+          <span className="RecipeIngredientCard-name">{ingredient.name}</span>
+
+          {isEditingQuantity ? (
+            <span className="RecipeIngredientCard-qtyRow">
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                autoFocus
+                value={item.quantity}
+                onChange={(e) => onChange({ quantity: e.target.value })}
+                onKeyDown={handleQuantityKeyDown}
+                onBlur={() => setIsEditingQuantity(false)}
+                placeholder="Cantidad"
+                aria-label={`Cantidad requerida de ${ingredient.name}`}
+              />
+              {ingredient.unitOfMeasure && <span>{ingredient.unitOfMeasure}</span>}
+            </span>
+          ) : (
+            <span className="RecipeIngredientCard-qtyText">{quantityText}</span>
+          )}
+        </div>
+      </div>
+
+      <div className="RecipeIngredientCard-actions">
         <button
           type="button"
-          className="RecipeIngredientCard-deleteButton"
-          title={canDelete ? 'Eliminar este ingrediente' : 'La receta debe tener al menos un ingrediente'}
+          className="RecipeIngredientCard-iconButton"
+          title={isEditingQuantity ? 'Listo' : 'Editar cantidad'}
+          // Evita que el mousedown le saque el foco al input antes del click: si no,
+          // el onBlur del input cierra la edición primero y el toggle la vuelve a abrir.
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={handleToggleEdit}
+        >
+          <span className="material-symbols-outlined">{isEditingQuantity ? 'check' : 'edit'}</span>
+        </button>
+        <button
+          type="button"
+          className="RecipeIngredientCard-iconButton RecipeIngredientCard-iconButton--danger"
+          title={canDelete ? 'Eliminar' : 'La receta debe tener al menos un ingrediente'}
           disabled={!canDelete}
           onClick={onDelete}
         >
           <span className="material-symbols-outlined">delete</span>
         </button>
-      </div>
-
-      {selectedIngredient ? (
-        <div className="RecipeIngredientCard-selected">
-          <span className="material-symbols-outlined">nutrition</span>
-          <span className="RecipeIngredientCard-selectedName">{selectedIngredient.name}</span>
-          <button type="button" className="RecipeIngredientCard-changeButton" onClick={handleChangeIngredient}>
-            Cambiar
-          </button>
-        </div>
-      ) : (
-        <div className="RecipeIngredientCard-field">
-          <label htmlFor={`ingredient-search-${index}`}>Buscar ingrediente *</label>
-          <div className="RecipeIngredientCard-searchWrapper">
-            <span className="material-symbols-outlined">search</span>
-            <input
-              id={`ingredient-search-${index}`}
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Ej: Tomate, harina, pollo..."
-              autoComplete="off"
-            />
-          </div>
-          {searchTerm.trim() && (
-            <ul className="RecipeIngredientCard-searchResults">
-              {searchResults.length === 0 && (
-                <li className="RecipeIngredientCard-searchEmpty">No se encontraron ingredientes.</li>
-              )}
-              {searchResults.map((ing) => (
-                <li key={ing.id}>
-                  <button type="button" onClick={() => handleSelect(ing)}>
-                    {ing.name}
-                    {ing.unitOfMeasure && <span> ({ing.unitOfMeasure})</span>}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
-      <div className="RecipeIngredientCard-field RecipeIngredientCard-field--inline">
-        <span className="material-symbols-outlined">scale</span>
-        <div>
-          <label htmlFor={`ingredient-quantity-${index}`}>
-            Cantidad requerida{selectedIngredient?.unitOfMeasure ? ` (${selectedIngredient.unitOfMeasure})` : ''}
-          </label>
-          <input
-            id={`ingredient-quantity-${index}`}
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={item.quantity}
-            onChange={(e) => onChange({ quantity: e.target.value })}
-            placeholder="ej. 500"
-            disabled={!selectedIngredient}
-          />
-        </div>
       </div>
     </div>
   );

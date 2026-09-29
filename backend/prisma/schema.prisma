@@ -114,7 +114,9 @@ model inventory {
   idIngredient      Int
   unitOfMeasure     String?    @db.VarChar(20)
   availableQuantity Decimal?   @db.Decimal(10, 2)
-  ingredient        ingredient @relation(fields: [idIngredient], references: [id], onDelete: Cascade, map: "fk_inventory_ingredient")
+  // Restrict (no Cascade): si un usuario tiene este ingrediente en su inventario, borrar
+  // el ingrediente de la tabla maestra no puede arrastrarse en silencio esa fila.
+  ingredient        ingredient @relation(fields: [idIngredient], references: [id], onDelete: Restrict, map: "fk_inventory_ingredient")
   user              User       @relation(fields: [idUser], references: [id], onDelete: Cascade, map: "fk_inventory_user")
 
   @@id([idUser, idIngredient])
@@ -166,7 +168,11 @@ model recipeingredient {
   idRecipe         Int
   idIngredient     Int
   requiredQuantity Decimal?   @db.Decimal(10, 2)
-  ingredient       ingredient @relation(fields: [idIngredient], references: [id], onDelete: Cascade, map: "fk_recipeingredient_ingredient")
+  // Restrict (no Cascade): si una receta usa este ingrediente, borrar el ingrediente de la
+  // tabla maestra no puede arrastrarse en silencio ese vínculo (dejaría la receta rota sin
+  // avisar a nadie). ingredientService.deleteIngredient ya espera este rechazo (P2003) para
+  // devolver "in_use"; antes, al ser Cascade, nunca se disparaba y el borrado pasaba igual.
+  ingredient       ingredient @relation(fields: [idIngredient], references: [id], onDelete: Restrict, map: "fk_recipeingredient_ingredient")
   recipe           recipe     @relation(fields: [idRecipe], references: [id], onDelete: Cascade, map: "fk_recipeingredient_recipe")
 
   @@id([idRecipe, idIngredient])

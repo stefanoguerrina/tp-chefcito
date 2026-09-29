@@ -94,10 +94,7 @@ function ProfileCard({ user, recipesCount, isOwnProfile, onEditProfile, onDonate
             <div className="ProfileCard-headline">
               <span>@{user.username}</span>
               {user.specialty && (
-                <span className="ProfileCard-badge ProfileCard-badge--specialty">
-                  <span className="material-symbols-outlined">restaurant_menu</span>
-                  {user.specialty}
-                </span>
+                <span className="ProfileCard-badge ProfileCard-badge--specialty">{user.specialty}</span>
               )}
             </div>
 

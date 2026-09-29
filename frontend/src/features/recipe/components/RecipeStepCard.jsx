@@ -1,52 +1,42 @@
-// Tarjeta de un paso de preparación dentro del wizard de receta (Etapa 2).
-// Cada paso solo tiene instrucción y tiempo estimado (son los únicos campos que
-// existen en el modelo `step` del backend); no hay título ni foto por paso todavía.
-import '../styles/_recipe-editor-page.scss';
+// Campos del paso que se está editando, dentro de RecipeStepsEditorStage: instrucción
+// (obligatoria) y tiempo estimado (opcional). Los pasos no tienen título ni foto propia,
+// a diferencia de la receta (que sí tiene su portada); el número de paso y "Eliminar" se
+// manejan desde el encabezado de la etapa, no acá.
+import { RECIPE_DESCRIPTION_MAX_LENGTH } from '../models/recipeModel.js';
 
-// Recibe: step ({ instruction, estimatedTime }), index (posición 0-based, para el
-// número mostrado), canDelete (false si es el único paso restante), onChange
-// (recibe los campos modificados), onDelete. Devuelve la tarjeta del paso.
-function RecipeStepCard({ step, index, canDelete, onChange, onDelete }) {
+// Recibe: step ({ instruction, estimatedTime }), index (posición 0-based) y total
+// (cantidad de pasos, para el texto "Paso X de Y"), onChange (campos modificados).
+function RecipeStepCard({ step, index, total, onChange }) {
   return (
     <div className="RecipeStepCard">
-      <div className="RecipeStepCard-header">
-        <span className="RecipeStepCard-number">{index + 1}</span>
-        <button
-          type="button"
-          className="RecipeStepCard-deleteButton"
-          title={canDelete ? 'Eliminar este paso' : 'La receta debe tener al menos un paso'}
-          disabled={!canDelete}
-          onClick={onDelete}
-        >
-          <span className="material-symbols-outlined">delete</span>
-        </button>
-      </div>
+      <span className="RecipeStepCard-tag">Paso {index + 1} de {total}</span>
 
       <div className="RecipeStepCard-field">
-        <label htmlFor={`step-instruction-${index}`}>Instrucciones detalladas *</label>
+        <label htmlFor={`step-instruction-${index}`}>Descripción</label>
         <textarea
           id={`step-instruction-${index}`}
           value={step.instruction}
           onChange={(e) => onChange({ instruction: e.target.value })}
           placeholder="Explicá cómo ejecutar este paso con precisión..."
-          rows={3}
+          rows={5}
+          maxLength={RECIPE_DESCRIPTION_MAX_LENGTH}
           required
         />
       </div>
 
-      <div className="RecipeStepCard-field RecipeStepCard-field--inline">
+      <div className="RecipeStepCard-timeField">
         <span className="material-symbols-outlined">timer</span>
-        <div>
-          <label htmlFor={`step-time-${index}`}>Temporizador estimado (min)</label>
-          <input
-            id={`step-time-${index}`}
-            type="number"
-            min="1"
-            value={step.estimatedTime}
-            onChange={(e) => onChange({ estimatedTime: e.target.value })}
-            placeholder="ej. 15"
-          />
-        </div>
+        <label htmlFor={`step-time-${index}`}>Tiempo:</label>
+        <input
+          id={`step-time-${index}`}
+          type="number"
+          min="1"
+          value={step.estimatedTime}
+          onChange={(e) => onChange({ estimatedTime: e.target.value })}
+          placeholder="-"
+          aria-label="Tiempo estimado en minutos (opcional)"
+        />
+        <span>min</span>
       </div>
     </div>
   );

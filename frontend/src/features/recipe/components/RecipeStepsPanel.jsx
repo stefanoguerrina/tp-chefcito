@@ -7,15 +7,12 @@ import '../styles/_recipe-steps-panel.scss';
 // Recibe: un número. Devuelve: el número con dos dígitos ("02"), como en las píldoras.
 const pad = (number) => String(number).padStart(2, '0');
 
-// Recibe: steps (step[] crudo, ya ordenado por stepNumber desde el backend) y totalTime
-// (preparationTime de la receta, en minutos, o null).
-function RecipeStepsPanel({ steps, totalTime }) {
+// Recibe: steps (step[] crudo, ya ordenado por stepNumber desde el backend).
+function RecipeStepsPanel({ steps }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const step = steps[currentIndex];
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === steps.length - 1;
-  // Si la receta no tiene tiempo total cargado, se suma el de cada paso.
-  const estimatedTotal = totalTime ?? steps.reduce((sum, item) => sum + (item.estimatedTime ?? 0), 0);
 
   return (
     <section className="RecipeDetailCard RecipeStepsPanel">
@@ -62,9 +59,11 @@ function RecipeStepsPanel({ steps, totalTime }) {
           </div>
 
           <div className="RecipeStepsPanel-content">
-            <div className="RecipeStepsPanel-visual">
-              <span className="RecipeStepsPanel-bigNumber">{pad(currentIndex + 1)}</span>
-              <span className="RecipeStepsPanel-ofTotal">de {pad(steps.length)}</span>
+            <div className="RecipeStepsPanel-contentHeader">
+              <span className="RecipeStepsPanel-tag">
+                Paso {pad(currentIndex + 1)} / {pad(steps.length)}
+              </span>
+              {/* El tiempo es opcional por paso: si no se cargó, no se muestra nada. */}
               {step.estimatedTime && (
                 <span className="RecipeStepsPanel-duration">
                   <span className="material-symbols-outlined">hourglass_top</span>
@@ -73,18 +72,7 @@ function RecipeStepsPanel({ steps, totalTime }) {
               )}
             </div>
 
-            <div className="RecipeStepsPanel-text">
-              <span className="RecipeStepsPanel-tag">
-                Paso {pad(currentIndex + 1)} / {pad(steps.length)}
-              </span>
-              <p className="RecipeStepsPanel-instruction">{step.instruction}</p>
-              {estimatedTotal > 0 && (
-                <span className="RecipeStepsPanel-hint">
-                  <span className="material-symbols-outlined">check_circle</span>
-                  Tiempo total estimado: {estimatedTotal} min
-                </span>
-              )}
-            </div>
+            <p className="RecipeStepsPanel-instruction">{step.instruction}</p>
           </div>
 
           <div className="RecipeStepsPanel-nav">

@@ -1,12 +1,12 @@
-// Estilos del wizard de creación/edición de receta (RecipeEditorPage y las
-// etapas RecipeCardStage / RecipeStepsStage / RecipeStepCard). Traducción a SASS
-// puro del diseño de referencia entregado por la cátedra (originalmente en
-// Tailwind): mismos tokens de color/tipografía/espaciado, sin la librería.
+// Estilos base del editor de receta (RecipeEditorPage): la barra de acciones de arriba,
+// la grilla de dos columnas (fotos + instrucciones) y la tarjeta compartida por todos los
+// módulos del editor (.RecipeEditorCard, mismo patrón que .RecipeDetailCard en el detalle
+// de receta). Cada módulo (fotos, datos básicos, ingredientes, instrucciones) suma lo
+// propio en su propio partial.
 @use '../../../styles/abstracts' as *;
 
-// Inputs de texto/select/textarea comparten el mismo look en todo el wizard.
-// box-sizing: border-box es clave acá: sin esto, width: 100% + el padding
-// horizontal desbordan el ancho del contenedor (se salen de la tarjeta).
+// Inputs de texto/select/textarea comparten el mismo look en todo el editor. Los demás
+// partials lo importan con @use '...' as editorPage; @include editorPage.editor-input;
 @mixin editor-input {
   box-sizing: border-box;
   width: 100%;
@@ -16,69 +16,43 @@
   background: $color-surface-container-lowest;
   color: $color-on-surface;
   font-family: $font-body;
-  font-size: 15px;
+  font-size: 14px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: $color-outline;
+  }
 
   &:focus {
     border-color: $color-primary;
   }
+
+  &:disabled {
+    color: $color-on-surface-variant;
+    cursor: not-allowed;
+  }
 }
 
 .RecipeEditorPage {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: $spacing-lg $spacing-md;
   display: flex;
   flex-direction: column;
-  gap: $spacing-xl;
+  gap: $spacing-lg;
+  font-family: $font-body;
+  text-align: left;
 
-  // El proyecto no trae un reset global de box-sizing: border-box, así que lo
-  // fijamos acá para todo el wizard (si no, width: 100% + padding desbordan).
+  // El proyecto no trae un reset global de box-sizing: border-box, así que lo fijamos
+  // acá para todo el editor (si no, width: 100% + padding desbordan las tarjetas).
   *,
   *::before,
   *::after {
     box-sizing: border-box;
   }
 
-  // .btn/.btn--primary/.btn--secondary son propios de este wizard (ya no dependen
-  // de ingredientCategory/styles, que se eliminó): tamaño, padding y colores
-  // completos acá, autosuficiente igual que NutritionalValuePanel.
-  .btn {
-    font-family: $font-body;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: $spacing-sm;
-    padding: $spacing-md $spacing-lg;
-    border-radius: $radius-lg;
-    border: none;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background-color 0.15s ease, opacity 0.15s ease;
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  .btn--primary {
-    background: $color-primary;
-    color: $color-on-primary;
-    &:hover:not(:disabled) { background: $color-primary-container; opacity: 1; }
-  }
-
-  .btn--secondary {
-    background: $color-surface-container-lowest;
-    color: $color-on-surface;
-    border: 1px solid $color-outline-variant;
-    &:hover:not(:disabled) { background: $color-surface-container-low; }
-  }
-
-  // Oculta la flechita de incremento/decremento nativa de los inputs numéricos
-  // (no aporta nada acá y complica el diseño de los chips de tiempo).
+  // Oculta la flechita de incremento/decremento nativa de los inputs numéricos (tiempo,
+  // cantidades): no aporta nada acá y complica el diseño de los campos chicos.
   input[type='number'] {
     -moz-appearance: textfield;
 
@@ -89,722 +63,172 @@
     }
   }
 
-  &-banner {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
-    padding-bottom: $spacing-md;
-    border-bottom: 1px solid $color-outline-variant;
-
-    @include respond-to(md) {
-      flex-direction: row;
-      align-items: flex-end;
-      justify-content: space-between;
-    }
-
-    h1 {
-      font-family: $font-body;
-      font-size: 28px;
-      font-weight: 700;
-      color: $color-on-surface;
-      margin: 4px 0;
-    }
-
-    p {
-      color: $color-on-surface-variant;
-      max-width: 60ch;
-    }
-  }
-
-  &-publishBar {
-    background: $color-surface-container-lowest;
-    border: 1px solid $color-outline-variant;
-    border-radius: $radius-lg;
-    box-shadow: $shadow-level-1;
-    padding: $spacing-lg;
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
-
-    @include respond-to(sm) {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-    }
-  }
-
-  &-publishInfo {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-
-    .material-symbols-outlined {
-      width: 40px;
-      height: 40px;
-      flex-shrink: 0;
-      border-radius: $radius-full;
-      background: $color-secondary-container;
-      color: $color-on-secondary-container;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    h4 {
-      margin: 0;
-      font-weight: 700;
-      color: $color-on-surface;
-    }
-
-    p {
-      margin: 2px 0 0;
-      color: $color-on-surface-variant;
-      font-size: 14px;
-    }
-  }
-
   &-loading,
   &-error {
-    padding: $spacing-lg;
+    padding: $spacing-xl;
+    text-align: center;
     color: $color-on-surface-variant;
   }
 
-  &-error {
-    color: $color-error;
-  }
-}
-
-// --- Etapa 1: tarjeta y datos base ---
-.RecipeCardStage {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: $spacing-xl;
-
-  @include respond-to(lg) {
-    grid-template-columns: 7fr 5fr;
-    align-items: start;
-  }
-
-  &-form {
+  // --- Barra de acciones ---
+  &-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md;
     background: $color-surface-container-lowest;
-    border: 1px solid $color-outline-variant;
+    border: 1px solid $color-surface-container-highest;
     border-radius: $radius-lg;
     box-shadow: $shadow-level-1;
-    padding: $spacing-lg;
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
   }
 
-  &-formHeader {
-    padding-bottom: $spacing-sm;
-    border-bottom: 1px solid $color-outline-variant;
+  // --- Título de la página, mismo criterio que RecipePage ("Mis recetas") ---
+  &-title {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: $color-on-surface;
 
-    h2 {
-      font-family: $font-body;
-      font-size: 22px;
-      font-weight: 700;
-      color: $color-on-surface;
+    @include respond-to(md) {
+      font-size: 32px;
     }
   }
 
-  &-field {
+  &-topbarActions {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-left: auto;
+  }
+
+  &-discardBtn,
+  &-draftBtn,
+  &-publishBtn {
+    display: inline-flex;
+    align-items: center;
     gap: 6px;
+    height: 38px;
+    padding: 0 $spacing-md;
+    border-radius: $radius-md;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+    white-space: nowrap;
 
-    label {
-      font-size: 14px;
-      font-weight: 600;
-      color: $color-on-surface;
+    .material-symbols-outlined {
+      font-size: 18px;
     }
 
-    input,
-    select,
-    textarea {
-      @include editor-input;
-    }
-
-    textarea {
-      resize: vertical;
-      font-family: $font-body;
-    }
-
-    input:disabled {
-      color: $color-on-surface-variant;
+    &:disabled {
+      opacity: 0.55;
       cursor: not-allowed;
     }
   }
 
-  &-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: $spacing-md;
-
-    @include respond-to(sm) {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    &--three {
-      @include respond-to(sm) {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-  }
-
-  &-dropzone {
-    border: 2px dashed $color-outline-variant;
-    border-radius: $radius-lg;
-    padding: $spacing-md;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 4px;
-    cursor: pointer;
-    background: $color-surface-container-low;
-    transition: border-color 0.15s;
+  &-discardBtn {
+    border: 1px solid with-opacity($color-error, 0.4);
+    background: $color-surface-container-lowest;
+    color: $color-error;
 
     &:hover {
-      border-color: $color-primary;
-    }
-
-    .material-symbols-outlined {
-      color: $color-primary;
-      font-size: 28px;
-    }
-
-    p span {
-      color: $color-primary;
-      font-weight: 600;
-      text-decoration: underline;
-    }
-
-    input[type='file'] {
-      display: none;
+      background: with-opacity($color-error, 0.1);
     }
   }
 
-  &-dropzoneHint {
-    font-size: 12px;
-    color: $color-on-surface-variant;
-  }
+  &-draftBtn {
+    border: 1px solid $color-outline-variant;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
 
-  &-error {
-    margin: $spacing-xs 0 0;
-    font-size: 13px;
-    color: $color-error;
-  }
-
-  &-actions {
-    padding-top: $spacing-sm;
-    border-top: 1px solid $color-outline-variant;
-
-    .btn {
-      width: 100%;
-      justify-content: center;
+    &:hover:not(:disabled) {
+      background: $color-surface-container-low;
     }
   }
 
-  &-preview {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: $spacing-sm;
+  &-publishBtn {
+    border: none;
+    background: $color-primary;
+    color: $color-on-primary;
+
+    &:hover:not(:disabled) {
+      background: shade($color-primary, 10%);
+    }
+  }
+
+  // --- Dos filas de dos columnas (misma proporción de ancho en ambas, una sola columna
+  // en mobile), las dos estiradas a la misma altura (--top/--bottom con align-items:
+  // stretch): fila de arriba Fotos | Instrucciones, fila de abajo Título/Descripción |
+  // columna con Ingredientes + Categorías. Así ambos lados de cada fila ocupan el mismo
+  // espacio en vez de quedar con alturas distintas (ver RecipeBasicInfoSection, donde la
+  // Descripción crece para aprovechar ese alto extra en vez de dejarlo vacío).
+  // La derecha es un poco más angosta que antes (agrupa Instrucciones, Ingredientes y
+  // Categorías, pero ya no hace falta que sea tan ancha).
+  &-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: $spacing-lg;
+    align-items: stretch;
 
     @include respond-to(lg) {
-      position: sticky;
-      top: 96px;
+      grid-template-columns: minmax(0, 9fr) minmax(0, 11fr);
     }
   }
 
-  &-previewNote {
-    text-align: center;
-    font-size: 13px;
-    color: $color-on-surface-variant;
-    padding: 0 $spacing-sm;
+  &-column {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+    min-width: 0;
   }
 }
 
-// --- Etapa 2: ingredientes de la receta ---
-.RecipeIngredientsStage {
+// --- Tarjeta compartida por cada módulo del editor ---
+.RecipeEditorCard {
   display: flex;
   flex-direction: column;
-  gap: $spacing-lg;
-  padding-top: $spacing-xl;
-  border-top: 1px solid $color-outline-variant;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-surface-container-highest;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-1;
 
   &-header {
     display: flex;
-    flex-direction: column;
-    gap: $spacing-sm;
-
-    @include respond-to(md) {
-      flex-direction: row;
-      align-items: flex-end;
-      justify-content: space-between;
-    }
-
-    h2 {
-      font-family: $font-body;
-      font-size: 26px;
-      font-weight: 700;
-      color: $color-on-surface;
-    }
-
-    p {
-      color: $color-on-surface-variant;
-      max-width: 60ch;
-    }
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm $spacing-md;
   }
 
-  &-eyebrow {
-    display: block;
-    color: $color-primary;
-    font-size: 12px;
+  &-title {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 18px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: normal;
+    color: $color-on-surface;
   }
 
-  &-counter {
+  &-subtitle {
+    margin: 2px 0 0;
+    font-size: 12px;
     color: $color-on-surface-variant;
-    font-weight: 500;
-    font-size: 14px;
-    white-space: nowrap;
-  }
-
-  &-list {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
   }
 
   &-empty {
-    color: $color-on-surface-variant;
-    font-size: 14px;
-    background: $color-surface-container-low;
-    border-radius: $radius-md;
+    margin: 0;
     padding: $spacing-md;
-  }
-
-  &-addButton {
-    width: 100%;
-    padding: $spacing-md $spacing-lg;
-    border-radius: $radius-lg;
-    border: 2px solid with-opacity($color-primary, 0.35);
-    background: $color-surface-container-lowest;
-    color: $color-primary;
-    font-size: 16px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: $spacing-sm;
-    cursor: pointer;
-    box-shadow: $shadow-level-1;
-    transition: background 0.15s;
-
-    .material-symbols-outlined {
-      font-size: 24px;
-    }
-
-    &:hover {
-      background: $color-surface-container-low;
-    }
-  }
-
-  &-actions {
-    padding-top: $spacing-sm;
-
-    .btn {
-      width: 100%;
-      justify-content: center;
-    }
-  }
-}
-
-.RecipeIngredientCard {
-  background: $color-surface-container-lowest;
-  border: 1px solid $color-outline-variant;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-level-1;
-  padding: $spacing-md;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
-
-  &-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  &-number {
-    width: 40px;
-    height: 40px;
-    border-radius: $radius-full;
-    background: $color-primary;
-    color: $color-on-primary;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: $font-body;
-    font-weight: 700;
-  }
-
-  &-deleteButton {
-    border: none;
-    background: transparent;
-    color: $color-on-surface-variant;
     border-radius: $radius-md;
-    padding: 6px;
-    cursor: pointer;
-    display: flex;
-
-    &:hover:not(:disabled) {
-      color: $color-error;
-      background: $color-surface-container;
-    }
-
-    &:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-  }
-
-  // Ingrediente ya elegido: chip con nombre + botón para volver a buscar.
-  &-selected {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-    background: $color-secondary-container;
-    color: $color-on-secondary-container;
-    border-radius: $radius-md;
-    padding: $spacing-sm $spacing-md;
-
-    .material-symbols-outlined {
-      font-size: 20px;
-    }
-  }
-
-  &-selectedName {
-    flex: 1;
-    font-weight: 700;
-  }
-
-  &-changeButton {
-    border: none;
-    background: transparent;
-    color: inherit;
-    font-weight: 600;
-    font-size: 13px;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-
-  &-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    position: relative;
-
-    label {
-      font-size: 14px;
-      font-weight: 600;
-      color: $color-on-surface;
-    }
-
-    input {
-      @include editor-input;
-    }
-
-    &--inline {
-      flex-direction: row;
-      align-items: center;
-      gap: $spacing-sm;
-      background: $color-surface-container-low;
-      border-radius: $radius-md;
-      padding: $spacing-sm $spacing-md;
-      width: fit-content;
-      max-width: 100%;
-
-      .material-symbols-outlined {
-        color: $color-primary;
-        flex-shrink: 0;
-      }
-
-      label {
-        white-space: nowrap;
-      }
-
-      div {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-
-      input {
-        background: transparent;
-        border: none;
-        padding: 0;
-        font-weight: 600;
-      }
-    }
-  }
-
-  // Barra de búsqueda: ícono a la izquierda, mismo look que el resto de los inputs.
-  &-searchWrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-
-    .material-symbols-outlined {
-      position: absolute;
-      left: $spacing-md;
-      color: $color-on-surface-variant;
-      font-size: 20px;
-    }
-
-    input {
-      @include editor-input;
-      padding-left: 40px;
-    }
-  }
-
-  &-searchResults {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 5;
-    margin-top: 4px;
-    max-height: 220px;
-    overflow-y: auto;
-    list-style: none;
-    padding: 6px;
-    background: $color-surface-container-lowest;
-    border: 1px solid $color-outline-variant;
-    border-radius: $radius-md;
-    box-shadow: $shadow-level-2;
-
-    button {
-      width: 100%;
-      text-align: left;
-      padding: $spacing-sm;
-      border: none;
-      background: transparent;
-      border-radius: $radius-md;
-      font-family: $font-body;
-      font-size: 14px;
-      color: $color-on-surface;
-      cursor: pointer;
-
-      &:hover {
-        background: $color-surface-container-low;
-      }
-
-      span {
-        color: $color-on-surface-variant;
-        font-size: 13px;
-      }
-    }
-  }
-
-  &-searchEmpty {
-    padding: $spacing-sm;
+    background: $color-surface-container-low;
+    text-align: center;
     font-size: 13px;
     color: $color-on-surface-variant;
-  }
-}
-
-// --- Etapa 3: pasos de preparación ---
-.RecipeStepsStage {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-lg;
-  padding-top: $spacing-xl;
-  border-top: 1px solid $color-outline-variant;
-
-  &-header {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-sm;
-
-    @include respond-to(md) {
-      flex-direction: row;
-      align-items: flex-end;
-      justify-content: space-between;
-    }
-
-    h2 {
-      font-family: $font-body;
-      font-size: 26px;
-      font-weight: 700;
-      color: $color-on-surface;
-    }
-
-    p {
-      color: $color-on-surface-variant;
-      max-width: 60ch;
-    }
-  }
-
-  &-eyebrow {
-    display: block;
-    color: $color-primary;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  &-counter {
-    color: $color-on-surface-variant;
-    font-weight: 500;
-    font-size: 14px;
-    white-space: nowrap;
-  }
-
-  &-list {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
-  }
-
-  &-addButton {
-    width: 100%;
-    padding: $spacing-md $spacing-lg;
-    border-radius: $radius-lg;
-    border: 2px solid with-opacity($color-primary, 0.35);
-    background: $color-surface-container-lowest;
-    color: $color-primary;
-    font-size: 16px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: $spacing-sm;
-    cursor: pointer;
-    box-shadow: $shadow-level-1;
-    transition: background 0.15s;
-
-    .material-symbols-outlined {
-      font-size: 24px;
-    }
-
-    &:hover {
-      background: $color-surface-container-low;
-    }
-  }
-}
-
-.RecipeStepCard {
-  background: $color-surface-container-lowest;
-  border: 1px solid $color-outline-variant;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-level-1;
-  padding: $spacing-md;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
-
-  &-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  &-number {
-    width: 40px;
-    height: 40px;
-    border-radius: $radius-full;
-    background: $color-primary;
-    color: $color-on-primary;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: $font-body;
-    font-weight: 700;
-  }
-
-  &-deleteButton {
-    border: none;
-    background: transparent;
-    color: $color-on-surface-variant;
-    border-radius: $radius-md;
-    padding: 6px;
-    cursor: pointer;
-    display: flex;
-
-    &:hover:not(:disabled) {
-      color: $color-error;
-      background: $color-surface-container;
-    }
-
-    &:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-  }
-
-  &-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-
-    label {
-      font-size: 14px;
-      font-weight: 600;
-      color: $color-on-surface;
-    }
-
-    textarea,
-    input {
-      @include editor-input;
-    }
-
-    textarea {
-      resize: vertical;
-      font-family: $font-body;
-    }
-
-    &--inline {
-      flex-direction: row;
-      align-items: center;
-      gap: $spacing-sm;
-      background: $color-surface-container-low;
-      border-radius: $radius-md;
-      padding: $spacing-sm $spacing-md;
-
-      // Se estira solo hasta lo que ocupe el texto de la etiqueta, sin
-      // achicarse ni forzar el salto de línea de "Temporizador estimado (min)".
-      width: fit-content;
-      max-width: 100%;
-
-      .material-symbols-outlined {
-        color: $color-primary;
-        flex-shrink: 0;
-      }
-
-      label {
-        white-space: nowrap;
-      }
-
-      div {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-
-      input {
-        background: transparent;
-        border: none;
-        padding: 0;
-        font-weight: 600;
-      }
-    }
   }
 }

@@ -1,14 +1,17 @@
-// Wizard de creación/edición de receta: Etapa 1 (tarjeta + datos base),
-// Etapa 2 (ingredientes requeridos) y Etapa 3 (pasos de preparación dinámicos).
-// Orquesta el estado de las tres etapas y el guardado final; el detalle visual
-// de cada etapa vive en sus propios componentes (RecipeCardStage,
-// RecipeIngredientsStage, RecipeStepsStage) para no superar ~150-200 líneas acá.
-import { useState, useEffect, useRef } from 'react';
+// Editor de creación/edición de receta: barra de acciones arriba (descartar/publicar) y,
+// debajo, los módulos de la receta (fotos + instrucciones lado a lado, y a todo el ancho
+// los datos básicos y los ingredientes). Orquesta el estado de cada módulo y el guardado
+// final; el detalle visual de cada uno vive en su propio componente para no superar
+// ~150-200 líneas acá.
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import RecipeCardStage from '../components/RecipeCardStage.jsx';
+import RecipeMediaStage from '../components/RecipeMediaStage.jsx';
+import RecipeBasicInfoSection from '../components/RecipeBasicInfoSection.jsx';
+import RecipeCategoryPicker from '../components/RecipeCategoryPicker.jsx';
 import RecipeIngredientsStage from '../components/RecipeIngredientsStage.jsx';
-import RecipeStepsStage from '../components/RecipeStepsStage.jsx';
+import RecipeStepsEditorStage from '../components/RecipeStepsEditorStage.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
+import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
 import { getRecipeById, createRecipe, updateRecipe } from '../services/recipeService.js';
 import { getAllCategories } from '../../category/services/categoryService.js';
@@ -16,9 +19,7 @@ import { getAllIngredients } from '../../ingredient/services/ingredientService.j
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import { replaceSteps } from '../../step/services/stepService.js';
 import { replaceRecipeIngredients } from '../../recipeIngredient/services/recipeIngredientService.js';
-import { createImage, updateImage } from '../../image/services/imageService.js';
-import { useAuthContext } from '../../../app/AuthContext.jsx';
-import { compressImage } from '../../../shared/utils/compressImage.js';
+import { useRecipePhotos } from '../hooks/useRecipePhotos.js';
 import {
   createEmptyRecipeDraft,
   recipeToDraft,
@@ -27,12 +28,11 @@ import {
   draftToRecipePayload,
   stepsToPayload,
   recipeIngredientsToPayload,
-  draftToCoverImagePayload,
+  computePreparationTimeFromSteps,
 } from '../models/recipeModel.js';
 import '../styles/_recipe-editor-page.scss';
 
 const EMPTY_STEP = { instruction: '', estimatedTime: '' };
-const EMPTY_INGREDIENT = { idIngredient: '', quantity: '' };
 
 // Rutas: /mis-recetas/nueva (crear) y /mis-recetas/:recipeId/editar (editar).
 // Al terminar o cancelar vuelve a la pantalla desde la que se abrió (location.state.from,
@@ -43,32 +43,27 @@ function RecipeEditorPage() {
   const { recipeId: recipeIdParam } = useParams();
   const recipeId = recipeIdParam ? Number(recipeIdParam) : null;
   const isEditing = recipeId != null;
-  const { username: authorUsername } = useAuthContext();
 
-  // Catálogos para los selectores del wizard.
+  // Catálogos para los selectores del editor.
   const [categories, setCategories] = useState([]);
   const [ingredientsCatalog, setIngredientsCatalog] = useState([]);
 
   const [draft, setDraft] = useState(createEmptyRecipeDraft());
-  const [ingredients, setIngredients] = useState([EMPTY_INGREDIENT]);
+  // Los ingredientes se agregan desde AddIngredientModal (ver RecipeIngredientsStage):
+  // arranca vacío, no con una fila en blanco para completar a mano.
+  const [ingredients, setIngredients] = useState([]);
   const [steps, setSteps] = useState([EMPTY_STEP]);
+  const photos = useRecipePhotos();
+
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Error de la foto de portada (archivo ilegible, link inválido), se muestra bajo el campo.
-  const [coverImageError, setCoverImageError] = useState('');
-  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
-  const ingredientsStageRef = useRef(null);
-  const stepsStageRef = useRef(null);
-
-  // Al editar, carga la receta existente (incluye sus ingredientes y pasos) y
-  // precarga el formulario.
-  // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
-  // llamar desde el useEffect sin renders en cascada.
-  // Pide las categorías y el catálogo de ingredientes (un 404 = lista vacía) y, si se
-  // está editando, la receta con sus ingredientes y pasos para precargar el formulario.
+  // Al editar, carga la receta existente (con sus fotos, ingredientes y pasos) y precarga
+  // el formulario. El estado se actualiza solo dentro de los callbacks de la promesa, así
+  // se puede llamar desde el useEffect sin renders en cascada.
   const loadRecipe = () =>
     Promise.all([
       fetchListOrEmpty(() => getAllCategories()),
@@ -80,8 +75,9 @@ function RecipeEditorPage() {
         setIngredientsCatalog(ingredientsData);
         if (recipe) {
           setDraft(recipeToDraft(recipe));
-          setIngredients(recipe.recipeingredient?.length ? recipeIngredientsToDraft(recipe.recipeingredient) : [EMPTY_INGREDIENT]);
+          setIngredients(recipe.recipeingredient?.length ? recipeIngredientsToDraft(recipe.recipeingredient) : []);
           setSteps(recipe.step?.length ? stepsToDraft(recipe.step) : [EMPTY_STEP]);
+          photos.loadFromRecipe(recipe);
         }
         setLoadError('');
       })
@@ -99,51 +95,15 @@ function RecipeEditorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipeId]);
 
-  // Vuelve a la pantalla desde la que se abrió el wizard (o a "Mis recetas").
+  // Vuelve a la pantalla desde la que se abrió el editor (o a "Mis recetas").
   const handleExit = () => navigate(location.state?.from ?? '/mis-recetas');
 
   const handleFieldChange = (field, value) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Comprime la foto elegida (WebP, máx. 1280px) y muestra una vista previa local.
-  // Se sube recién al publicar, porque necesita el id de la receta (que todavía no
-  // existe si se está creando una nueva). Elegir una foto descarta un link pegado.
-  const handleCoverImageSelect = async (file) => {
-    setCoverImageError('');
-    setIsProcessingImage(true);
-    try {
-      const compressed = await compressImage(file);
-      setDraft((prev) => ({
-        ...prev,
-        coverImageFile: compressed,
-        coverImageLink: '',
-        coverImagePreview: URL.createObjectURL(compressed),
-      }));
-    } catch (err) {
-      setCoverImageError(err.message);
-    } finally {
-      setIsProcessingImage(false);
-    }
-  };
-
-  // Usa un link externo como portada. Pegar un link descarta una foto elegida antes.
-  const handleCoverImageLinkChange = (link) => {
-    setCoverImageError('');
-    setDraft((prev) => ({
-      ...prev,
-      coverImageLink: link,
-      coverImageFile: null,
-      coverImagePreview: link.trim() || prev.coverImagePreview,
-    }));
-  };
-
-  const handleContinueToIngredients = () => {
-    ingredientsStageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const handleContinueToSteps = () => {
-    stepsStageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleCategoriesChange = (categoryIds) => {
+    setDraft((prev) => ({ ...prev, categoryIds }));
   };
 
   const handlePublish = async () => {
@@ -155,24 +115,22 @@ function RecipeEditorPage() {
     }
     // Si todavía no hay ningún ingrediente cargado en el catálogo, no hay nada
     // para elegir: se omite la validación y el paso de guardado de ingredientes.
-    if (ingredientsCatalog.length > 0 && ingredients.some((item) => !item.idIngredient)) {
-      setSubmitError('Todos los ingredientes deben estar elegidos del catálogo.');
+    // El backend exige al menos un ingrediente al reemplazar la lista (ver
+    // replaceRecipeIngredients), así que se valida acá antes de mandarlo.
+    if (ingredientsCatalog.length > 0 && ingredients.length === 0) {
+      setSubmitError('Agregá al menos un ingrediente.');
       return;
     }
     if (steps.some((step) => !step.instruction.trim())) {
       setSubmitError('Todos los pasos necesitan una instrucción.');
       return;
     }
-    const coverImageLink = draft.coverImageLink.trim();
-    if (coverImageLink && !/^https?:\/\/\S+$/i.test(coverImageLink)) {
-      setCoverImageError('El link de la imagen debe empezar con http:// o https://.');
-      setSubmitError('Revisá el link de la foto de portada.');
-      return;
-    }
 
     setIsSubmitting(true);
     try {
-      const recipePayload = draftToRecipePayload(draft);
+      // El tiempo de preparación no lo carga el usuario: sale de sumar el tiempo de
+      // cada paso (ver RecipeStepsEditorStage, que muestra el mismo cálculo).
+      const recipePayload = { ...draftToRecipePayload(draft), preparationTime: computePreparationTimeFromSteps(steps) };
       const savedRecipe = isEditing
         ? await updateRecipe(recipeId, recipePayload)
         : await createRecipe(recipePayload);
@@ -181,16 +139,7 @@ function RecipeEditorPage() {
         await replaceRecipeIngredients(savedRecipe.id, recipeIngredientsToPayload(ingredients));
       }
       await replaceSteps(savedRecipe.id, stepsToPayload(steps));
-
-      // Solo se manda la portada si el usuario eligió una foto nueva o pegó un link.
-      const coverImagePayload = draftToCoverImagePayload(draft);
-      if (coverImagePayload) {
-        if (draft.mainImageId != null) {
-          await updateImage(savedRecipe.id, draft.mainImageId, coverImagePayload);
-        } else {
-          await createImage(savedRecipe.id, coverImagePayload);
-        }
-      }
+      await photos.commitPhotos(savedRecipe.id);
 
       handleExit();
     } catch (err) {
@@ -210,61 +159,93 @@ function RecipeEditorPage() {
 
   return (
     <div className="RecipeEditorPage">
-      <div className="RecipeEditorPage-banner">
-        <div>
-          <h1>{isEditing ? 'Editar receta' : 'Crear una nueva receta'}</h1>
-          <p>Diseñá la ficha visual y detallá el paso a paso para que la comunidad pueda replicarla.</p>
-        </div>
-        <button type="button" className="btn btn--secondary" onClick={handleExit}>
-          Cancelar
+      <header className="RecipeEditorPage-header">
+        <h1 className="RecipeEditorPage-title">{isEditing ? 'Editar receta' : 'Crear receta'}</h1>
+      </header>
+
+      <div className="RecipeEditorPage-topbar">
+        <button
+          type="button"
+          className="RecipeEditorPage-discardBtn"
+          onClick={() => setShowDiscardConfirm(true)}
+        >
+          <span className="material-symbols-outlined">delete_sweep</span>
+          Descartar cambios
         </button>
-      </div>
 
-      <RecipeCardStage
-        values={draft}
-        categories={categories}
-        authorUsername={authorUsername}
-        onFieldChange={handleFieldChange}
-        onCoverImageSelect={handleCoverImageSelect}
-        onCoverImageLinkChange={handleCoverImageLinkChange}
-        coverImageError={coverImageError}
-        isProcessingImage={isProcessingImage}
-        onContinue={handleContinueToIngredients}
-      />
-
-      <div ref={ingredientsStageRef}>
-        <RecipeIngredientsStage
-          ingredients={ingredients}
-          ingredientsCatalog={ingredientsCatalog}
-          onIngredientsChange={setIngredients}
-          onContinue={handleContinueToSteps}
-        />
-      </div>
-
-      <div ref={stepsStageRef}>
-        <RecipeStepsStage steps={steps} onStepsChange={setSteps} />
-      </div>
-
-      <div className="RecipeEditorPage-publishBar">
-        <div className="RecipeEditorPage-publishInfo">
-          <span className="material-symbols-outlined">verified</span>
-          <div>
-            <h4>¿Todo listo para compartir?</h4>
-            <p>Tu receta se publicará en la comunidad con la tarjeta, los ingredientes y los pasos que cargaste.</p>
-          </div>
-        </div>
-        <div>
+        <div className="RecipeEditorPage-topbarActions">
+          {/* Todavía no existe un estado "borrador" en el backend (la receta se guarda
+              publicada o no se guarda): el botón queda visible pero deshabilitado, mismo
+              criterio que otros accesos sin feature propia (ver sidebar). */}
           <button
             type="button"
-            className="btn btn--primary"
-            onClick={handlePublish}
-            disabled={isSubmitting || isProcessingImage}
+            className="RecipeEditorPage-draftBtn"
+            disabled
+            title="Todavía no disponible"
           >
-            <span className="material-symbols-outlined">publish</span>
-            {isSubmitting ? 'Publicando...' : isEditing ? 'Guardar cambios' : 'Publicar receta'}
+            Guardar como borrador
+          </button>
+          <button
+            type="button"
+            className="RecipeEditorPage-publishBtn"
+            onClick={handlePublish}
+            disabled={isSubmitting || photos.isProcessing}
+          >
+            <span className="material-symbols-outlined">{isEditing ? 'save' : 'publish'}</span>
+            {isSubmitting ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Publicar receta'}
           </button>
         </div>
       </div>
+
+      {/* Fila de arriba: fotos + instrucciones, estiradas a la misma altura (si no,
+          fotos queda una tarjeta bastante más baja y deja un hueco raro al lado). */}
+      <div className="RecipeEditorPage-grid">
+        <RecipeMediaStage
+          photos={photos.photos}
+          mainPhoto={photos.mainPhoto}
+          canAddMore={photos.canAddMore}
+          error={photos.error}
+          isProcessing={photos.isProcessing}
+          onAddFiles={photos.addFiles}
+          onReplaceMainFile={photos.replaceMainFile}
+          onSetMain={photos.setMain}
+          onRemove={photos.remove}
+        />
+
+        <RecipeStepsEditorStage steps={steps} onStepsChange={setSteps} />
+      </div>
+
+      {/* Fila de abajo: título/descripción a la izquierda y, a la derecha, ingredientes +
+          categorías apilados, estirada a la misma altura que la columna de la izquierda
+          para que ocupen el mismo espacio. */}
+      <div className="RecipeEditorPage-grid">
+        <RecipeBasicInfoSection values={draft} onFieldChange={handleFieldChange} />
+
+        <div className="RecipeEditorPage-column">
+          <RecipeIngredientsStage
+            ingredients={ingredients}
+            ingredientsCatalog={ingredientsCatalog}
+            onIngredientsChange={setIngredients}
+          />
+
+          <RecipeCategoryPicker
+            categories={categories}
+            selectedIds={draft.categoryIds}
+            onChange={handleCategoriesChange}
+          />
+        </div>
+      </div>
+
+      {showDiscardConfirm && (
+        <ConfirmModal
+          title="Descartar cambios"
+          message="Vas a perder todo lo que cargaste en este editor. ¿Querés descartarlo?"
+          confirmLabel="Descartar"
+          danger
+          onConfirm={handleExit}
+          onCancel={() => setShowDiscardConfirm(false)}
+        />
+      )}
 
       {submitError && (
         <AlertModal

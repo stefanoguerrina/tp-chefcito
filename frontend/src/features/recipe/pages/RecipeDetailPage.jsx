@@ -150,7 +150,7 @@ function RecipeDetailPage() {
 
         <div className="RecipeDetailPage-column">
           {/* key: al pasar a otra receta, el panel vuelve al paso 1. */}
-          <RecipeStepsPanel key={recipe.id} steps={recipe.step ?? []} totalTime={recipe.preparationTime} />
+          <RecipeStepsPanel key={recipe.id} steps={recipe.step ?? []} />
           <ReviewList recipe={recipe} isLoggedIn={isLoggedIn} onSaveRecipe={handleSaveRecipe} isSaved={isSaved} />
         </div>
       </div>
