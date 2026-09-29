@@ -28,6 +28,8 @@ npx prisma db push      # (or migrate) push schema changes to the MySQL database
 No test script is configured yet (`npm test` is a placeholder). No lint script is configured.
 Requires a `backend/.env` (gitignored) with `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`,
 `DB_NAME`, `JWT_SECRET`, and `DATABASE_URL` (mysql connection string used by Prisma).
+Optional: `GEMINI_API_KEY` (and `GEMINI_MODEL`, default `gemini-3.8-flash`) for Chefcito Bot
+(`features/assistant`, `POST /api/assistant/chat`); without it the endpoint answers 503.
 
 ### Frontend (`frontend/`)
 ```

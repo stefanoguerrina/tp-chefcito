@@ -1,9 +1,13 @@
-// Banner de "Chefcito Bot" al final de los resultados de búsqueda. El asistente IA todavía
-// no existe: el botón se muestra (así queda el diseño armado) pero no hace nada por ahora.
+// Banner de "Chefcito Bot" al final de los resultados de búsqueda: su botón abre el chat con
+// el asistente IA (features/assistant).
+import { useState } from 'react';
+import AssistantChatModal from '../../assistant/components/AssistantChatModal.jsx';
 import '../styles/_assistant-banner.scss';
 
 // Recibe: title (pregunta del banner) y description (texto de apoyo).
 function AssistantBanner({ title, description }) {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   return (
     <section className="AssistantBanner" aria-label="Asistente IA">
       <div className="AssistantBanner-content">
@@ -13,11 +17,12 @@ function AssistantBanner({ title, description }) {
           <p className="AssistantBanner-description">{description}</p>
         </div>
       </div>
-      {/* TODO: conectar con el chat de Chefcito Bot cuando exista (Fase 5 de tasks-division). */}
-      <button type="button" className="AssistantBanner-button" aria-disabled="true" title="Próximamente">
+      <button type="button" className="AssistantBanner-button" onClick={() => setIsChatOpen(true)}>
         <span className="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
         Consultar al Asistente IA
       </button>
+
+      {isChatOpen && <AssistantChatModal onClose={() => setIsChatOpen(false)} />}
     </section>
   );
 }

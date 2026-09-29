@@ -30,6 +30,9 @@ DB_NAME=chefcito
 
 # --- COMPLETAR: mismo usuario/contraseña/base que arriba, en formato URL ---
 DATABASE_URL="mysql://root:TU_CONTRASEÑA_DE_MYSQL_ACA@localhost:3306/chefcito"
+
+# --- OPCIONAL: solo para usar Chefcito Bot (asistente IA) ---
+GEMINI_API_KEY=
 ```
 
 - **`JWT_SECRET`**: ya tiene un valor listo, no hace falta cambiarlo (es la clave con la
@@ -42,6 +45,11 @@ DATABASE_URL="mysql://root:TU_CONTRASEÑA_DE_MYSQL_ACA@localhost:3306/chefcito"
   (podés dejarlo en `chefcito` si creás la base con ese mismo nombre, ver paso 3).
 - **`DATABASE_URL`**: es un resumen de los 5 campos de arriba en un solo string; hay
   que completarlo con la misma contraseña que pusiste en `DB_PASSWORD`.
+- **`GEMINI_API_KEY`** (opcional): clave de la API de Gemini que usa Chefcito Bot, el chat
+  que sugiere recetas con los ingredientes del inventario. Se crea gratis en Google AI Studio
+  (aistudio.google.com, opción "Get API key"). Si queda vacía, el resto de la app funciona
+  igual y el chat avisa que el asistente no está disponible. Opcionalmente, `GEMINI_MODEL`
+  permite cambiar el modelo (por defecto `gemini-3.8-flash`).
 
 ## 3. Crear la base de datos y cargar los datos de prueba
 
