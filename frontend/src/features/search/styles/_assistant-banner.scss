@@ -78,8 +78,6 @@
     color: $color-on-surface-variant;
   }
 
-  // Se ve como un botón activo (así queda armado el diseño), pero el asistente todavía no
-  // existe: el cursor normal es la única pista de que por ahora no hace nada.
   &-button {
     position: relative;
     z-index: 1;
@@ -95,8 +93,13 @@
     font-family: $font-body;
     font-size: 14px;
     font-weight: 600;
-    cursor: default;
+    cursor: pointer;
     box-shadow: $shadow-level-1;
+    transition: background 0.15s;
+
+    &:hover {
+      background: shade($color-primary, 8%);
+    }
 
     .material-symbols-outlined {
       font-size: 18px;

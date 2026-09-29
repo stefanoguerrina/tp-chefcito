@@ -11,6 +11,7 @@ import { recipeRouter } from '../features/recipe/routes/recipeRouter.js';
 import { savedRecipesRouter } from '../features/userRecipe/routes/savedRecipesRouter.js';
 import { inventoryRouter } from '../features/inventory/routes/inventoryRouter.js';
 import { searchRouter } from '../features/search/routes/searchRouter.js';
+import { assistantRouter } from '../features/assistant/routes/assistantRouter.js';
 
 const apiRouter = Router();
 
@@ -40,5 +41,8 @@ apiRouter.use('/users/:userId/inventory', inventoryRouter);
 
 // Búsqueda rápida (buscador de la home): categorías, recetas y usuarios en un solo pedido
 apiRouter.use('/search', searchRouter);
+
+// Chefcito Bot: chat con IA que sugiere recetas a partir del inventario del usuario
+apiRouter.use('/assistant', assistantRouter);
 
 export { apiRouter };
