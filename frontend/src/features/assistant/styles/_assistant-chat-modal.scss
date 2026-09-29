@@ -1,0 +1,240 @@
+// Estilos de la ventana de chat con Chefcito Bot (features/assistant/components/AssistantChatModal).
+// Mobile-first: en celular ocupa casi toda la pantalla desde abajo; desde md es una ventana centrada.
+@use '../../../styles/abstracts' as *;
+
+.AssistantChat-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+
+  @include respond-to(md) {
+    align-items: center;
+    padding: $spacing-lg;
+  }
+}
+
+.AssistantChat-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 90dvh;
+  overflow: hidden;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg $radius-lg 0 0;
+  box-shadow: $shadow-level-2;
+  font-family: $font-body;
+
+  @include respond-to(md) {
+    max-width: 520px;
+    height: min(640px, 85dvh);
+    border-radius: $radius-lg;
+  }
+}
+
+.AssistantChat-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1px solid $color-outline-variant;
+}
+
+.AssistantChat-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md;
+  background: $color-primary;
+  color: $color-on-primary;
+  font-size: 22px;
+}
+
+.AssistantChat-headerText {
+  flex: 1;
+  min-width: 0;
+}
+
+.AssistantChat-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: $color-on-surface;
+}
+
+.AssistantChat-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: $color-on-surface-variant;
+}
+
+.AssistantChat-close {
+  display: flex;
+  padding: $spacing-xs;
+  border: none;
+  border-radius: $radius-full;
+  background: transparent;
+  color: $color-on-surface-variant;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-surface-container;
+  }
+}
+
+.AssistantChat-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding: $spacing-lg;
+  overflow-y: auto;
+  background: $color-surface-container-low;
+}
+
+.AssistantChat-welcome {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.AssistantChat-bubble {
+  max-width: 85%;
+  margin: 0;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-lg;
+  font-size: 14px;
+  line-height: 1.5;
+  // Respeta los saltos de línea y guiones que usa el bot para armar listas.
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  &--user {
+    align-self: flex-end;
+    border-bottom-right-radius: $spacing-xs;
+    background: $color-primary;
+    color: $color-on-primary;
+  }
+
+  &--assistant {
+    align-self: flex-start;
+    border-bottom-left-radius: $spacing-xs;
+    background: $color-surface-container-highest;
+    color: $color-on-surface;
+  }
+}
+
+.AssistantChat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.AssistantChat-suggestion {
+  padding: $spacing-xs $spacing-md;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-full;
+  background: $color-surface-container-lowest;
+  color: $color-on-surface;
+  font-family: $font-body;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: with-opacity($color-primary, 0.1);
+  }
+}
+
+.AssistantChat-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  color: $color-on-surface-variant;
+}
+
+// Tres puntitos que "saltan" mientras el bot arma la respuesta.
+.AssistantChat-dots {
+  display: inline-flex;
+  gap: 3px;
+
+  span {
+    width: 5px;
+    height: 5px;
+    border-radius: $radius-full;
+    background: currentColor;
+    animation: assistant-chat-dot 1.2s infinite ease-in-out;
+
+    &:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+  }
+}
+
+@keyframes assistant-chat-dot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.AssistantChat-form {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  border-top: 1px solid $color-outline-variant;
+}
+
+.AssistantChat-input {
+  flex: 1;
+  min-width: 0;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-full;
+  background: $color-surface-container-lowest;
+  color: $color-on-surface;
+  font-family: $font-body;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+  }
+}
+
+.AssistantChat-send {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: $radius-full;
+  background: $color-primary;
+  color: $color-on-primary;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
