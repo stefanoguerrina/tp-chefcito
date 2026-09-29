@@ -66,7 +66,8 @@ backend/
 │   │   ├── prismaClient.ts    # Singleton de PrismaClient — importar desde acá siempre
 │   │   ├── fileStorage.ts     # Carpeta uploads/: rutas públicas y borrado de archivos subidos
 │   │   └── middleware/
-│   │       └── authMiddleware.ts  # verifyToken / verifyAdmin / verifyOwnerOrAdmin
+│   │       ├── authMiddleware.ts        # verifyToken / verifyAdmin / verifyOwnerOrAdmin
+│   │       └── validationMiddleware.ts  # handleValidationErrors compartido (lo usan follow y feed)
 │   ├── routes/
 │   │   └── apiRouter.ts       # Router central que monta todos los sub-routers
 │   └── features/
@@ -85,6 +86,8 @@ backend/
 │       ├── userRecipe/        # Recetas guardadas
 │       ├── inventory/         # Inventario de ingredientes del usuario
 │       ├── search/            # Búsqueda rápida: categorías, recetas y usuarios en un solo pedido
+│       ├── follow/            # "Seguir" a otros usuarios (sus "amigos" en la home)
+│       ├── feed/              # Home: recetas y reseñas de amigos, top de recetas de la semana
 │       └── database/          # Endpoint de inicialización/seed (solo dev)
 ├── uploads/                   # Imágenes subidas (se crea sola, no se commitea)
 ```
@@ -158,6 +161,7 @@ El esquema vive en `prisma/schema.prisma`. **Es la fuente de verdad de la BD.**
 | `userrecipe` | `userrecipe` | Recetas guardadas por usuarios. |
 | `review` | `review` | Reseñas de usuarios sobre recetas. |
 | `donation` | `donation` | Donaciones entre usuarios. |
+| `follow` | `follow` | Quién sigue a quién (PK `idFollower + idFollowed`). |
 | `image` | `image` | Imágenes asociadas a recetas. |
 
 ### Comandos Prisma útiles

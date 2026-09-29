@@ -1,0 +1,91 @@
+// Estilos del contenido de la home (features/user/pages/HomePage): las 3 pantallas que
+// encajan al scrollear. Mismo esquema que el perfil (_profile-page.scss), con una
+// diferencia: arriba flota el buscador (SearchNavbar, sticky), así que cada pantalla le
+// deja libre su alto para que no tape el título de la sección.
+// (La clase .HomePage es el marco con la sidebar de TODAS las páginas del usuario, ver
+// UserLayout; por eso el contenido de la home usa .HomeFeed.)
+@use '../../../styles/abstracts' as *;
+
+// Alto aproximado del buscador en mobile (el input de 44px + sus márgenes internos).
+$home-search-mobile-height: 72px;
+// Desde md: lo que ocupa el buscador arriba de la 1ª pantalla (su alto de 80px + el margen
+// de abajo, ver _search-navbar.scss).
+$home-search-offset: $layout-header-height + $spacing-lg;
+
+.HomeFeed {
+  display: flex;
+  flex-direction: column;
+  // Mobile: las pantallas se apilan con un espacio entre sí (no encajan).
+  gap: $spacing-xl * 1.5;
+
+  // Pantalla: contenedor fijo con su ScrollReveal adentro, estirado a todo su alto.
+  &-screen {
+    display: flex;
+    flex-direction: column;
+    // Al bajar con la flecha en mobile, deja lugar a la barra superior y al buscador.
+    scroll-margin-top: $layout-topbar-height + $home-search-mobile-height;
+
+    > .HomeFeed-section {
+      flex: 1;
+    }
+  }
+
+  // El contenido animado (ScrollReveal) ocupa todo el ancho: así el aviso con flecha de
+  // abajo llega de borde a borde. El ancho de lectura lo limita -screenBody.
+  &-section {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  // Lo de cada pantalla va centrado en el alto disponible (el aviso ocupa el pie).
+  &-screenBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+
+    // Variante sin centrar: el contenido arranca arriba de la pantalla.
+    &--top {
+      justify-content: flex-start;
+    }
+  }
+
+  // Desde md, cada pantalla mide exactamente la pantalla y encaja al scrollear (ver
+  // scroll-snap al final del archivo): se ve una sola por vez.
+  @include respond-to(md) {
+    gap: 0;
+
+    &-screen {
+      box-sizing: border-box;
+      min-height: 100svh;
+      // Deja libre el alto del buscador flotante (que queda encima al llegar acá) y el
+      // difuminado que se extiende debajo de él: el contenido arranca a la misma altura
+      // que en la 1ª pantalla.
+      padding-top: $home-search-offset;
+      scroll-snap-align: start;
+      scroll-margin-top: 0;
+    }
+
+    // La 1ª arranca debajo del buscador, que en esta pantalla todavía ocupa su lugar en la
+    // página. Con este margen su punto de encaje es el tope de la página y termina justo
+    // en el borde de abajo.
+    &-screen--first {
+      min-height: calc(100svh - #{$home-search-offset});
+      padding-top: 0;
+      scroll-margin-top: $home-search-offset;
+    }
+  }
+}
+
+// Encaje por pantallas: solo con la home abierta (:has) y desde md, igual que el perfil.
+// Va en <html> porque es el que scrollea la página. Si una pantalla es más alta que la
+// ventana (ej. en tablets), adentro se puede scrollear libre.
+html:has(.HomeFeed) {
+  @include respond-to(md) {
+    scroll-snap-type: y mandatory;
+  }
+}

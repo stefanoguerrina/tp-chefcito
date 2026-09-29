@@ -2,6 +2,7 @@
 // frente) y la 2ª y 3ª a los costados, inclinadas. Cada una es la RecipeCard de siempre
 // con su valoración encima de la foto.
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
+import RatingBadge from '../../../core/components/RatingBadge.jsx';
 import { recipeToCardProps } from '../../recipe/models/recipeModel.js';
 import '../styles/_featured-recipes.scss';
 
@@ -33,11 +34,12 @@ function FeaturedRecipes({ recipes, reviewStatsByRecipe, onRecipeClick }) {
 
           return (
             <div key={recipe.id} className={`FeaturedRecipes-item FeaturedRecipes-item--${position}`}>
-              <span className="FeaturedRecipes-rating">
-                <span className="material-symbols-outlined" aria-hidden="true">star</span>
-                {averageRating.toFixed(1)}
-                <span className="FeaturedRecipes-reviews">({totalReviews})</span>
-              </span>
+              <RatingBadge
+                className="FeaturedRecipes-rating"
+                rating={averageRating}
+                reviewsCount={totalReviews}
+                isHighlighted={position === 'center'}
+              />
 
               <RecipeCard
                 recipe={recipeToCardProps(recipe)}

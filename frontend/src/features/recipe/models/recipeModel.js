@@ -20,6 +20,11 @@ export const RECIPE_DESCRIPTION_MAX_LENGTH = 2000;
 // Imagen de reemplazo para recetas sin foto de portada todavía.
 export const RECIPE_PLACEHOLDER_IMAGE = 'https://placehold.co/480x360/f9f3eb/8d7169?text=Sin+foto';
 
+// Recibe: timeMinutes (número, string o null). Devuelve el texto del tiempo de preparación
+// ("25 min" o "Sin definir"), mismo formato que muestra RecipeCard.
+export const formatPreparationTime = (timeMinutes) =>
+  timeMinutes === null || timeMinutes === undefined || timeMinutes === '' ? 'Sin definir' : `${timeMinutes} min`;
+
 // Devuelve la imagen principal de una receta cruda (la marcada isMain o, si no hay, la
 // primera), o null si todavía no tiene ninguna.
 export const getMainImage = (recipe) =>

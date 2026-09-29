@@ -143,7 +143,12 @@ Recipe images: `shared/utils/compressImage.js` (canvas → WebP) before upload a
 `shared/utils/imageUrl.js` (`resolveImageUrl`) to turn `/uploads/...` paths into full URLs.
 
 `src/core/components/` holds cross-feature UI primitives (`ConfirmModal`, `AlertModal`,
-`ErrorState`, `RecipeCard`, `MasonryGrid`, `StarRating`, ...); reuse them instead of duplicating.
+`ErrorState`, `RecipeCard`, `RatingBadge`, `SaveRecipeButton`, `UserAvatar`, `ScrollReveal`,
+`StarRating`, ...) and `src/core/hooks/` shared hooks (`useDragScroll` for carousels); reuse them
+instead of duplicating.
+The home (`/`, `features/user/pages/HomePage.jsx`) is 3 snap-scrolling screens like the profile,
+fed by `features/feed` (friends' recipes, weekly top 10, friends' reviews); "friends" = users you
+follow (`features/follow`, backend table `follow`).
 `CollapsibleSidebar` is the shared shell for both the user `Sidebar` and `AdminSidebar`: they only
 pass data (`items`, `footerItems`, `account`); desktop = icon rail that expands on hover (pure CSS,
 overlays the content), mobile = top bar + slide-in panel. Layout sizes live in `_variables.scss`

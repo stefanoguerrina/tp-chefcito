@@ -21,6 +21,45 @@
     cursor: pointer;
   }
 
+  // Disposición horizontal (prop horizontal): foto a la izquierda desde sm. La foto es un
+  // cuadrado de tamaño fijo: si siguiera el alto del texto, cada card la mostraría con
+  // otra proporción según cuánto texto tenga.
+  &--horizontal {
+    @include respond-to(sm) {
+      flex-direction: row;
+
+      .RecipeCard-imageWrapper {
+        width: var(--recipe-card-image-size, 200px);
+        height: var(--recipe-card-image-size, 200px);
+        aspect-ratio: auto;
+        // Sin esto el flex la estiraría al alto de la card.
+        align-self: flex-start;
+      }
+
+      .RecipeCard-body {
+        min-width: 0;
+      }
+    }
+  }
+
+  // Botón de guardar en la esquina de arriba a la derecha de la card (prop
+  // saveButtonInCorner), en vez de sobre la foto. Desde sm el texto queda a la derecha de
+  // la foto: se le deja lugar para que la bajada no pase por debajo del botón.
+  &--saveInCorner {
+    position: relative;
+
+    .RecipeCard-saveButton {
+      top: $spacing-sm + $spacing-xs;
+      right: $spacing-sm + $spacing-xs;
+    }
+
+    @include respond-to(sm) {
+      .RecipeCard-text {
+        padding-right: 36px;
+      }
+    }
+  }
+
   &:hover {
     box-shadow: $shadow-level-2;
     transform: translateY(-4px);
@@ -29,7 +68,7 @@
       transform: scale(1.08);
     }
 
-    .RecipeCard-hoverOverlay {
+    .RecipeHoverOverlay {
       opacity: 1;
     }
   }
@@ -60,31 +99,6 @@
     pointer-events: none;
   }
 
-  // Capa "Ver receta" que aparece al pasar el mouse (equivalente al botón "Read Article"
-  // del diseño original, pero sin abrir su propio click: toda la card ya es clickeable).
-  &-hoverOverlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.25);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    pointer-events: none;
-  }
-
-  &-viewAction {
-    padding: 10px $spacing-lg;
-    border-radius: $radius-full;
-    background: $color-primary;
-    color: $color-on-primary;
-    font-family: $font-body;
-    font-size: 14px;
-    font-weight: 700;
-    box-shadow: $shadow-level-2;
-  }
-
   &-categories {
     position: absolute;
     left: $spacing-md;
@@ -107,54 +121,11 @@
     white-space: nowrap;
   }
 
+  // Botón de guardar (SaveRecipeButton): arriba a la derecha de la foto.
   &-saveButton {
     position: absolute;
     top: $spacing-md;
     right: $spacing-md;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: $radius-full;
-    background: with-opacity($color-surface-container-lowest, 0.9);
-    color: $color-on-surface-variant;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: $shadow-level-1;
-    // Mismo "rebote" que usa el resto de la app para sus botones principales (ver
-    // Navbar-registerButton): así el botón se siente interactivo en vez de pegado a la foto.
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.15s ease,
-      color 0.15s ease, box-shadow 0.2s ease;
-
-    &:hover {
-      transform: scale(1.12);
-      background: $color-surface-container-lowest;
-      box-shadow: $shadow-level-2;
-    }
-
-    &:active {
-      transform: scale(0.92);
-    }
-
-    // Guardada: degradé de la marca (el mismo de los botones seleccionados).
-    &--saved {
-      background: $gradient-brand;
-      color: $color-on-primary;
-
-      // Sin esto, el &:hover de más arriba (más específico por el pseudo-clase) le
-      // ganaría a este fondo y el botón perdería el degradé al pasar el mouse.
-      &:hover {
-        background: $gradient-brand;
-      }
-
-      // Repetimos los otros ejes de la fuente variable (definidos en el reset
-      // global de .material-symbols-outlined) porque font-variation-settings
-      // no es acumulativo: fijar solo 'FILL' resetearía wght/GRAD/opsz.
-      .material-symbols-outlined {
-        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      }
-    }
   }
 
   &-body {
@@ -241,12 +212,28 @@
     min-width: 0;
   }
 
+  // Nombre del autor y, si hay, la nota al lado ("· hace 3 días"). Si el nombre es largo,
+  // es el nombre el que se recorta, no la nota.
+  &-authorLine {
+    display: flex;
+    align-items: baseline;
+    gap: $spacing-xs;
+    min-width: 0;
+  }
+
   &-authorName {
     font-size: 13px;
     font-weight: 700;
     color: $color-on-background;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &-authorNote {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: $color-on-surface-variant;
     white-space: nowrap;
   }
 

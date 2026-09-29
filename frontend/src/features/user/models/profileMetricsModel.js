@@ -1,8 +1,6 @@
-// Métricas del perfil (valoración, recetas por mes, categorías y categoría principal),
+// Métricas del perfil (recetas publicadas, valoración promedio y categoría principal),
 // calculadas con las recetas y reseñas que ya carga useProfileData: sin pedidos extra.
-
-// Cuántos meses muestra el gráfico de barras de "Recetas" (el actual y los anteriores).
-const MONTHS_IN_CHART = 6;
+// Los seguidores y seguidos vienen aparte (ver useFollow).
 
 // Recibe: recipeReviewStats ({ [idReceta]: { averageRating, totalReviews } }).
 // Devuelve: { averageRating, totalReviews } de todas las recetas juntas. El promedio se
@@ -12,21 +10,6 @@ const buildOverallRating = (recipeReviewStats) => {
   const totalReviews = allStats.reduce((sum, stats) => sum + stats.totalReviews, 0);
   const ratingSum = allStats.reduce((sum, stats) => sum + stats.averageRating * stats.totalReviews, 0);
   return { averageRating: totalReviews > 0 ? ratingSum / totalReviews : 0, totalReviews };
-};
-
-// Recibe: recipes (crudas, con createdAt). Devuelve las barras del gráfico, de la más vieja
-// a la actual: [{ label: 'abr', count }].
-const buildRecipesPerMonth = (recipes) => {
-  const now = new Date();
-  return Array.from({ length: MONTHS_IN_CHART }, (_, index) => {
-    const month = new Date(now.getFullYear(), now.getMonth() - (MONTHS_IN_CHART - 1 - index), 1);
-    const count = recipes.filter((recipe) => {
-      if (!recipe.createdAt) return false;
-      const createdAt = new Date(recipe.createdAt);
-      return createdAt.getMonth() === month.getMonth() && createdAt.getFullYear() === month.getFullYear();
-    }).length;
-    return { label: month.toLocaleDateString('es-AR', { month: 'short' }), count };
-  });
 };
 
 // Recibe: recipes. Devuelve: { distinctCount, topName, topCount } — cuántas categorías
@@ -51,10 +34,9 @@ const buildCategoryStats = (recipes) => {
 };
 
 // Recibe: recipes y recipeReviewStats (de useProfileData).
-// Devuelve: { rating, recipesCount, recipesPerMonth, categories } (ver funciones de arriba).
+// Devuelve: { rating, recipesCount, categories } (ver funciones de arriba).
 export const buildProfileMetrics = (recipes, recipeReviewStats) => ({
   rating: buildOverallRating(recipeReviewStats),
   recipesCount: recipes.length,
-  recipesPerMonth: buildRecipesPerMonth(recipes),
   categories: buildCategoryStats(recipes),
 });

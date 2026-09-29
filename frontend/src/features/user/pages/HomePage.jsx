@@ -1,83 +1,72 @@
-// Home page (ruta "/") — inicio de un usuario común: el buscador (SearchNavbar) y la
-// grilla de recetas de la comunidad. La sidebar la pone UserLayout; las demás secciones (Mis
-// recetas, Perfil, Inventario, etc.) son rutas propias (ver App.jsx).
-// Un admin nunca llega acá: ProtectedRoute lo manda a /admin.
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// Home page (ruta "/") — inicio de un usuario común: el buscador (SearchNavbar) y, debajo,
+// 3 "pantallas" que encajan al scrollear (scroll snap desde md) y aparecen con animación
+// al entrar en pantalla (ScrollReveal), igual que el perfil:
+// 1. Recetas por amigos (lo último que publicaron las personas que sigue);
+// 2. Top 10 de la semana (las mejor valoradas de los últimos 7 días, en carrusel);
+// 3. Reseñas de amigos.
+// Al pie de las dos primeras, un aviso con flecha (ProfileScrollHint) lleva a la siguiente.
+// Cada sección carga sus datos por separado (features/feed): si una falla, las otras se
+// ven igual. La sidebar la pone UserLayout. Un admin nunca llega acá: ProtectedRoute lo
+// manda a /admin.
 import SearchNavbar from '../../search/components/SearchNavbar.jsx';
-import RecipeCarouselSection from '../../recipe/components/RecipeCarouselSection.jsx';
-import ErrorState from '../../../core/components/ErrorState.jsx';
+import ScrollReveal from '../../../core/components/ScrollReveal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
-import { getAllRecipes } from '../../recipe/services/recipeService.js';
-import { recipeToCardProps } from '../../recipe/models/recipeModel.js';
+import ProfileScrollHint from '../components/ProfileScrollHint.jsx';
+import FriendsRecipesSection from '../../feed/components/FriendsRecipesSection.jsx';
+import WeeklyTopSection from '../../feed/components/WeeklyTopSection.jsx';
+import FriendsReviewsSection from '../../feed/components/FriendsReviewsSection.jsx';
 import { useSavedRecipes } from '../../userRecipe/hooks/useSavedRecipes.js';
-import { useRecipeReviewStats } from '../../review/hooks/useRecipeReviewStats.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
-import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
+import '../styles/_home-feed.scss';
+
+// ids de las pantallas 2 y 3, para bajar hasta ellas con los avisos con flecha.
+const WEEKLY_TOP_SCREEN_ID = 'inicio-top-semana';
+const FRIENDS_REVIEWS_SCREEN_ID = 'inicio-resenas';
 
 function HomePage() {
-  const navigate = useNavigate();
   const { userId } = useAuthContext();
+  // Uno solo para toda la home: si una receta aparece en dos secciones (ej. la publicó un
+  // amigo y además está en el top), su listón se ve igual en las dos.
   const { savedRecipeIds, handleToggleSave, saveError, clearSaveError } = useSavedRecipes();
-
-  // Recetas publicadas por otros usuarios (un 404 = todavía no hay ninguna).
-  const [communityRecipes, setCommunityRecipes] = useState([]);
-  const [isLoadingRecipes, setIsLoadingRecipes] = useState(true);
-  const [recipesError, setRecipesError] = useState('');
-  // Promedio de valoraciones + cantidad de reseñas de cada receta, para su card.
-  const reviewStatsByRecipe = useRecipeReviewStats(communityRecipes.map((recipe) => recipe.id));
-
-  // "Recetas de la comunidad" es para descubrir lo que publicaron otros, no las propias
-  // (esas ya se gestionan desde "Mis recetas").
-  // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
-  // llamar desde el useEffect sin renders en cascada.
-  const loadRecipes = () =>
-    fetchListOrEmpty(() => getAllRecipes())
-      .then((recipes) => {
-        const othersRecipes = recipes.filter((recipe) => recipe.idUser !== userId);
-        setCommunityRecipes(othersRecipes.map(recipeToCardProps));
-        setRecipesError('');
-      })
-      .catch((err) => setRecipesError(err.message))
-      .finally(() => setIsLoadingRecipes(false));
-
-  // Reintento manual después de un error de carga.
-  const handleRetry = () => {
-    setIsLoadingRecipes(true);
-    loadRecipes();
-  };
-
-  useEffect(() => {
-    loadRecipes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
-
-  const handleRecipeClick = (idRecipe) => navigate(`/recetas/${idRecipe}`);
 
   return (
     <>
       <SearchNavbar />
 
-      {isLoadingRecipes && <p className="HomePage-recipesStatus">Cargando recetas...</p>}
-      {recipesError && <ErrorState message={recipesError} onRetry={handleRetry} />}
-      {!isLoadingRecipes && !recipesError && communityRecipes.length === 0 && (
-        <p className="HomePage-recipesStatus">
-          Todavía no hay recetas cargadas. ¡Sé el primero en publicar una desde "Mis recetas"!
-        </p>
-      )}
-      {!isLoadingRecipes && !recipesError && communityRecipes.length > 0 && (
-        <RecipeCarouselSection
-          title="Recetas de la comunidad"
-          recipes={communityRecipes.map((recipe) => ({
-            ...recipe,
-            isSaved: savedRecipeIds.has(recipe.id),
-            rating: reviewStatsByRecipe[recipe.id]?.averageRating,
-            reviewsCount: reviewStatsByRecipe[recipe.id]?.reviewsCount,
-          }))}
-          onRecipeClick={handleRecipeClick}
-          onToggleSave={handleToggleSave}
-        />
-      )}
+      {/* Cada pantalla es un contenedor fijo (el que encaja al scrollear y al que bajan las
+          flechas) con la animación adentro, como en ProfilePage. */}
+      <div className="HomeFeed">
+        <div className="HomeFeed-screen HomeFeed-screen--first">
+          <ScrollReveal className="HomeFeed-section">
+            <div className="HomeFeed-screenBody">
+              <FriendsRecipesSection savedRecipeIds={savedRecipeIds} onToggleSave={handleToggleSave} />
+            </div>
+            <ProfileScrollHint label="Top 10 de la semana" targetId={WEEKLY_TOP_SCREEN_ID} />
+          </ScrollReveal>
+        </div>
+
+        <div id={WEEKLY_TOP_SCREEN_ID} className="HomeFeed-screen">
+          <ScrollReveal className="HomeFeed-section">
+            <div className="HomeFeed-screenBody">
+              <WeeklyTopSection
+                currentUserId={userId}
+                savedRecipeIds={savedRecipeIds}
+                onToggleSave={handleToggleSave}
+              />
+            </div>
+            <ProfileScrollHint label="Reseñas de amigos" targetId={FRIENDS_REVIEWS_SCREEN_ID} />
+          </ScrollReveal>
+        </div>
+
+        <div id={FRIENDS_REVIEWS_SCREEN_ID} className="HomeFeed-screen">
+          <ScrollReveal className="HomeFeed-section">
+            {/* Arriba de la pantalla (no centrada): título y reseñas quedan juntos. */}
+            <div className="HomeFeed-screenBody HomeFeed-screenBody--top">
+              <FriendsReviewsSection />
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
 
       {saveError && (
         <AlertModal title="No se pudo guardar la receta" message={saveError} onClose={clearSaveError} />

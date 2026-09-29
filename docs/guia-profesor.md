@@ -66,6 +66,11 @@ DATABASE_URL="mysql://root:TU_CONTRASEÑA_DE_MYSQL_ACA@localhost:3306/chefcito"
 > seguir: no borra los datos que ya tenías cargados, solo actualiza la estructura de las
 > tablas a la última versión. Si igual algo falla, lo más simple es tirar la base
 > (`DROP DATABASE chefcito;`), crearla de nuevo vacía y repetir los pasos 2 y 3 completos.
+>
+> Si tu base es anterior a la opción **"Seguir"** (la home nueva con recetas y reseñas de
+> amigos), después del `db push` ejecutá solo la **sección 8** de `demo-seed.sql` (desde
+> `-- 8. Seguidos` hasta el `COMMIT;` final): carga quién sigue a quién y reseñas de esta
+> semana, sin duplicar lo que ya tenías.
 
 ## 4. Frontend (`frontend/.env`)
 
@@ -111,3 +116,9 @@ usuarios comunes ya tienen recetas, reseñas y recetas guardadas cargadas para p
 recorrer la app sin partir de cero. **`juanperez`** además tiene ingredientes en su
 inventario: es el indicado para probar el filtro **"Inventario"** de los listados de
 recetas (muestra qué recetas se pueden preparar con lo que hay cargado).
+
+`juanperez` también es el indicado para ver la **pantalla de inicio**: sigue a María, Carlos y
+Lucía, así que ve sus recetas y reseñas en "Recetas por amigos" y "Reseñas de amigos", y el
+"Top 10 de la semana" con las recetas mejor valoradas de los últimos 7 días. Para probar
+**"Seguir"**, entrá al perfil de `martinlopez` (buscándolo arriba, en la barra de búsqueda) y
+tocá "Seguir": al volver a Inicio aparecen también sus recetas y reseñas.

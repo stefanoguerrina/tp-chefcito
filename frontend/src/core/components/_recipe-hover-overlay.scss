@@ -1,0 +1,26 @@
+// Estilos del componente compartido RecipeHoverOverlay (core/components). Salieron tal cual
+// de RecipeCard.
+@use '../../styles/abstracts' as *;
+
+.RecipeHoverOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+
+  &-action {
+    padding: 10px $spacing-lg;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-on-primary;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: $shadow-level-2;
+  }
+}

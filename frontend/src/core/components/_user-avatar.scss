@@ -1,0 +1,27 @@
+// Estilos del componente compartido UserAvatar (core/components).
+@use '../../styles/abstracts' as *;
+
+.UserAvatar {
+  // El lado lo pasa el componente en --user-avatar-size (prop size).
+  width: var(--user-avatar-size, 36px);
+  height: var(--user-avatar-size, 36px);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: $radius-full;
+  background: $color-secondary-container;
+  color: $color-on-secondary-container;
+  font-family: $font-body;
+  // Las iniciales escalan con el avatar (un poco más de un tercio del lado).
+  font-size: calc(var(--user-avatar-size, 36px) * 0.38);
+  font-weight: 700;
+  line-height: 1;
+
+  &-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

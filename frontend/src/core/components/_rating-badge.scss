@@ -1,0 +1,49 @@
+// Estilos del componente compartido RatingBadge (core/components). Nació como la etiqueta
+// de valoración de las recetas destacadas del perfil (FeaturedRecipes).
+@use '../../styles/abstracts' as *;
+
+.RatingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px $spacing-sm;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-full;
+  background: $color-surface-container-lowest;
+  color: $color-on-surface;
+  font-family: $font-body;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: $shadow-level-1;
+  pointer-events: none;
+
+  &-star {
+    font-size: 15px;
+    color: $color-primary;
+    font-variation-settings: 'FILL' 1;
+  }
+
+  &-separator {
+    opacity: 0.6;
+  }
+
+  &-reviews {
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.8;
+  }
+
+  // El primero del ranking: fondo verde de la marca.
+  &--highlighted {
+    border-color: $color-primary;
+    background: $color-primary;
+    color: $color-on-primary;
+
+    // Sobre el verde, la estrella verde no se distinguía: toma el color del texto de la
+    // etiqueta (oscuro en modo oscuro, blanco en modo claro).
+    .RatingBadge-star {
+      color: inherit;
+    }
+  }
+}

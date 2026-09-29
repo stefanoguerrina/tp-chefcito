@@ -405,6 +405,84 @@ INSERT INTO inventory (idUser, idIngredient, unitOfMeasure, availableQuantity) V
   (@user_juan, @ing_lechuga, 'g', 300),
   (@user_juan, @ing_leche, 'ml', 1000);
 
+-- ---------------------------------------------------------------------
+-- 8. Seguidos ("amigos") y reseñas de esta semana, para la home:
+--    "Recetas por amigos", "Top 10 de la semana" y "Reseñas de amigos".
+--
+--    Esta sección se puede correr SOLA sobre una base que ya tenía el
+--    seed anterior (sin la tabla follow): primero `npx prisma db push`
+--    desde backend/ y después seleccionar desde acá hasta el COMMIT y
+--    ejecutarlo. Por eso vuelve a buscar los ids por nombre en vez de
+--    depender de las variables de más arriba.
+--
+--    OJO: las fechas son relativas al momento en que se corre el script.
+--    El Top 10 cuenta solo las reseñas de los últimos 7 días, así que si
+--    pasa más de una semana, se va vaciando (es lo esperado).
+-- ---------------------------------------------------------------------
+SET @user_juan   := (SELECT id FROM user WHERE username = 'juanperez' LIMIT 1);
+SET @user_maria  := (SELECT id FROM user WHERE username = 'mariagomez' LIMIT 1);
+SET @user_carlos := (SELECT id FROM user WHERE username = 'carlosdiaz' LIMIT 1);
+SET @user_lucia  := (SELECT id FROM user WHERE username = 'luciafernandez' LIMIT 1);
+SET @user_martin := (SELECT id FROM user WHERE username = 'martinlopez' LIMIT 1);
+
+SET @recipe_milanesas      := (SELECT id FROM recipe WHERE name = 'Milanesas con puré' LIMIT 1);
+SET @recipe_cesar          := (SELECT id FROM recipe WHERE name = 'Ensalada César' LIMIT 1);
+SET @recipe_fideos         := (SELECT id FROM recipe WHERE name = 'Fideos con tuco' LIMIT 1);
+SET @recipe_tarta          := (SELECT id FROM recipe WHERE name = 'Tarta de verduras' LIMIT 1);
+SET @recipe_guiso          := (SELECT id FROM recipe WHERE name = 'Guiso de lentejas' LIMIT 1);
+SET @recipe_arrozpollo     := (SELECT id FROM recipe WHERE name = 'Arroz con pollo' LIMIT 1);
+SET @recipe_flan           := (SELECT id FROM recipe WHERE name = 'Flan casero' LIMIT 1);
+SET @recipe_ensaladasimple := (SELECT id FROM recipe WHERE name = 'Ensalada de tomate y lechuga' LIMIT 1);
+SET @recipe_sopa           := (SELECT id FROM recipe WHERE name = 'Sopa de verduras' LIMIT 1);
+SET @recipe_panqueques     := (SELECT id FROM recipe WHERE name = 'Panqueques dulces' LIMIT 1);
+
+-- Quién sigue a quién. juanperez sigue a María, Carlos y Lucía, pero NO a
+-- Martín: así, entrando como juanperez, se puede probar "Seguir" desde el
+-- perfil de Martín y ver cómo sus recetas y reseñas aparecen en la home.
+INSERT INTO follow (idFollower, idFollowed, createdAt) VALUES
+  (@user_juan, @user_maria, DATE_SUB(NOW(), INTERVAL 30 DAY)),
+  (@user_juan, @user_carlos, DATE_SUB(NOW(), INTERVAL 25 DAY)),
+  (@user_juan, @user_lucia, DATE_SUB(NOW(), INTERVAL 15 DAY)),
+  (@user_maria, @user_juan, DATE_SUB(NOW(), INTERVAL 28 DAY)),
+  (@user_maria, @user_lucia, DATE_SUB(NOW(), INTERVAL 12 DAY)),
+  (@user_carlos, @user_juan, DATE_SUB(NOW(), INTERVAL 20 DAY)),
+  (@user_lucia, @user_maria, DATE_SUB(NOW(), INTERVAL 10 DAY)),
+  (@user_lucia, @user_martin, DATE_SUB(NOW(), INTERVAL 8 DAY)),
+  (@user_martin, @user_juan, DATE_SUB(NOW(), INTERVAL 6 DAY)),
+  (@user_martin, @user_carlos, DATE_SUB(NOW(), INTERVAL 5 DAY));
+
+-- Reseñas de los últimos días. Cada una necesita su fila en userrecipe
+-- (isSaved = 0: la reseñó sin guardarla), salvo Carlos con la Ensalada
+-- César, que ya la tenía guardada desde la sección 6. ON DUPLICATE KEY:
+-- si en una base ya usada alguien había guardado alguna de estas recetas,
+-- se deja esa fila como está (sigue guardada) en vez de fallar.
+INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
+  (@user_lucia, @recipe_milanesas, 0, NULL),
+  (@user_martin, @recipe_fideos, 0, NULL),
+  (@user_juan, @recipe_tarta, 0, NULL),
+  (@user_maria, @recipe_arrozpollo, 0, NULL),
+  (@user_carlos, @recipe_panqueques, 0, NULL),
+  (@user_lucia, @recipe_sopa, 0, NULL),
+  (@user_martin, @recipe_flan, 0, NULL),
+  (@user_juan, @recipe_sopa, 0, NULL),
+  (@user_maria, @recipe_ensaladasimple, 0, NULL),
+  (@user_juan, @recipe_guiso, 0, NULL),
+  (@user_lucia, @recipe_panqueques, 0, NULL)
+ON DUPLICATE KEY UPDATE isSaved = isSaved;
+INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
+  (@user_lucia, @recipe_milanesas, 1, 5.0, 'Las hice para el domingo y no quedó ni una. El puré, una seda.', DATE_SUB(NOW(), INTERVAL 20 HOUR)),
+  (@user_martin, @recipe_flan, 1, 5.0, 'Salió perfecto al primer intento, el caramelo en su punto.', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+  (@user_martin, @recipe_fideos, 1, 4.5, 'Tuco casero de verdad, le sumé albahaca fresca.', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  (@user_carlos, @recipe_panqueques, 1, 5.0, 'Masa finita y suave, ideal con dulce de leche.', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  (@user_juan, @recipe_guiso, 1, 4.5, 'Abundante y rendidor, lo repito seguro.', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  (@user_carlos, @recipe_cesar, 1, 4.5, 'Fresca y rápida, el aderezo casero es la clave.', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+  (@user_lucia, @recipe_sopa, 1, 4.0, 'Liviana y rica, le agregué un poco de zapallo.', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+  (@user_juan, @recipe_tarta, 1, 4.0, 'Muy buena, la masa quedó crocante.', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  (@user_maria, @recipe_ensaladasimple, 1, 4.0, 'Simple pero siempre suma en la mesa.', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  (@user_maria, @recipe_arrozpollo, 1, 4.5, 'Cremoso como el de mi abuela.', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+  (@user_lucia, @recipe_panqueques, 1, 4.5, 'Los hice de merienda con los chicos, un éxito.', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+  (@user_juan, @recipe_sopa, 1, 3.5, 'Rica, aunque le faltaba un poco de sal para mi gusto.', DATE_SUB(NOW(), INTERVAL 6 DAY));
+
 COMMIT;
 
 -- =====================================================================
@@ -421,6 +499,9 @@ COMMIT;
 --   - Guardados + reseñas cruzadas entre usuarios, para ver valoraciones,
 --     "recetas destacadas" y métricas del perfil con datos reales
 --   - Inventario de ejemplo para juanperez
+--   - Seguidos entre usuarios + reseñas de los últimos días, para que la
+--     home muestre "Recetas por amigos", "Top 10 de la semana" y
+--     "Reseñas de amigos" (juanperez sigue a María, Carlos y Lucía)
 --
 -- Iniciá sesión como cualquiera de los usuarios comunes para recorrer la
 -- home (con el buscador de recetas, categorías y usuarios), "Mis recetas",

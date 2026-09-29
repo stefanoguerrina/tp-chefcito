@@ -10,3 +10,14 @@ $gradient-brand: linear-gradient(
   $color-primary 45%,
   shade($color-primary, 40%) 100%
 );
+
+// Pinta el texto con el degradé de la marca (títulos de sección del perfil y de la home, y
+// el nombre de la receta #1). padding-bottom: el degradé se pinta solo dentro de la caja
+// del texto y, con un alto de línea justo, la parte de abajo de las letras quedaba cortada.
+@mixin gradient-text {
+  padding-bottom: 0.1em;
+  background: $gradient-brand;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
