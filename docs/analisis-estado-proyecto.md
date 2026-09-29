@@ -15,6 +15,18 @@
 | 🟡 | Mejora de calidad: nos pueden preguntar o bajar nota en la defensa. |
 | ⚪ | Opcional / prolijidad. |
 
+> **Actualización (28/09/2026, rama `task/Frontend-Upgrades`, todavía no mergeada a
+> `develop`):** se terminó de partir el editor de recetas en secciones propias (fotos,
+> título/descripción, categorías e ingredientes con el mismo patrón visual, instrucciones),
+> se agregó la foto de portada de perfil (`coverUrl`, además del avatar), se corrigió un bug de
+> UI al confirmar la cantidad de un ingrediente y se cambió a `onDelete: Restrict` la relación
+> `ingredient` → `inventory`/`recipeingredient` (antes, al ser `Cascade`, borrar un ingrediente
+> en uso arrastraba en silencio sus vínculos en vez de rechazarse como espera
+> `ingredientService.deleteIngredient`). También se ajustó la paleta de colores clara/oscura
+> para que fondo, sidebar y cards guarden la misma relación de tono en los dos temas. El resto
+> del diagnóstico de este documento sigue describiendo `develop` (commit `f3080a3`); la única
+> sección puntualmente actualizada es 7.7.
+
 ---
 
 ## 1. Resumen ejecutivo
@@ -258,7 +270,7 @@ propuesta. Mostrar funciones que no existen resta en UX.
 | 7.4 | 🟡 | El filtro por categoría del perfil solo mira la **primera** categoría de cada receta (`recipecategory?.[0]`), pero una receta puede tener varias | [ProfileRecipeGallery.jsx](../frontend/src/features/user/components/ProfileRecipeGallery.jsx) | Usar `recipe.recipecategory.some((rc) => selectedCategoryIds.includes(rc.idCategory))` y armar las opciones con `flatMap`. |
 | 7.5 | 🟡 | `CategoryFormModal` duplicado (category/ e ingredientCategory/) y las tablas admin de categorías casi idénticas (239 líneas cada una) | `features/category/`, `features/ingredientCategory/`, `features/admin/components/` | Un solo modal/tabla genérica en `core/components/` que reciba título y servicio por props. |
 | 7.6 | 🟡 | Faltan modelos (requisito de la cátedra + CLAUDE.md §7) | `features/user/models/` (vacía), category, ingredient, role, nutritionalValue, image, step | Factory functions simples, ej. `createUserFromApi(raw)` y `toUpdateUserPayload(form)`, y que los servicios mapeen la respuesta cruda al modelo. |
-| 7.7 | 🟡 | Componentes > 200 líneas (CLAUDE.md §6) | `AdminUsersTable` 353 · `AdminPage` 286 · `AdminIngredientsTable` 286 · `RecipeEditorPage` 281 · `InventoryPage` 264 · `NutritionalValuePanel` 262 · `RecipeDetailPage` 242 · `SearchUsersForm` 236 | Extraer subcomponentes (filas, paginación, formularios) y hooks. `NutritionalValuePanel` está en `pages/` pero es un panel dentro de un modal → moverlo a `components/`. |
+| 7.7 | 🟡 | Componentes > 200 líneas (CLAUDE.md §6) | `AdminUsersTable` 353 · `AdminPage` 286 · `AdminIngredientsTable` 286 · `NutritionalValuePanel` 262 · `RecipeEditorPage` 261 · `InventoryPage` 264 · `SearchUsersForm` 236 | Extraer subcomponentes (filas, paginación, formularios) y hooks. `NutritionalValuePanel` está en `pages/` pero es un panel dentro de un modal → moverlo a `components/`. `RecipeEditorPage` ya se partió en `RecipeMediaStage`/`RecipeBasicInfoSection`/`RecipeCategoryPicker`/`RecipeIngredientsStage`/`RecipeStepsEditorStage` (task/Frontend-Upgrades): bajó de 281 a 261, todavía por encima de 200 porque orquesta la carga, el guardado y el layout de las cinco. `RecipeDetailPage` bajó de 242 a 180 con el mismo trabajo — ya no entra en esta lista. |
 | 7.8 | ⚪ | `index.html` con `lang="en"` y título "chefcito" | [index.html](../frontend/index.html) | `lang="es"`, `<title>Chefcito</title>` y `<meta name="description">`. |
 | 7.9 | ⚪ | Archivos sin uso | `src/assets/react.svg`, `vite.svg`, `hero.png`; `.gitkeep` en carpetas que ya tienen archivos (`auth/styles`, `user/styles`, `styles/`) | Borrarlos. |
 | 7.10 | ⚪ | Sin `.env.example` | `frontend/` | Crear `frontend/.env.example` con `VITE_API_BASE_URL=http://localhost:3000/api` (este sí se commitea). |
@@ -471,6 +483,7 @@ Base: `/api`. **Público** = sin token · **Token** = cualquier usuario logueado
 | Usuarios | `GET /users` (`?inactive=true` solo admin) · `GET /users/:id` | Token |
 | | `POST /users` · `PATCH /users/:id/restore` | Admin |
 | | `PATCH /users/:id` · `PATCH /users/:id/password` · `DELETE /users/:id` (baja lógica) | Dueño/Admin |
+| | `PATCH` / `DELETE /users/:id/avatar` · `PATCH` / `DELETE /users/:id/cover` (foto de perfil y portada, archivo multipart en `image`) | Dueño/Admin |
 | Inventario | `GET`, `POST /users/:userId/inventory` · `PATCH`, `DELETE /users/:userId/inventory/:ingredientId` | Dueño/Admin |
 | Roles | `GET`, `POST /roles` · `GET`, `PATCH`, `DELETE /roles/:id` · `GET /roles/users/:userId` · `GET`, `POST /roles/:id/users` · `DELETE /roles/:id/users/:userId` | Admin |
 | Categorías de receta | `GET /categories` · `GET /categories/name/:name` | Token |
@@ -496,7 +509,7 @@ Base: `/api`. **Público** = sin token · **Token** = cualquier usuario logueado
 | Guardado | `GET`, `POST`, `PATCH`, `DELETE /recipes/:idRecipe/save` | Token (usuario del token) |
 | | `GET /saved-recipes/:idUser` | Dueño/Admin |
 | Salud | `GET /database/health` | Público |
-| Archivos | `GET /uploads/recipes/<archivo>` (estático, fuera de `/api`) | Público |
+| Archivos | `GET /uploads/recipes/<archivo>` · `GET /uploads/users/<archivo>` (estático, fuera de `/api`) | Público |
 | **Donaciones** | — | **No existe todavía** |
 
 ## Anexo B — Verificaciones hechas para este análisis

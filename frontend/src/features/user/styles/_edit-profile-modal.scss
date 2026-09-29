@@ -1,132 +1,403 @@
 // Estilos del modal de edición de perfil (features/user/components/EditProfileModal).
-// Mismo patrón visual que core/components/ConfirmModal, con campos de formulario propios.
+// Adaptación del diálogo "Edit profile" de shadcn: barra de título, portada con avatar
+// superpuesto, formulario con scroll propio y pie fijo con los botones.
 @use '../../../styles/abstracts' as *;
 
-.EditProfileModal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: $spacing-lg;
+// Entrada del fondo y del diálogo (el diálogo además crece desde el 95%).
+@keyframes edit-profile-fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
-.EditProfileModal-card {
-  width: 100%;
-  max-width: 420px;
-  max-height: 90vh;
-  overflow-y: auto;
-  background: $color-surface-container-lowest;
-  border: 1px solid $color-outline-variant;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-level-2;
-  padding: $spacing-lg;
+@keyframes edit-profile-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
 }
 
-.EditProfileModal-title {
-  font-family: $font-body;
-  font-size: 18px;
-  font-weight: 700;
-  color: $color-on-surface;
-  margin: 0 0 $spacing-lg;
-}
-
-.EditProfileModal-form {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
-}
-
-.EditProfileModal-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  label {
-    font-size: 13px;
-    font-weight: 600;
-    color: $color-on-surface-variant;
+.EditProfileModal {
+  // El proyecto no tiene un reset global de box-sizing: sin esto los paddings de los
+  // inputs se sumarían al 100% de ancho y se saldrían del diálogo.
+  &-dialog,
+  &-dialog * {
+    box-sizing: border-box;
   }
 
-  input,
-  textarea {
+  &-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-md;
+    animation: edit-profile-fade-in 0.2s ease;
+  }
+
+  &-dialog {
+    position: relative;
+    width: 100%;
+    max-width: 512px;
+    max-height: calc(100% - #{$spacing-md});
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: $color-surface-container-lowest;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-level-2;
     font-family: $font-body;
+    color: $color-on-surface;
+    text-align: left;
+    animation: edit-profile-zoom-in 0.2s ease;
+  }
+
+  // --- Barra de título ---
+  &-title {
+    flex: none;
+    margin: 0;
+    padding: $spacing-md $spacing-lg;
+    border-bottom: 1px solid $color-outline-variant;
+    font-family: $font-body;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    letter-spacing: normal;
+    color: $color-on-surface;
+  }
+
+  &-close {
+    position: absolute;
+    top: 14px;
+    right: $spacing-md;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      opacity: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-outline;
+      outline-offset: 2px;
+    }
+  }
+
+  // --- Contenido con scroll (portada + avatar + formulario) ---
+  &-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  // Portada: la foto elegida, o el mismo degradé de la tarjeta de perfil si no hay.
+  &-cover {
+    position: relative;
+    height: 128px;
+    overflow: hidden;
+    background: linear-gradient(120deg, $color-primary-container 0%, $color-secondary 100%);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &-avatarRow {
+    margin-top: -40px;
+    padding: 0 $spacing-lg;
+  }
+
+  &-avatar {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border: 4px solid $color-surface-container-lowest;
+    border-radius: $radius-full;
+    overflow: hidden;
+    background: $color-primary-container;
+    box-shadow: $shadow-level-1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &-avatarInitials {
+    color: $color-on-primary-container;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  // Botones (cambiar / quitar) centrados encima de la portada o del avatar.
+  &-imageActions {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+  }
+
+  // Botón redondo semitransparente: se ve sobre cualquier foto (clara u oscura).
+  &-imageButton {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    background: rgba(0, 0, 0, 0.6);
+    color: $color-on-image;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-outline;
+      outline-offset: 2px;
+    }
+  }
+
+  // El <input type="file"> no se ve: lo abren los botones de arriba.
+  &-fileInput {
+    display: none;
+  }
+
+  // --- Formulario ---
+  &-form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-lg $spacing-lg;
+  }
+
+  // Dos campos lado a lado (nombre/apellido, especialidad/ubicación); apilados en mobile.
+  &-row {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    @include respond-to(sm) {
+      flex-direction: row;
+
+      > * {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+  }
+
+  &-field {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &-label {
     font-size: 14px;
-    padding: $spacing-sm $spacing-md;
+    font-weight: 500;
+    line-height: 1;
+    color: $color-on-surface;
+  }
+
+  &-input {
+    width: 100%;
+    height: 40px;
+    padding: $spacing-sm 12px;
     border: 1px solid $color-outline-variant;
     border-radius: $radius-md;
     background: $color-surface-container-lowest;
     color: $color-on-surface;
-
-    &:focus {
-      outline: none;
-      border-color: $color-primary;
-    }
-  }
-
-  textarea {
-    resize: vertical;
-    min-height: 64px;
     font-family: $font-body;
-  }
-}
+    font-size: 14px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
-.EditProfileModal-charCount {
-  align-self: flex-end;
-  font-size: 11px;
-  color: $color-on-surface-variant;
-}
+    &::placeholder {
+      color: $color-outline;
+    }
 
-.EditProfileModal-alert {
-  background: rgba($color-error, 0.1);
-  color: $color-error;
-  border-radius: $radius-md;
-  padding: $spacing-sm $spacing-md;
-  font-size: 14px;
-}
+    &:focus-visible {
+      outline: none;
+      border-color: $color-outline;
+      box-shadow: 0 0 0 3px with-opacity($color-outline, 0.25);
+    }
 
-.EditProfileModal-actions {
-  display: flex;
-  gap: $spacing-sm;
-  margin-top: $spacing-xs;
-}
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
 
-.EditProfileModal-button {
-  flex: 1;
-  padding: $spacing-sm $spacing-md;
-  border-radius: $radius-md;
-  border: none;
-  font-family: $font-body;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
+    // Deja lugar al ícono de la derecha (candado del usuario).
+    &--withIcon {
+      padding-right: 36px;
+    }
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-
-  &--cancel {
-    border: 1px solid $color-outline-variant;
-    background: $color-surface-container-lowest;
-    color: $color-on-surface;
-
-    &:hover:not(:disabled) {
-      background: $color-surface-container-low;
+    // Pegado al prefijo "URL": sin borde redondeado a la izquierda.
+    &--addon {
+      margin-left: -1px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
     }
   }
 
-  &--confirm {
-    background: $color-primary;
-    color: $color-on-primary;
+  &-textarea {
+    height: auto;
+    min-height: 80px;
+    resize: vertical;
+    line-height: 1.5;
+  }
 
-    &:hover:not(:disabled) {
-      background: $color-primary-container;
+  &-inputWrapper {
+    position: relative;
+  }
+
+  &-inputIcon {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: $color-on-surface-variant;
+    pointer-events: none;
+  }
+
+  // Prefijo pegado al input ("URL"), como el "https://" del diseño de referencia.
+  &-addonGroup {
+    display: flex;
+  }
+
+  &-addon {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md 0 0 $radius-md;
+    background: $color-surface-container-low;
+    color: $color-on-surface-variant;
+    font-size: 14px;
+  }
+
+  // Bandera de la característica +54 del teléfono.
+  &-flag {
+    width: 20px;
+    height: auto;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px $color-outline-variant;
+  }
+
+  &-charCount {
+    margin: 0;
+    text-align: right;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &-fieldError,
+  &-error {
+    margin: 0;
+    font-size: 13px;
+    color: $color-error;
+  }
+
+  &-error {
+    padding: $spacing-sm 12px;
+    border-radius: $radius-md;
+    background: with-opacity($color-error, 0.1);
+  }
+
+  // --- Pie con los botones (fijo, fuera del scroll) ---
+  &-footer {
+    flex: none;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-lg;
+    border-top: 1px solid $color-outline-variant;
+
+    @include respond-to(sm) {
+      flex-direction: row;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+  }
+
+  // Mismo estilo que los botones de ProfileCard (primario claro + contorno).
+  &-button {
+    height: 40px;
+    padding: 0 $spacing-md;
+    border-radius: $radius-md;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-outline;
+      outline-offset: 2px;
+    }
+
+    &--outline {
+      border: 1px solid $color-outline-variant;
+      background: $color-surface-container-lowest;
+      color: $color-on-surface;
+
+      &:hover:not(:disabled) {
+        background: $color-surface-container-highest;
+      }
+    }
+
+    &--primary {
+      border: none;
+      background: $color-on-surface;
+      color: $color-surface-container-lowest;
+
+      &:hover:not(:disabled) {
+        background: $color-on-surface-variant;
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-// Home page (ruta "/") — inicio de un usuario común: accesos rápidos y el carrusel de
+// Home page (ruta "/") — inicio de un usuario común: accesos rápidos y la grilla de
 // recetas de la comunidad. La sidebar la pone UserLayout; las demás secciones (Mis
 // recetas, Perfil, Inventario, etc.) son rutas propias (ver App.jsx).
 // Un admin nunca llega acá: ProtectedRoute lo manda a /admin.
@@ -9,8 +9,9 @@ import RecipeCarouselSection from '../../recipe/components/RecipeCarouselSection
 import ErrorState from '../../../core/components/ErrorState.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import { getAllRecipes } from '../../recipe/services/recipeService.js';
-import { recipeToHomeCardProps } from '../../recipe/models/recipeModel.js';
+import { recipeToCardProps } from '../../recipe/models/recipeModel.js';
 import { useSavedRecipes } from '../../userRecipe/hooks/useSavedRecipes.js';
+import { useRecipeReviewStats } from '../../review/hooks/useRecipeReviewStats.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 
@@ -23,6 +24,8 @@ function HomePage() {
   const [communityRecipes, setCommunityRecipes] = useState([]);
   const [isLoadingRecipes, setIsLoadingRecipes] = useState(true);
   const [recipesError, setRecipesError] = useState('');
+  // Promedio de valoraciones + cantidad de reseñas de cada receta, para su card.
+  const reviewStatsByRecipe = useRecipeReviewStats(communityRecipes.map((recipe) => recipe.id));
 
   // "Recetas de la comunidad" es para descubrir lo que publicaron otros, no las propias
   // (esas ya se gestionan desde "Mis recetas").
@@ -32,7 +35,7 @@ function HomePage() {
     fetchListOrEmpty(() => getAllRecipes())
       .then((recipes) => {
         const othersRecipes = recipes.filter((recipe) => recipe.idUser !== userId);
-        setCommunityRecipes(othersRecipes.map(recipeToHomeCardProps));
+        setCommunityRecipes(othersRecipes.map(recipeToCardProps));
         setRecipesError('');
       })
       .catch((err) => setRecipesError(err.message))
@@ -70,6 +73,8 @@ function HomePage() {
           recipes={communityRecipes.map((recipe) => ({
             ...recipe,
             isSaved: savedRecipeIds.has(recipe.id),
+            rating: reviewStatsByRecipe[recipe.id]?.averageRating,
+            reviewsCount: reviewStatsByRecipe[recipe.id]?.reviewsCount,
           }))}
           onRecipeClick={handleRecipeClick}
           onToggleSave={handleToggleSave}

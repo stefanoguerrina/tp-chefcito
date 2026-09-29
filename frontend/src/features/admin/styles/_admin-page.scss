@@ -1,7 +1,5 @@
 // Layout general del panel de administración (features/admin/pages/AdminPage).
 @use '../../../styles/abstracts' as *;
-// Trae el ancho/alto reales de la sidebar (ver ese partial) para no duplicar el valor.
-@use './admin-sidebar' as adminSidebar;
 
 // El scaffold original (#root en index.css) trae un ancho fijo pensado para la landing;
 // el panel admin necesita ancho completo, igual que hace HomePage con su propio #root:has().
@@ -25,11 +23,25 @@
     flex-direction: column;
     min-height: 100vh;
     // En mobile la sidebar es una barra fija arriba: se le deja el espacio con padding-top.
-    padding-top: adminSidebar.$admin-sidebar-mobile-height;
+    // Desde md es el riel fijo de la izquierda (mismo layout que HomePage).
+    padding-top: $layout-topbar-height;
 
-    @include respond-to(lg) {
+    @include respond-to(md) {
       padding-top: 0;
-      margin-left: adminSidebar.$admin-sidebar-width;
+      margin-left: $layout-sidebar-collapsed-width;
+      // Misma duración y curva que el ancho de la sidebar, para que se muevan juntos.
+      transition: margin-left 0.2s ease;
+    }
+
+    // A diferencia de la sidebar de usuario (que se expande por encima del contenido),
+    // en el panel de admin la sidebar expandida EMPUJA el contenido para no tapar tablas
+    // ni gráficos. :has() detecta desde CSS que la sidebar está expandida (mouse encima o
+    // foco de teclado adentro), sin estado en React.
+    @include respond-to(md) {
+      .AdminPage:has(.CollapsibleSidebar-panel:hover) &,
+      .AdminPage:has(.CollapsibleSidebar-panel :focus-visible) & {
+        margin-left: $layout-sidebar-expanded-width;
+      }
     }
   }
 

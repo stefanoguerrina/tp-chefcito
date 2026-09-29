@@ -26,7 +26,7 @@
   &-bar {
     width: 100%;
     border-radius: $radius-md $radius-md 0 0;
-    background: rgba($color-tertiary, 0.18);
+    background: with-opacity($color-tertiary, 0.18);
     transition: background-color 0.15s ease;
 
     &--highlighted {

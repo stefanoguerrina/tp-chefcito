@@ -1,9 +1,11 @@
-// Estilos de una sección de carrusel de recetas de la home
-// (features/recipe/components/RecipeCarouselSection).
+// Estilos del carrusel de recetas de la home (features/recipe/components/RecipeCarouselSection).
 @use '../../../styles/abstracts' as *;
 
 .RecipeCarouselSection {
   margin-bottom: $spacing-xl;
+  // El viewport recorta la sombra de las cards al pasar el mouse si no se le da lugar;
+  // min-width:0 evita que el flex del padre lo estire más allá del ancho disponible.
+  min-width: 0;
 
   &-heading {
     font-family: $font-body;
@@ -12,68 +14,57 @@
     margin: 0 0 $spacing-md;
   }
 
+  // Recorta lo que se sale por los costados; el fade de los bordes (mask-image) suaviza
+  // ese corte y de paso insinúa que hay más cards para arrastrar.
   &-viewport {
-    position: relative;
+    overflow: hidden;
+    // Compensa el padding de abajo para no perder la sombra que levantan las cards al
+    // pasar el mouse (si no, el overflow:hidden se la corta de raíz).
+    margin: -12px;
+    padding: 12px;
+    mask-image: linear-gradient(to right, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 24px,
+      black calc(100% - 24px),
+      transparent 100%
+    );
   }
 
   &-track {
     display: flex;
     gap: $spacing-lg;
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    // Sin scroll-behavior: smooth acá a propósito: si estuviera, el salto instantáneo
-    // que hace useInfiniteScroll al llegar a un extremo (asignar scrollLeft) se vería
-    // como una animación en vez de un salto invisible. Los botones igual scrollean con
-    // animación porque la piden explícitamente (scrollBy({ behavior: 'smooth' })).
-    padding-bottom: $spacing-lg;
+    scroll-snap-type: x proximity;
+    // Se desplaza arrastrando las cards (mouse, touch o trackpad): la barra nativa sobra.
+    scrollbar-width: none;
     cursor: grab;
 
-    // Oculta la scrollbar (el scroll sigue funcionando con drag, rueda o los botones).
-    scrollbar-width: none;
     &::-webkit-scrollbar {
       display: none;
     }
 
-    &.is-dragging {
-      cursor: grabbing;
+    // Mientras se arrastra con el mouse: sin scroll-snap (si no, cada movimiento "salta" a
+    // la card más cercana) y sin seleccionar texto de las cards por accidente.
+    &--dragging {
       scroll-snap-type: none;
+      cursor: grabbing;
+      user-select: none;
     }
   }
 
-  &-navButton {
-    position: absolute;
-    top: 40%;
-    transform: translateY(-50%);
-    z-index: 10;
-    width: 40px;
-    height: 40px;
-    border-radius: $radius-full;
-    background: rgba($color-surface, 0.9);
-    backdrop-filter: blur(8px);
-    border: 1px solid $color-outline-variant;
-    box-shadow: $shadow-level-1;
-    color: $color-on-surface;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease, background-color 0.2s ease;
+  &-item {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    width: 300px;
 
-    &:hover {
-      background: $color-surface;
+    @include respond-to(sm) {
+      width: 320px;
     }
 
-    &--left {
-      left: -$spacing-sm;
+    @include respond-to(md) {
+      width: 340px;
     }
-
-    &--right {
-      right: -$spacing-sm;
-    }
-  }
-
-  &:hover &-navButton {
-    opacity: 1;
   }
 }

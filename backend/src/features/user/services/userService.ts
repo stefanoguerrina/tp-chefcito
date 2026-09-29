@@ -2,7 +2,8 @@
 // Orquesta el repositorio, aplica reglas y transforma datos para el controller.
 import bcrypt from 'bcrypt';
 import { userRepository } from '../repository/userRepository.js';
-import { toPublic, type UpdateUserData, ADMIN_ROLE_ID } from '../models/userModel.js';
+import { toPublic, type UpdateUserData, type UserImageField, ADMIN_ROLE_ID } from '../models/userModel.js';
+import { deleteLocalUpload } from '../../../core/fileStorage.js';
 
 const SALT_ROUNDS = 10;
 
@@ -52,6 +53,37 @@ export async function updateUser(id: number, data: UpdateUserData) {
   if (!existing) return null;
   const updated = await userRepository.update(id, data);
   return toPublic(updated);
+}
+
+// Guarda la nueva foto de perfil o de portada (una sola de cada una por usuario).
+// Recibe: id del usuario, field ('avatarUrl' | 'coverUrl') y la ruta pública del archivo
+// ya subido. La foto anterior, si era un archivo propio, se borra del disco porque ya no
+// la usa nadie. Devuelve el usuario actualizado o not_found.
+export async function setUserImage(
+  id: number,
+  field: UserImageField,
+  imageUrl: string
+): Promise<{ ok: true; user: object } | { ok: false; reason: 'not_found' }> {
+  const existing = await userRepository.findById(id);
+  if (!existing) return { ok: false, reason: 'not_found' };
+
+  const updated = await userRepository.update(id, { [field]: imageUrl });
+  await deleteLocalUpload(existing[field]);
+  return { ok: true, user: toPublic(updated) };
+}
+
+// Quita la foto de perfil o de portada: deja la columna en null y borra el archivo.
+// Recibe: id del usuario y field. Devuelve el usuario actualizado o not_found.
+export async function removeUserImage(
+  id: number,
+  field: UserImageField
+): Promise<{ ok: true; user: object } | { ok: false; reason: 'not_found' }> {
+  const existing = await userRepository.findById(id);
+  if (!existing) return { ok: false, reason: 'not_found' };
+
+  const updated = await userRepository.update(id, { [field]: null });
+  await deleteLocalUpload(existing[field]);
+  return { ok: true, user: toPublic(updated) };
 }
 
 // Cambia la contraseña de un usuario verificando primero la contraseña actual.

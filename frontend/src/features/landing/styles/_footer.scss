@@ -2,8 +2,9 @@
 @use '../../../styles/abstracts' as *;
 
 .Footer {
-  background: $color-inverse-surface;
-  color: $color-inverse-on-surface;
+  background: $color-footer-background;
+  border-top: 1px solid $color-footer-border;
+  color: $color-footer-text;
   padding: 64px $spacing-gutter-mobile;
 
   @include respond-to(lg) {
@@ -37,7 +38,7 @@
 
     p {
       font-size: 12px;
-      color: $color-surface-dim;
+      color: $color-footer-muted;
       max-width: 320px;
       line-height: 1.5;
       margin: 0;
@@ -48,7 +49,7 @@
     font-family: $font-body;
     font-size: 24px;
     font-weight: 700;
-    color: $color-secondary-container;
+    color: $color-footer-accent;
     display: flex;
     align-items: center;
     gap: $spacing-sm;
@@ -62,17 +63,17 @@
     gap: $spacing-lg;
 
     a {
-      color: $color-surface-dim;
+      color: $color-footer-muted;
       text-decoration: none;
       font-weight: 500;
       font-size: 15px;
 
       &:hover {
-        color: $color-on-primary;
+        color: $color-footer-hover;
       }
 
       &:first-child {
-        color: $color-secondary-container;
+        color: $color-footer-accent;
       }
     }
   }

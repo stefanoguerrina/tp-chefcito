@@ -58,6 +58,13 @@ DATABASE_URL="mysql://root:TU_CONTRASEÑA_DE_MYSQL_ACA@localhost:3306/chefcito"
    ejecutándolo, o `mysql -u root -p chefcito < docs/demo-seed.sql`). El archivo explica
    en sus propios comentarios qué carga y con qué usuarios podés entrar.
 
+> **¿Ya habías probado una versión anterior de Chefcito?** El modelo de datos sigue
+> sumando columnas y ajustes a medida que avanza el proyecto (por ejemplo, la foto de
+> portada del perfil). Volvé a correr `npx prisma db push` desde `backend/` antes de
+> seguir: no borra los datos que ya tenías cargados, solo actualiza la estructura de las
+> tablas a la última versión. Si igual algo falla, lo más simple es tirar la base
+> (`DROP DATABASE chefcito;`), crearla de nuevo vacía y repetir los pasos 2 y 3 completos.
+
 ## 4. Frontend (`frontend/.env`)
 
 Creá el archivo `frontend/.env` con este contenido (ya completo, no hace falta tocar

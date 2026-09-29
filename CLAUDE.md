@@ -53,6 +53,10 @@ There is no automated test suite in either package currently.
 Recipe images are uploaded as files with `multer` (`features/image/middleware/imageUploadMiddleware.ts`)
 into `backend/uploads/recipes/` (gitignored, served statically at `/uploads`); the DB column
 `image.imageUrl` stores only the public path or an external http(s) link — never base64.
+User profile photos follow the same scheme: one avatar and one cover per user
+(`User.avatarUrl` / `User.coverUrl`), uploaded via `PATCH /api/users/:id/avatar|cover`
+(`features/user/middleware/userImageUploadMiddleware.ts`) into `backend/uploads/users/`;
+replacing or deleting one removes the old file.
 `core/fileStorage.ts` resolves upload paths and deletes orphaned files.
 
 Each feature under `src/features/<name>/` follows the same internal layering — new features should
@@ -138,8 +142,19 @@ Recipe images: `shared/utils/compressImage.js` (canvas → WebP) before upload a
 
 `src/core/components/` holds cross-feature UI primitives (`ConfirmModal`, `AlertModal`,
 `ErrorState`, `RecipeCard`, `MasonryGrid`, `StarRating`, ...); reuse them instead of duplicating.
+`CollapsibleSidebar` is the shared shell for both the user `Sidebar` and `AdminSidebar`: they only
+pass data (`items`, `footerItems`, `account`); desktop = icon rail that expands on hover (pure CSS,
+overlays the content), mobile = top bar + slide-in panel. Layout sizes live in `_variables.scss`
+(`$layout-sidebar-collapsed-width`, `$layout-topbar-height`, ...).
 Styles are mobile-first SASS: use `@include respond-to(sm|md|lg)` and the variables in
 `src/styles/abstracts/_variables.scss` — no `max-width` media queries, no hardcoded colors.
+Light/dark mode: every `$color-*` / `$shadow-*` variable is a CSS custom property
+(`var(--color-...)`) whose real values live in `src/styles/_themes.scss` (`:root` = light,
+`:root[data-theme='dark']` = dark); `app/ThemeContext.jsx` sets `data-theme` on `<html>` and
+`core/components/ThemeToggle.jsx` is the switch button (landing navbar; the sidebars use a footer item instead). Because of that, SASS color functions
+(`rgba($color, x)`, `color.adjust`) don't work on them — use `with-opacity($color, 0.1)` and
+`shade($color, 8%)` from `abstracts/_functions.scss`. Use `$color-on-image` (always white) for
+text over darkened photos, since `$color-on-primary` turns dark in dark mode.
 
 ## Documentation conventions (course requirement)
 

@@ -1,0 +1,163 @@
+// Estilos del modal de "buscar y elegir" del editor (features/recipe/components/RecipeSearchModal),
+// compartido por ingredientes y categorías. Mismo patrón de overlay que core/components/_confirm-modal.scss.
+@use '../../../styles/abstracts' as *;
+@use './recipe-editor-page' as editorPage;
+
+.RecipeSearchModal {
+  &-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-lg;
+  }
+
+  &-card {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 420px;
+    max-height: min(520px, 80vh);
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    background: $color-surface-container-lowest;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-level-2;
+    padding: $spacing-lg;
+    text-align: left;
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+
+    h3 {
+      margin: 0;
+      font-family: $font-body;
+      font-size: 18px;
+      font-weight: 700;
+      color: $color-on-surface;
+    }
+  }
+
+  &-closeButton {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface-variant;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover {
+      background: $color-surface-container-low;
+      color: $color-on-surface;
+    }
+  }
+
+  &-searchWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    .material-symbols-outlined {
+      position: absolute;
+      left: $spacing-md;
+      color: $color-on-surface-variant;
+      font-size: 20px;
+    }
+
+    input {
+      @include editorPage.editor-input;
+      padding-left: 40px;
+    }
+  }
+
+  &-list {
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    // Se desliza con la ruedita nada más, sin barra visible.
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: $spacing-sm;
+      padding: $spacing-sm $spacing-md;
+      border: none;
+      border-radius: $radius-md;
+      background: transparent;
+      font-family: $font-body;
+      font-size: 14px;
+      font-weight: 600;
+      color: $color-on-surface;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background: $color-surface-container-low;
+      }
+    }
+  }
+
+  &-meta {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: $color-on-surface-variant;
+  }
+
+  // Difuminado sobre el final de la lista, solo cuando de verdad hay más para bajar (lo
+  // decide RecipeSearchModal.jsx midiendo el scroll): reemplaza a la barra de scroll como
+  // pista de que hay más para bajar, sin cortar bruscamente el último item visible.
+  &-fade {
+    position: absolute;
+    left: $spacing-lg;
+    right: $spacing-lg;
+    bottom: $spacing-lg;
+    height: 36px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, with-opacity($color-surface-container-lowest, 0), $color-surface-container-lowest);
+  }
+
+  &-empty {
+    padding: $spacing-md;
+    text-align: center;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+  }
+}

@@ -1,0 +1,177 @@
+// Estilos de los pasos del detalle de receta (components/RecipeStepsPanel).
+// La tarjeta base y su encabezado vienen de .RecipeDetailCard.
+@use '../../../styles/abstracts' as *;
+
+.RecipeStepsPanel {
+  // Píldoras "01 02 03...": si hay muchos pasos, se desplazan de costado.
+  &-pills {
+    display: flex;
+    gap: 6px;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  &-pill {
+    flex: none;
+    padding: 4px 12px;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: with-opacity($color-primary, 0.12);
+    }
+
+    &--active,
+    &--active:hover {
+      border-color: $color-primary;
+      background: $color-primary;
+      color: $color-on-primary;
+      font-weight: 700;
+    }
+  }
+
+  // Barra de progreso: un segmento por paso (grid-template-columns lo pone el JSX).
+  &-progress {
+    display: grid;
+    gap: $spacing-sm;
+  }
+
+  &-segment {
+    height: 6px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    background: $color-surface-container-high;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &--done {
+      background: $color-primary;
+    }
+
+    &--current {
+      box-shadow: 0 0 0 2px with-opacity($color-primary, 0.35);
+    }
+  }
+
+  // Paso actual: un bloque de texto simple (tag + tiempo, y la instrucción abajo).
+  // Sin ninguna caja decorativa a un costado: los pasos no tienen foto propia.
+  &-content {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    padding: $spacing-md;
+    border: 1px solid $color-surface-container-highest;
+    border-radius: $radius-lg;
+    background: with-opacity($color-surface-container-low, 0.6);
+    min-height: 120px;
+  }
+
+  &-contentHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+  }
+
+  &-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $color-primary;
+  }
+
+  // Tiempo estimado de ESTE paso puntual (no un total de la receta): se omite por
+  // completo si ese paso no tiene tiempo cargado (es un campo opcional).
+  &-duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    font-size: 11px;
+    font-weight: 700;
+    color: $color-on-surface;
+
+    .material-symbols-outlined {
+      font-size: 15px;
+      color: $color-primary;
+    }
+  }
+
+  &-instruction {
+    flex: 1;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: $color-on-surface;
+    overflow-wrap: anywhere;
+  }
+
+  &-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding-top: $spacing-sm;
+    border-top: 1px solid $color-surface-container-high;
+  }
+
+  &-navBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &--primary {
+      border-color: $color-primary;
+      background: $color-primary;
+      color: $color-on-primary;
+      font-weight: 700;
+
+      &:hover:not(:disabled) {
+        background: shade($color-primary, 12%);
+      }
+
+      // "¡Receta lista!": se ve completo (no apagado) aunque ya no avance.
+      &:disabled {
+        opacity: 1;
+        cursor: default;
+      }
+    }
+  }
+}

@@ -31,7 +31,8 @@ export const useSavedRecipes = () => {
   };
 
   // Guarda o quita una receta. Actualiza el listón de forma optimista (al instante) y lo
-  // revierte si el backend falla.
+  // revierte si el backend falla. Devuelve true si se guardó el cambio, false si falló
+  // (el error queda en saveError), por si quien llama quiere avisar que salió bien.
   const handleToggleSave = async (idRecipe) => {
     const wasSaved = savedRecipeIds.has(idRecipe);
     setSaved(idRecipe, !wasSaved);
@@ -41,9 +42,11 @@ export const useSavedRecipes = () => {
       } else {
         await createUserRecipe(idRecipe);
       }
+      return true;
     } catch (err) {
       setSaved(idRecipe, wasSaved);
       setSaveError(err.message);
+      return false;
     }
   };
 

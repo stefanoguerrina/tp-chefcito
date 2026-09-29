@@ -1,35 +1,71 @@
-// Sección de la home con un carrusel horizontal de recetas: título + flechas de scroll +
-// lista de cards, arrastrable con el mouse (useDragScroll) o desplazable con los botones.
-// El carrusel es "infinito": el contenido se triplica y useInfiniteScroll reubica el
-// scroll sin que se note al llegar a un extremo, así siempre se puede seguir deslizando.
-// Esto solo tiene sentido con recetas de sobra para llenar las 3 copias sin que se
-// vean superpuestas en pantalla a la vez (si no, se ven como recetas "duplicadas").
-import { useRef } from 'react';
-import { useDragScroll } from '../../../core/hooks/useDragScroll.js';
-import { useInfiniteScroll } from '../../../core/hooks/useInfiniteScroll.js';
+// Carrusel horizontal de recetas (usado en la home para "Recetas de la comunidad").
+// Se desplaza arrastrando las cards: con el dedo (scroll nativo del navegador) o con el
+// mouse (lógica de arrastre de abajo). Sin flechas, sin clonar tarjetas ni scroll infinito.
+import { useRef, useState } from 'react';
 import HomeRecipeCard from './HomeRecipeCard.jsx';
 import '../styles/_recipe-carousel-section.scss';
 
-// Cuánto se desplaza el carrusel por cada click en una flecha (ancho de card + gap).
-const SCROLL_STEP = 336;
-// Con menos recetas que esto, el loop infinito no suma nada (ya entran casi todas en
-// pantalla) y solo se ve como si las recetas estuvieran repetidas: se muestran una sola vez.
-const MIN_RECIPES_TO_LOOP = 5;
+// Cuántos píxeles hay que mover el mouse para que cuente como arrastre y no como click.
+const DRAG_THRESHOLD = 5;
 
-// Recibe: title (encabezado de la sección), recipes (array, ver recipeToHomeCardProps),
-// onRecipeClick (función que recibe el id de la receta al hacer click en una card),
-// onToggleSave (función opcional que recibe el id de la receta al tocar el listón).
+// Recibe: title, recipes (ver recipeToCardProps + isSaved/rating/reviewsCount),
+// onRecipeClick y onToggleSave (handlers opcionales que se pasan tal cual a cada card).
 function RecipeCarouselSection({ title, recipes, onRecipeClick, onToggleSave }) {
-  const shouldLoop = recipes.length >= MIN_RECIPES_TO_LOOP;
-
-  // Un mismo ref compartido por los dos hooks: ambos necesitan operar sobre el mismo
-  // contenedor (uno escucha el drag del mouse, el otro el scroll para el loop infinito).
   const trackRef = useRef(null);
-  useDragScroll(trackRef);
-  useInfiniteScroll(trackRef, shouldLoop);
+  // Datos del arrastre en curso. Va en un ref (no en estado) porque cambia en cada
+  // movimiento del mouse y no necesita re-renderizar nada.
+  const dragRef = useRef({ isPressed: false, hasMoved: false, startX: 0, startScrollLeft: 0 });
+  // Solo para la clase CSS (cursor "agarrando" y sin scroll-snap mientras se arrastra).
+  const [isDragging, setIsDragging] = useState(false);
 
-  const scrollByStep = (amount) => {
-    trackRef.current?.scrollBy({ left: amount, behavior: 'smooth' });
+  // Al apretar el mouse se anota desde dónde arranca. El touch no pasa por acá: en
+  // celular el navegador ya desplaza el carrusel solo, con su propio scroll nativo.
+  const handlePointerDown = (event) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    dragRef.current = {
+      isPressed: true,
+      hasMoved: false,
+      startX: event.clientX,
+      startScrollLeft: trackRef.current.scrollLeft,
+    };
+  };
+
+  // Mientras el botón sigue apretado, el carrusel sigue al mouse (hacia el lado contrario
+  // del movimiento, como cuando se arrastra una hoja con la mano).
+  const handlePointerMove = (event) => {
+    const drag = dragRef.current;
+    if (!drag.isPressed) return;
+    // Se soltó el botón fuera del carrusel antes de empezar a arrastrar: ya no hay arrastre.
+    if (event.buttons === 0) {
+      handlePointerUp();
+      return;
+    }
+
+    const distance = event.clientX - drag.startX;
+    if (!drag.hasMoved && Math.abs(distance) > DRAG_THRESHOLD) {
+      drag.hasMoved = true;
+      setIsDragging(true);
+      // Sigue recibiendo el movimiento aunque el mouse salga del carrusel.
+      trackRef.current.setPointerCapture(event.pointerId);
+    }
+    if (drag.hasMoved) {
+      trackRef.current.scrollLeft = drag.startScrollLeft - distance;
+    }
+  };
+
+  const handlePointerUp = () => {
+    dragRef.current.isPressed = false;
+    setIsDragging(false);
+  };
+
+  // Si hubo arrastre, el click que dispara el navegador al soltar no tiene que abrir la
+  // receta ni tocar "guardar": se frena acá, en la fase de captura, antes de que llegue a
+  // la card.
+  const handleClickCapture = (event) => {
+    if (!dragRef.current.hasMoved) return;
+    event.stopPropagation();
+    event.preventDefault();
+    dragRef.current.hasMoved = false;
   };
 
   return (
@@ -37,39 +73,28 @@ function RecipeCarouselSection({ title, recipes, onRecipeClick, onToggleSave }) 
       <h2 className="RecipeCarouselSection-heading">{title}</h2>
 
       <div className="RecipeCarouselSection-viewport">
-        <button
-          type="button"
-          className="RecipeCarouselSection-navButton RecipeCarouselSection-navButton--left"
-          aria-label="Ver recetas anteriores"
-          onClick={() => scrollByStep(-SCROLL_STEP)}
+        {/* onDragStart evita que el navegador arrastre la foto como archivo en vez de
+            desplazar el carrusel. */}
+        <div
+          className={`RecipeCarouselSection-track${isDragging ? ' RecipeCarouselSection-track--dragging' : ''}`}
+          ref={trackRef}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onClickCapture={handleClickCapture}
+          onDragStart={(event) => event.preventDefault()}
         >
-          <span className="material-symbols-outlined">chevron_left</span>
-        </button>
-
-        <div className="RecipeCarouselSection-track" ref={trackRef}>
-          {/* Triplicamos la lista (misma clave "copyIndex-id") para que siempre haya
-              contenido antes y después de lo que se ve, y el salto del loop sea invisible.
-              Con pocas recetas (shouldLoop = false) se muestra una sola copia. */}
-          {(shouldLoop ? [0, 1, 2] : [0]).map((copyIndex) =>
-            recipes.map((recipe) => (
+          {recipes.map((recipe) => (
+            <div className="RecipeCarouselSection-item" key={recipe.id}>
               <HomeRecipeCard
-                key={`${copyIndex}-${recipe.id}`}
                 recipe={recipe}
                 onClick={onRecipeClick ? () => onRecipeClick(recipe.id) : undefined}
                 onToggleSave={onToggleSave}
               />
-            ))
-          )}
+            </div>
+          ))}
         </div>
-
-        <button
-          type="button"
-          className="RecipeCarouselSection-navButton RecipeCarouselSection-navButton--right"
-          aria-label="Ver más recetas"
-          onClick={() => scrollByStep(SCROLL_STEP)}
-        >
-          <span className="material-symbols-outlined">chevron_right</span>
-        </button>
       </div>
     </section>
   );

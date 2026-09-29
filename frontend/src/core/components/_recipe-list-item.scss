@@ -3,7 +3,7 @@
 
 .RecipeListItem {
   background: $color-surface;
-  border: 1px solid rgba($color-surface-container-highest, 0.5);
+  border: 1px solid with-opacity($color-surface-container-highest, 0.5);
   border-radius: $radius-lg;
   padding: $spacing-md;
   display: flex;
@@ -18,7 +18,7 @@
 
   &-position {
     font-family: $font-body;
-    color: rgba($color-primary, 0.4);
+    color: with-opacity($color-primary, 0.4);
     font-size: 18px;
     width: $spacing-md;
   }

@@ -295,20 +295,20 @@
     }
 
     &--danger {
-      border-color: rgba($color-error, 0.3);
+      border-color: with-opacity($color-error, 0.3);
       color: $color-error;
 
       &:hover:not(:disabled) {
-        background: rgba($color-error, 0.08);
+        background: with-opacity($color-error, 0.08);
       }
     }
 
     &--restore {
-      border-color: rgba($color-secondary, 0.3);
+      border-color: with-opacity($color-secondary, 0.3);
       color: $color-secondary;
 
       &:hover:not(:disabled) {
-        background: rgba($color-secondary, 0.08);
+        background: with-opacity($color-secondary, 0.08);
       }
     }
   }

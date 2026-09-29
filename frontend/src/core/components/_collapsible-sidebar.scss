@@ -1,0 +1,326 @@
+// Estilos de la sidebar colapsable (core/components/CollapsibleSidebar).
+// Mobile-first: en celular hay una barra superior fija y la sidebar es un panel que entra
+// desde la izquierda; desde $breakpoint-md es un riel fijo de solo íconos que se expande
+// al pasar el mouse. Se expande POR ENCIMA del contenido (no lo empuja): así la página no
+// se reacomoda cada vez que el mouse pasa por la sidebar.
+@use '../../styles/abstracts' as *;
+
+.CollapsibleSidebar {
+  // --- Barra superior (solo mobile) ---
+  &-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: $layout-topbar-height;
+    box-sizing: border-box;
+    padding: 0 $spacing-md;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: $color-surface-container-low;
+    border-bottom: 1px solid $color-outline-variant;
+    z-index: 50;
+
+    @include respond-to(md) {
+      display: none;
+    }
+  }
+
+  // Botones de solo ícono: abrir menú (barra superior) y cerrarlo (dentro del panel).
+  &-iconButton {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface-variant;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background: $color-surface-container-highest;
+    }
+  }
+
+  &-closeButton {
+    @include respond-to(md) {
+      display: none;
+    }
+  }
+
+  &-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 150;
+
+    @include respond-to(md) {
+      display: none;
+    }
+  }
+
+  // --- Panel (la sidebar en sí) ---
+  &-panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(#{$layout-sidebar-expanded-width}, 85vw);
+    display: flex;
+    flex-direction: column;
+    background: $color-surface-container-low;
+    border-right: 1px solid $color-outline-variant;
+    // Los textos que no entran cuando está colapsada quedan recortados, no desbordan.
+    overflow: hidden;
+    z-index: 200;
+    // Cerrado en mobile: fuera de pantalla y con visibility hidden para que tampoco se
+    // pueda llegar a sus links con Tab. visibility espera a que termine el deslizamiento
+    // (0.3s) para no cortar la animación de cierre.
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.3s ease, visibility 0s linear 0.3s, width 0.2s ease, box-shadow 0.2s ease;
+
+    &--open {
+      transform: translateX(0);
+      visibility: visible;
+      box-shadow: $shadow-level-2;
+      transition: transform 0.3s ease, visibility 0s, width 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    @include respond-to(md) {
+      transform: none;
+      visibility: visible;
+      width: $layout-sidebar-collapsed-width;
+      box-shadow: none;
+      z-index: 50;
+
+      // Se expande con el mouse, o con el teclado cuando algún link tiene foco visible
+      // (:focus-visible y no :focus, para que no quede abierta después de un click).
+      &:hover,
+      &:has(:focus-visible) {
+        width: $layout-sidebar-expanded-width;
+        box-shadow: $shadow-level-2;
+      }
+    }
+  }
+
+  // Todo texto que se oculta cuando la sidebar está colapsada (labels, marca, cuenta).
+  // Se desvanece en vez de desaparecer de golpe, mientras el ancho se anima.
+  &-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+  }
+
+  @include respond-to(md) {
+    &-panel &-label {
+      opacity: 0;
+    }
+
+    &-panel:hover &-label,
+    &-panel:has(:focus-visible) &-label {
+      opacity: 1;
+    }
+  }
+
+  // --- Marca ---
+  &-header {
+    flex-shrink: 0;
+    height: $layout-topbar-height;
+    box-sizing: border-box;
+    padding: 0 $spacing-md;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid $color-outline-variant;
+
+    @include respond-to(md) {
+      height: $layout-header-height;
+    }
+  }
+
+  &-brand {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+    text-decoration: none;
+  }
+
+  &-brandIcon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: $radius-md;
+    background: $color-primary;
+    color: $color-on-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  &-brandText {
+    display: flex;
+    flex-direction: column;
+    // line-height ajustado: el 145% heredado de index.css deja mucho aire entre
+    // "Chefcito" y el subtítulo si no se lo achica acá.
+    line-height: 1.35;
+  }
+
+  &-brandName {
+    font-family: $font-body;
+    font-size: 18px;
+    font-weight: 700;
+    color: $color-on-background;
+  }
+
+  &-brandSubtitle {
+    font-family: $font-body;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $color-on-surface-variant;
+  }
+
+  // --- Accesos ---
+  // Padding horizontal de 16px + ícono de 40px = riel de 72px con el ícono centrado.
+  &-nav {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    padding: $spacing-md;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    width: 100%;
+    min-height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface-variant;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    // Solo links y botones reaccionan al hover (la cuenta del admin es un <div> fijo).
+    &:is(a, button):hover:not(:disabled) {
+      background: $color-surface-container-highest;
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    &--active {
+      background: $color-secondary-container;
+      color: $color-on-secondary-container;
+      font-weight: 600;
+
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1;
+      }
+
+      &:hover:not(:disabled) {
+        background: $color-secondary-container;
+      }
+    }
+
+    &--danger:hover:not(:disabled) {
+      background: with-opacity($color-error, 0.1);
+      color: $color-error;
+    }
+  }
+
+  // Caja fija de 40px para el ícono (o el avatar): es lo que queda visible con la
+  // sidebar colapsada, siempre en el mismo lugar.
+  &-itemIcon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  // --- Pie: acciones + cuenta ---
+  &-footer {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md $spacing-md;
+    border-top: 1px solid $color-outline-variant;
+  }
+
+  &-account {
+    min-height: 48px;
+
+    // Solo la cuenta del usuario común es un link (a su perfil); la del admin es fija.
+    &:not(a) {
+      cursor: default;
+    }
+  }
+
+  &-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-full;
+    object-fit: cover;
+
+    &--initials {
+      background: $color-secondary-container;
+      color: $color-on-secondary-container;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: $font-body;
+      font-size: 13px;
+      font-weight: 700;
+    }
+  }
+
+  &-accountText {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.35;
+  }
+
+  &-accountName {
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-on-background;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &-accountDetail {
+    font-size: 12px;
+    font-weight: 500;
+    color: $color-on-surface-variant;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

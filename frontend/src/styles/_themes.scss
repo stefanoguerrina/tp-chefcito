@@ -1,0 +1,146 @@
+// Paletas de los dos temas de la app (claro y oscuro) como variables CSS.
+// Las variables SASS de abstracts/_variables.scss apuntan a estas (ej. $color-primary es
+// var(--color-primary)), así que todos los componentes cambian de tema sin tocarlos.
+// El tema activo lo decide el atributo data-theme de <html>, que maneja ThemeContext.
+// Se importa una sola vez, desde main.jsx.
+
+// --- Tema claro (el diseño original de Chefcito) ---
+// Los neutros (fondo, superficies, outline, "muted") tiran a verde en vez de al
+// marrón/rojizo, mismo criterio que el tema oscuro (ver su comentario más abajo); el
+// marrón de $color-tertiary sigue siendo un acento a propósito, no un neutro.
+// Misma lógica de elevación que el tema oscuro: el fondo de la página es el más oscuro
+// de los tres, y las superficies "container-low"/"container-lowest" (sidebar y cards,
+// respectivamente) son ambas más claras que el fondo y muy parecidas entre sí, para que
+// se lean como "un mismo color" separado del fondo por el cambio de tono.
+:root {
+  // Hace que los controles nativos (scrollbars, inputs de fecha, selects) sigan el tema.
+  color-scheme: light;
+
+  --color-primary: #4b6400;
+  --color-primary-container: #617e10;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #fbffe6;
+
+  --color-secondary: #2b6a47;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #adefc2;
+  --color-on-secondary-container: #306e4b;
+
+  --color-tertiary: #765538;
+  --color-tertiary-container: #916d4e;
+  --color-on-tertiary-container: #fffbff;
+  --color-tertiary-fixed-dim: #eabe9a;
+
+  --color-background: #eef5e6;
+  --color-on-background: #1a1e17;
+
+  --color-surface: #eef5e6;
+  --color-surface-dim: #d7ddd0;
+  --color-surface-bright: #eef5e6;
+  --color-surface-container-lowest: #fbfef6;
+  --color-surface-container-low: #f8fcf2;
+  --color-surface-container: #eaf1e3;
+  --color-surface-container-high: #e4ebdd;
+  --color-surface-container-highest: #dee6d7;
+  --color-on-surface: #1a1e17;
+  --color-on-surface-variant: #3f5341;
+
+  --color-outline: #708273;
+  --color-outline-variant: #c9d9c6;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+
+  --color-pantry-cream: #f0f7ea;
+  --color-pantry-lime: #a7c957;
+  --color-pantry-lime-light: #f0f5d8;
+  --color-pantry-green: #3f7d58;
+  --color-pantry-warning: #ed8936;
+  --color-pantry-muted: #849a87;
+  --color-pantry-muted-light: #c9d9cb;
+
+  --color-inverse-surface: #2b332c;
+  --color-inverse-on-surface: #eef6e9;
+
+  --color-footer-background: #2b332c;
+  --color-footer-border: transparent;
+  --color-footer-text: #eef6e9;
+  --color-footer-muted: #d7ddd0;
+  --color-footer-accent: #adefc2;
+  --color-footer-hover: #ffffff;
+
+  --shadow-level-1: 0 4px 12px rgba(26, 31, 27, 0.08);
+  --shadow-level-2: 0 8px 24px rgba(26, 31, 27, 0.12);
+}
+
+// --- Tema oscuro ---
+// Misma paleta (verde oliva, verde menta, marrón y crema), invertida: fondo casi negro y
+// superficies (cards, sidebar, modales) de un gris muy oscuro que tira a verde, en vez de
+// al marrón/rojizo; los verdes se aclaran para que se lean sobre ese fondo. Por eso $color-on-primary pasa a ser oscuro: los botones verdes llevan texto oscuro.
+// Las superficies "container" son más claras que el fondo (mismo criterio que el tema
+// claro, ver su comentario más arriba): acá además hace falta, porque en oscuro las
+// sombras casi no se ven, y es el cambio de tono lo que separa las cards.
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-primary: #b0d266;
+  // Un poco más oscuro que primary: es el color de hover de los botones verdes, y tiene
+  // que seguir leyéndose con el texto oscuro de $color-on-primary.
+  --color-primary-container: #98ba4c;
+  --color-on-primary: #1d2a00;
+  --color-on-primary-container: #1d2a00;
+
+  --color-secondary: #95d4a9;
+  --color-on-secondary: #00391f;
+  --color-secondary-container: #1e5237;
+  --color-on-secondary-container: #b1f0c4;
+
+  --color-tertiary: #e6bd98;
+  --color-tertiary-container: #916d4e;
+  --color-on-tertiary-container: #fffbff;
+  --color-tertiary-fixed-dim: #eabe9a;
+
+  --color-background: #080a08;
+  --color-on-background: #e4e9e1;
+
+  --color-surface: #080a08;
+  --color-surface-dim: #080a08;
+  --color-surface-bright: #2d342d;
+  --color-surface-container-lowest: #121612;
+  --color-surface-container-low: #101310;
+  --color-surface-container: #171c17;
+  --color-surface-container-high: #1f251f;
+  --color-surface-container-highest: #283028;
+  --color-on-surface: #e4e9e1;
+  --color-on-surface-variant: #bcc6b8;
+
+  --color-outline: #8a9586;
+  --color-outline-variant: #354035;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-on-error-container: #ffdad6;
+
+  --color-pantry-cream: #131813;
+  --color-pantry-lime: #a7c957;
+  --color-pantry-lime-light: #2f3519;
+  --color-pantry-green: #7fc49b;
+  --color-pantry-warning: #f4a261;
+  --color-pantry-muted: #97a393;
+  --color-pantry-muted-light: #3d473d;
+
+  --color-inverse-surface: #e4e9e1;
+  --color-inverse-on-surface: #2b312b;
+
+  // Más oscuro que el fondo de la página, con una línea arriba para separarlo.
+  --color-footer-background: #040504;
+  --color-footer-border: #354035;
+  --color-footer-text: #e4e9e1;
+  --color-footer-muted: #a6b1a2;
+  --color-footer-accent: #95d4a9;
+  --color-footer-hover: #ffffff;
+
+  --shadow-level-1: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-level-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+}

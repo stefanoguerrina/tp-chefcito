@@ -84,10 +84,6 @@ function InventoryPage() {
       {/* ---- Header ---- */}
       <header className="InventoryPage-header">
         <div className="InventoryPage-titleGroup">
-          <span className="InventoryPage-badge">
-            <span className="material-symbols-outlined">kitchen</span>
-            Inventario · Mi despensa
-          </span>
           <h1 className="InventoryPage-title">Ingredientes disponibles</h1>
         </div>
 

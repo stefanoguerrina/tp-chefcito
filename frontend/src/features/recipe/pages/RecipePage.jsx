@@ -8,6 +8,7 @@ import { getAllRecipes, deleteRecipe } from '../services/recipeService.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import { recipeToCardProps } from '../models/recipeModel.js';
+import { useRecipeReviewStats } from '../../review/hooks/useRecipeReviewStats.js';
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
@@ -27,6 +28,8 @@ function RecipePage() {
   const [actionError, setActionError] = useState('');
   // Texto de búsqueda sobre las recetas propias ya cargadas (mismo patrón que InventoryPage).
   const [searchQuery, setSearchQuery] = useState('');
+  // Promedio de valoraciones + cantidad de reseñas de cada receta, para su card.
+  const reviewStatsByRecipe = useRecipeReviewStats(recipes.map((recipe) => recipe.id));
 
   // Carga las recetas propias (un 404 = todavía no creó ninguna).
   // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
@@ -73,11 +76,7 @@ function RecipePage() {
     <div className="RecipePage">
       <header className="RecipePage-header">
         <div className="RecipePage-titleGroup">
-          <span className="RecipePage-badge">
-            <span className="material-symbols-outlined">menu_book</span>
-            Mis recetas
-          </span>
-          <h1 className="RecipePage-title">Recetas creadas por vos</h1>
+          <h1 className="RecipePage-title">Mis recetas</h1>
         </div>
 
         <div className="RecipePage-headerActions">
@@ -172,8 +171,17 @@ function RecipePage() {
               {filteredRecipes.map((recipe) => (
                 <RecipeCard
                   key={recipe.id}
-                  recipe={recipeToCardProps(recipe)}
+                  recipe={{
+                    ...recipeToCardProps(recipe),
+                    rating: reviewStatsByRecipe[recipe.id]?.averageRating,
+                    reviewsCount: reviewStatsByRecipe[recipe.id]?.reviewsCount,
+                  }}
                   showSaveButton={false}
+                  showAuthor={false}
+                  showTime={false}
+                  // Las reseñas se ven al abrir la receta (RecipeDetailPage), no en esta
+                  // grilla de gestión: acá arriba de "Editar"/"Eliminar" no aportan nada.
+                  showRating={false}
                   onClick={() => navigate(`/recetas/${recipe.id}`)}
                   onEdit={() => navigate(`/mis-recetas/${recipe.id}/editar`)}
                   onDelete={() => setRecipePendingDelete(recipe)}

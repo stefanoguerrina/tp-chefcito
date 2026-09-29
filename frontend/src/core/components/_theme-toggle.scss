@@ -1,0 +1,28 @@
+// Estilos del botón de cambio de tema (core/components/ThemeToggle).
+// Mismo tamaño y comportamiento que el botón de cerrar sesión de las sidebars, para que
+// queden parejos cuando están uno al lado del otro.
+@use '../../styles/abstracts' as *;
+
+.ThemeToggle {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: $radius-md;
+  background: transparent;
+  color: $color-on-surface-variant;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  .material-symbols-outlined {
+    font-size: 22px;
+  }
+
+  &:hover {
+    background: $color-surface-container-highest;
+    color: $color-primary;
+  }
+}

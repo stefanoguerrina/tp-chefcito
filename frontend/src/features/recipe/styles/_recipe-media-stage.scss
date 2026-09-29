@@ -1,0 +1,247 @@
+// Estilos del módulo de fotos del editor (features/recipe/components/RecipeMediaStage).
+// La tarjeta base (fondo, borde, padding) viene de .RecipeEditorCard.
+@use '../../../styles/abstracts' as *;
+
+.RecipeMediaStage {
+  &-main {
+    position: relative;
+    flex: 1;
+    min-height: 220px;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    background: $color-surface-container;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &-mainImage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &-mainPlaceholder {
+    font-size: 56px;
+    color: $color-outline;
+  }
+
+  // Franja oscura sobre la foto (o directamente el fondo, sin foto) con el botón central.
+  &-mainOverlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  &-mainButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: $spacing-sm $spacing-md;
+    border: none;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: $shadow-level-1;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+      color: $color-primary;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-primary;
+      color: $color-on-primary;
+
+      .material-symbols-outlined {
+        color: inherit;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+
+  &-mainHint {
+    margin: 0;
+    font-size: 11px;
+    color: $color-on-image;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  &-counter {
+    position: absolute;
+    right: $spacing-sm;
+    bottom: $spacing-sm;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: $radius-md;
+    background: rgba(0, 0, 0, 0.65);
+    color: $color-on-image;
+    font-size: 11px;
+    font-weight: 500;
+
+    .material-symbols-outlined {
+      font-size: 14px;
+    }
+  }
+
+  &-fileInput {
+    display: none;
+  }
+
+  &-error {
+    margin: 0;
+    font-size: 12px;
+    color: $color-error;
+  }
+
+  // Miniaturas + "Añadir foto": 4 por fila, se ajustan solas.
+  &-thumbs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: $spacing-sm;
+  }
+
+  &-thumb {
+    position: relative;
+    height: 68px;
+    border-radius: $radius-md;
+    overflow: hidden;
+  }
+
+  &-thumbButton {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: $radius-md;
+    overflow: hidden;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.15s ease, border-color 0.15s ease;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &:hover:not(:disabled) {
+      opacity: 1;
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
+  &-thumb--main &-thumbButton {
+    opacity: 1;
+    border-color: $color-primary;
+  }
+
+  &-thumbBadge {
+    position: absolute;
+    left: 4px;
+    bottom: 4px;
+    padding: 1px 6px;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-on-primary;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &-thumbRemove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    background: rgba(0, 0, 0, 0.65);
+    color: $color-on-image;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 13px;
+    }
+
+    &:hover {
+      background: $color-error;
+    }
+  }
+
+  // El botón de quitar aparece al pasar el mouse por la miniatura (desktop); en touch
+  // queda siempre visible, porque no hay hover que lo revele.
+  &-thumb:hover &-thumbRemove {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    &-thumbRemove {
+      opacity: 1;
+    }
+  }
+
+  &-addThumb {
+    height: 68px;
+    padding: 0;
+    border: 2px dashed $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+    color: $color-on-surface-variant;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+
+    span:last-child {
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: $color-primary;
+      color: $color-primary;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}

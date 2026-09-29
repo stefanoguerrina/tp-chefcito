@@ -1,0 +1,200 @@
+// Estilos de la cabecera del detalle de receta (features/recipe/components/RecipeDetailHeader).
+// La tarjeta base (fondo, borde, padding) viene de .RecipeDetailCard.
+@use '../../../styles/abstracts' as *;
+
+.RecipeDetailHeader {
+  &-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+  }
+
+  &-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: $radius-full;
+    background: $color-secondary-container;
+    color: $color-on-secondary-container;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 20px;
+
+    .material-symbols-outlined {
+      font-size: 14px;
+    }
+
+    // Tiempo de preparación: mismo chip, en un tono neutro.
+    &--muted {
+      background: $color-surface-container-high;
+      color: $color-on-surface-variant;
+    }
+  }
+
+  &-actions {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  // Botones chicos con borde: "Guardar" y "Compartir".
+  &-smallBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover {
+      background: with-opacity($color-primary, 0.1);
+      border-color: with-opacity($color-primary, 0.4);
+    }
+
+    // Ya guardada: el ícono se rellena y toma el color principal.
+    &--saved .material-symbols-outlined {
+      color: $color-primary;
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  }
+
+  &-title {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 25px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: $color-on-surface;
+    overflow-wrap: anywhere;
+  }
+
+  &-description {
+    margin: $spacing-xs 0 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: $color-on-surface-variant;
+    overflow-wrap: anywhere;
+  }
+
+  // Pie: autor a la izquierda, acción principal a la derecha.
+  &-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid $color-surface-container-high;
+  }
+
+  &-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-family: $font-body;
+    text-align: left;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: default;
+    }
+
+    &:hover:not(:disabled) .RecipeDetailHeader-authorName {
+      color: $color-primary;
+    }
+  }
+
+  // Avatar: la foto del autor o sus iniciales.
+  &-avatar {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-full;
+    overflow: hidden;
+    border: 1px solid $color-outline-variant;
+    background: $color-primary-container;
+    color: $color-on-primary-container;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &-authorText {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+  }
+
+  &-authorName {
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-on-surface;
+    transition: color 0.15s ease;
+  }
+
+  &-authorUser {
+    font-size: 11px;
+    color: $color-on-surface-variant;
+  }
+
+  // "Editar receta" / "Donar".
+  &-primaryBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 14px;
+    border: none;
+    border-radius: $radius-md;
+    background: $color-primary;
+    color: $color-on-primary;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover {
+      background: shade($color-primary, 12%);
+    }
+  }
+}

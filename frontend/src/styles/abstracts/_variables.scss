@@ -4,53 +4,72 @@
 
 // --- Colores ---
 // Nombres tomados del esquema Material que usa el diseño de referencia de Chefcito.
-$color-primary: #4b6400;
-$color-primary-container: #617e10;
-$color-on-primary: #ffffff;
-$color-on-primary-container: #fbffe6;
+// Cada variable apunta a una variable CSS (var(--...)) en vez de a un color fijo: los
+// valores reales viven en styles/_themes.scss, una vez para el modo claro y otra para el
+// oscuro. Así ningún componente tiene que saber en qué tema está: al cambiar el atributo
+// data-theme de <html> cambia la paleta de toda la app.
+// Ojo: por eso no sirven las funciones de color de SASS (rgba($color, x), color.adjust),
+// que necesitan un color real al compilar. Usar with-opacity() y shade() de _functions.scss.
+$color-primary: var(--color-primary);
+$color-primary-container: var(--color-primary-container);
+$color-on-primary: var(--color-on-primary);
+$color-on-primary-container: var(--color-on-primary-container);
 
-$color-secondary: #2b6a47;
-$color-on-secondary: #ffffff;
-$color-secondary-container: #adefc2;
-$color-on-secondary-container: #306e4b;
+$color-secondary: var(--color-secondary);
+$color-on-secondary: var(--color-on-secondary);
+$color-secondary-container: var(--color-secondary-container);
+$color-on-secondary-container: var(--color-on-secondary-container);
 
-$color-tertiary: #765538;
-$color-tertiary-container: #916d4e;
-$color-on-tertiary-container: #fffbff;
-$color-tertiary-fixed-dim: #eabe9a; // usado para estrellas de rating
+$color-tertiary: var(--color-tertiary);
+$color-tertiary-container: var(--color-tertiary-container);
+$color-on-tertiary-container: var(--color-on-tertiary-container);
+$color-tertiary-fixed-dim: var(--color-tertiary-fixed-dim); // usado para estrellas de rating
 
-$color-background: #fff8f1;
-$color-on-background: #1e1b17;
+$color-background: var(--color-background);
+$color-on-background: var(--color-on-background);
 
-$color-surface: #fff8f1;
-$color-surface-dim: #dfd9d1;
-$color-surface-bright: #fff8f1;
-$color-surface-container-lowest: #ffffff;
-$color-surface-container-low: #f9f3eb;
-$color-surface-container: #f4ede5;
-$color-surface-container-high: #eee7df;
-$color-surface-container-highest: #e8e1da;
-$color-on-surface: #1e1b17;
-$color-on-surface-variant: #59413b;
+$color-surface: var(--color-surface);
+$color-surface-dim: var(--color-surface-dim);
+$color-surface-bright: var(--color-surface-bright);
+$color-surface-container-lowest: var(--color-surface-container-lowest);
+$color-surface-container-low: var(--color-surface-container-low);
+$color-surface-container: var(--color-surface-container);
+$color-surface-container-high: var(--color-surface-container-high);
+$color-surface-container-highest: var(--color-surface-container-highest);
+$color-on-surface: var(--color-on-surface);
+$color-on-surface-variant: var(--color-on-surface-variant);
 
-$color-outline: #8d7169;
-$color-outline-variant: #e1bfb6;
+$color-outline: var(--color-outline);
+$color-outline-variant: var(--color-outline-variant);
 
-$color-error: #ba1a1a;
-$color-on-error: #ffffff;
-$color-on-error-container: #93000a;
+$color-error: var(--color-error);
+$color-on-error: var(--color-on-error);
+$color-on-error-container: var(--color-on-error-container);
 
 // Tonos propios de la sección Inventario ("Mi despensa").
-$color-pantry-cream: #faf2eb;
-$color-pantry-lime: #a7c957;
-$color-pantry-lime-light: #f0f5d8;
-$color-pantry-green: #3f7d58;
-$color-pantry-warning: #ed8936;
-$color-pantry-muted: #9c8c80;
-$color-pantry-muted-light: #d5c9bd;
+$color-pantry-cream: var(--color-pantry-cream);
+$color-pantry-lime: var(--color-pantry-lime);
+$color-pantry-lime-light: var(--color-pantry-lime-light);
+$color-pantry-green: var(--color-pantry-green);
+$color-pantry-warning: var(--color-pantry-warning);
+$color-pantry-muted: var(--color-pantry-muted);
+$color-pantry-muted-light: var(--color-pantry-muted-light);
 
-$color-inverse-surface: #33302b;
-$color-inverse-on-surface: #f7f0e8;
+$color-inverse-surface: var(--color-inverse-surface);
+$color-inverse-on-surface: var(--color-inverse-on-surface);
+
+// Footer de la landing: tiene tokens propios porque en los dos temas tiene que ser una
+// franja oscura (no puede usar inverse-surface, que en modo oscuro pasa a ser crema).
+$color-footer-background: var(--color-footer-background);
+$color-footer-border: var(--color-footer-border);
+$color-footer-text: var(--color-footer-text);
+$color-footer-muted: var(--color-footer-muted);
+$color-footer-accent: var(--color-footer-accent);
+$color-footer-hover: var(--color-footer-hover);
+
+// Texto sobre fotos oscurecidas con un overlay negro: es blanco en los dos temas, a
+// diferencia de $color-on-primary (que en modo oscuro pasa a ser un verde muy oscuro).
+$color-on-image: #ffffff;
 
 // --- Espaciados ---
 $spacing-xs: 4px;
@@ -62,22 +81,29 @@ $spacing-gutter-mobile: 16px;
 $spacing-gutter-desktop: 32px;
 
 // --- Tipografía ---
-$font-headline: 'Playfair Display', serif;
-$font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+// Una sola familia (Inter, cargada en index.html) para toda la app: $font-headline y
+// $font-body son la misma fuente. Se mantienen las dos variables (en vez de una sola)
+// para no tener que tocar cada archivo que ya referencia alguna de las dos.
+$font-headline: 'Inter', system-ui, sans-serif;
+$font-body: 'Inter', system-ui, sans-serif;
 
 // --- Bordes y sombras ---
 $radius-md: 0.5rem;
 $radius-lg: 0.75rem;
 $radius-full: 9999px;
 
-$shadow-level-1: 0 4px 12px rgba(31, 27, 22, 0.08);
-$shadow-level-2: 0 8px 24px rgba(31, 27, 22, 0.12);
+// También dependen del tema: sobre fondo oscuro una sombra tan suave no se vería.
+$shadow-level-1: var(--shadow-level-1);
+$shadow-level-2: var(--shadow-level-2);
 
 // --- Layout ---
-// Ancho de la sidebar fija de las páginas autenticadas (features/user). Vive acá porque
-// tanto la sidebar como el contenedor que la compensa (margin-left) necesitan el mismo valor.
-// Muestra ícono + label de cada link (mismo patrón que AdminSidebar), por eso es más
-// ancha que un rail de solo íconos.
-$layout-sidebar-width: 232px;
-// Alto de la barra de navegación inferior que reemplaza a la sidebar en mobile.
-$layout-bottom-nav-height: 64px;
+// Sidebar colapsable compartida por usuario y admin (core/components/CollapsibleSidebar).
+// En desktop es un riel de solo íconos que se expande al pasar el mouse POR ENCIMA del
+// contenido: por eso el contenido solo se corre el ancho colapsado.
+$layout-sidebar-collapsed-width: 72px;
+$layout-sidebar-expanded-width: 264px;
+// Alto de la marca de la sidebar en desktop. AdminTopbar usa el mismo, para que la línea
+// debajo de "Chefcito" y la de debajo del título de la sección queden a la misma altura.
+$layout-header-height: 80px;
+// Alto de la barra superior (logo + botón de menú) que reemplaza a la sidebar en mobile.
+$layout-topbar-height: 56px;

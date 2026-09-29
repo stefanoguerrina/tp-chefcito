@@ -37,17 +37,17 @@
   justify-content: center;
   // Mismo verde oliva ($color-primary) que el resto de las acciones "activas" del
   // panel de administración (asignar un rol).
-  background: rgba($color-primary, 0.12);
+  background: with-opacity($color-primary, 0.12);
   color: $color-primary;
 
   &--remove {
-    background: rgba($color-error, 0.12);
+    background: with-opacity($color-error, 0.12);
     color: $color-error;
   }
 }
 
 .RoleConfirmModal-title {
-  // Todo el panel de administración usa una sola familia de fuentes, sin Playfair Display.
+  // $font-body: toda la app usa una sola familia de fuentes (Inter).
   font-family: $font-body;
   font-size: 18px;
   font-weight: 700;

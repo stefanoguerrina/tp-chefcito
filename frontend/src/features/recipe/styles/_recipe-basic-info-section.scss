@@ -1,0 +1,56 @@
+// Estilos de los datos básicos del editor (features/recipe/components/RecipeBasicInfoSection).
+// La tarjeta base viene de .RecipeEditorCard.
+@use '../../../styles/abstracts' as *;
+@use './recipe-editor-page' as editorPage;
+
+.RecipeBasicInfoSection {
+  &-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: $color-on-surface;
+    }
+
+    input,
+    select,
+    textarea {
+      @include editorPage.editor-input;
+    }
+
+    textarea {
+      resize: vertical;
+      font-family: $font-body;
+      line-height: 1.5;
+    }
+  }
+
+  // Cuando la tarjeta se estira para igualar el alto de la columna de al lado
+  // (RecipeEditorPage-grid con align-items: stretch), este campo crece para aprovechar
+  // ese alto extra en vez de dejarlo vacío al final de la tarjeta.
+  &-field--grow {
+    flex: 1;
+
+    textarea {
+      flex: 1;
+      height: auto;
+    }
+  }
+
+  // "Título" y "Descripción" son los dos campos principales de la receta: su etiqueta se
+  // nota más que las del resto del formulario (Categorías, etc.). El selector repite
+  // "&-field" para pesar más que ".field label" de arriba y no depender de !important.
+  &-field &-label--large {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  &-charCount {
+    align-self: flex-end;
+    font-size: 11px;
+    color: $color-on-surface-variant;
+  }
+}

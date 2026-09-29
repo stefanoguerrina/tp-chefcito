@@ -1,0 +1,254 @@
+// Estilos de las instrucciones del editor (components/RecipeStepsEditorStage +
+// RecipeStepCard). La tarjeta base viene de .RecipeEditorCard; el look de la barra de
+// progreso y las píldoras es el mismo que RecipeStepsPanel en el detalle de receta.
+@use '../../../styles/abstracts' as *;
+@use './recipe-editor-page' as editorPage;
+
+.RecipeStepsEditorStage {
+  &-headerActions {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  &-actionBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 $spacing-sm;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-low;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &--danger {
+      border-color: with-opacity($color-error, 0.35);
+      color: $color-error;
+
+      &:hover:not(:disabled) {
+        background: with-opacity($color-error, 0.1);
+      }
+    }
+
+    // Mismo verde que RecipeEditorPage-publishBtn ("Guardar cambios"/"Publicar receta").
+    &--primary {
+      border: none;
+      background: $color-primary;
+      color: $color-on-primary;
+
+      &:hover:not(:disabled) {
+        background: shade($color-primary, 10%);
+      }
+    }
+  }
+
+  &-progress {
+    display: grid;
+    gap: $spacing-sm;
+  }
+
+  &-segment {
+    height: 6px;
+    border-radius: $radius-full;
+    background: $color-surface-container-high;
+    transition: background-color 0.2s ease;
+
+    &--done {
+      background: $color-primary;
+    }
+  }
+
+  &-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding-top: $spacing-sm;
+    border-top: 1px solid $color-surface-container-high;
+  }
+
+  &-navBtn {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-low;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &--primary {
+      border: none;
+      background: $color-primary;
+      color: $color-on-primary;
+
+      &:hover:not(:disabled) {
+        background: shade($color-primary, 10%);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+      }
+    }
+  }
+
+  // Ocupa el espacio entre las dos flechas (que quedan ancladas a los extremos de la
+  // tarjeta vía justify-content: space-between en &-nav) y centra las píldoras ahí adentro.
+  &-pills {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  &-pill {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background: with-opacity($color-primary, 0.12);
+    }
+
+    &--active,
+    &--active:hover {
+      border-color: $color-primary;
+      background: $color-primary;
+      color: $color-on-primary;
+      font-weight: 700;
+    }
+  }
+}
+
+.RecipeStepCard {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  flex: 1;
+
+  &-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $color-primary;
+  }
+
+  &-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: $color-on-surface;
+    }
+
+    textarea,
+    input {
+      @include editorPage.editor-input;
+    }
+
+    textarea {
+      flex: 1;
+      min-height: 110px;
+      resize: vertical;
+      font-family: $font-body;
+      line-height: 1.5;
+    }
+  }
+
+  // Píldora compacta "⏱ Tiempo: [15] min": solo el número adentro del recuadro se
+  // puede escribir, el resto es texto fijo (mismo look que RecipeStepsPanel-duration
+  // del detalle de receta, pero editable).
+  &-timeField {
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: $radius-full;
+    background: $color-surface-container-low;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+      color: $color-primary;
+    }
+
+    label {
+      white-space: nowrap;
+    }
+
+    input {
+      width: 48px;
+      padding: 3px 4px;
+      border: 1px solid $color-outline-variant;
+      border-radius: $radius-md;
+      background: $color-surface-container-lowest;
+      color: $color-on-surface;
+      font-family: $font-body;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+
+      &:focus {
+        outline: none;
+        border-color: $color-primary;
+      }
+    }
+  }
+}
