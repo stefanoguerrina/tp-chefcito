@@ -1,0 +1,105 @@
+// Estilos del banner de Chefcito Bot (features/search/components/AssistantBanner).
+@use '../../../styles/abstracts' as *;
+
+.AssistantBanner {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-lg;
+  padding: $spacing-lg;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  background: $color-surface-container-low;
+  box-shadow: $shadow-level-1;
+
+  @include respond-to(md) {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  // Mancha de color difuminada en la esquina, solo decorativa.
+  &::after {
+    content: '';
+    position: absolute;
+    right: -48px;
+    bottom: -48px;
+    width: 256px;
+    height: 256px;
+    border-radius: $radius-full;
+    background: with-opacity($color-primary, 0.12);
+    filter: blur(32px);
+    pointer-events: none;
+  }
+
+  &-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-md;
+    max-width: 672px;
+    text-align: center;
+
+    @include respond-to(sm) {
+      flex-direction: row;
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+
+  &-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-lg;
+    background: $color-primary;
+    color: $color-on-primary;
+    font-size: 24px;
+    box-shadow: $shadow-level-1;
+  }
+
+  &-title {
+    margin: 0 0 $spacing-xs;
+    font-size: 18px;
+    font-weight: 700;
+    color: $color-on-surface;
+    overflow-wrap: anywhere;
+  }
+
+  &-description {
+    margin: 0;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+  }
+
+  // Se ve como un botón activo (así queda armado el diseño), pero el asistente todavía no
+  // existe: el cursor normal es la única pista de que por ahora no hace nada.
+  &-button {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm + 2px $spacing-lg;
+    border: none;
+    border-radius: $radius-md;
+    background: $color-primary;
+    color: $color-on-primary;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: default;
+    box-shadow: $shadow-level-1;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+  }
+}

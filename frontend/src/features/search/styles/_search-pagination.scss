@@ -1,0 +1,78 @@
+// Estilos del paginador de los listados de búsqueda (features/search/components/SearchPagination).
+@use '../../../styles/abstracts' as *;
+
+.SearchPagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+  padding-top: $spacing-lg;
+  border-top: 1px solid $color-outline-variant;
+
+  @include respond-to(sm) {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  &-summary {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: $color-on-surface-variant;
+
+    strong {
+      color: $color-on-surface;
+    }
+  }
+
+  &-pages {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: $spacing-xs;
+  }
+
+  &-button {
+    min-width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 $spacing-sm;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: $color-primary;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &--active {
+      border-color: $color-primary;
+      background: $color-primary;
+      color: $color-on-primary;
+    }
+  }
+
+  &-gap {
+    padding: 0 $spacing-xs;
+    color: $color-on-surface-variant;
+  }
+}

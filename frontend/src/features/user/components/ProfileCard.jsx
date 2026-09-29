@@ -1,7 +1,8 @@
 // Tarjeta principal del perfil: portada, avatar, nombre, @usuario, etiquetas, ubicación
-// y fecha de alta, las acciones (editar perfil o donar, y compartir) y, debajo del
-// avatar, la biografía. Adapta a nuestro stack el bloque "ProfileCard" de referencia
-// (sin TypeScript, CSS Modules ni íconos SVG propios: SASS y Material Symbols).
+// y fecha de alta, las acciones (perfil propio: editar y compartir, como íconos; perfil
+// ajeno: seguir, donar y compartir) y, debajo del avatar, la biografía. Adapta a nuestro
+// stack el bloque "ProfileCard" de referencia (sin TypeScript, CSS Modules ni íconos SVG
+// propios: SASS y Material Symbols).
 import { useState } from 'react';
 import { resolveImageUrl } from '../../../shared/utils/imageUrl.js';
 import '../styles/_profile-card.scss';
@@ -17,9 +18,9 @@ const formatJoinedDate = (createdAt) =>
     ? `Se unió en ${new Date(createdAt).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}`
     : null;
 
-// Recibe: user, recipesCount (para el texto de compartir),
-// isOwnProfile, onEditProfile (abre el modal de edición) y onDonate (perfil ajeno).
-function ProfileCard({ user, recipesCount, isOwnProfile, onEditProfile, onDonate }) {
+// Recibe: user, recipesCount (para el texto de compartir), isOwnProfile, onEditProfile
+// (abre el modal de edición) y, del perfil ajeno, onFollow y onDonate.
+function ProfileCard({ user, recipesCount, isOwnProfile, onEditProfile, onFollow, onDonate }) {
   const [shareFeedback, setShareFeedback] = useState('');
   // Se activa si la foto no llega a cargar: se cae al círculo con iniciales. ProfilePage
   // monta este componente con key={user.avatarUrl}, así que se reinicia al cambiar la foto.
@@ -118,16 +119,33 @@ function ProfileCard({ user, recipesCount, isOwnProfile, onEditProfile, onDonate
 
           <div className="ProfileCard-actions">
             {isOwnProfile ? (
-              <button type="button" className="ProfileCard-btn ProfileCard-btn--primary" onClick={onEditProfile}>
-                Editar
+              <button
+                type="button"
+                className="ProfileCard-btn ProfileCard-btn--icon ProfileCard-btn--primary"
+                onClick={onEditProfile}
+                aria-label="Editar perfil"
+                title="Editar perfil"
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">edit</span>
               </button>
             ) : (
-              <button type="button" className="ProfileCard-btn ProfileCard-btn--primary" onClick={onDonate}>
-                Donar
-              </button>
+              <>
+                <button type="button" className="ProfileCard-btn ProfileCard-btn--accent" onClick={onFollow}>
+                  Seguir
+                </button>
+                <button type="button" className="ProfileCard-btn ProfileCard-btn--primary" onClick={onDonate}>
+                  Donar
+                </button>
+              </>
             )}
-            <button type="button" className="ProfileCard-btn ProfileCard-btn--outline" onClick={handleShare}>
-              Compartir
+            <button
+              type="button"
+              className="ProfileCard-btn ProfileCard-btn--icon ProfileCard-btn--outline"
+              onClick={handleShare}
+              aria-label="Compartir perfil"
+              title="Compartir perfil"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">share</span>
             </button>
           </div>
 

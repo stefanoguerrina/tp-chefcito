@@ -1,0 +1,86 @@
+// Estilos del aviso "sección siguiente" del perfil (features/user/components/ProfileScrollHint).
+@use '../../../styles/abstracts' as *;
+
+// La flecha sube y baja apenas, para invitar a seguir bajando.
+@keyframes profile-scroll-hint-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+.ProfileScrollHint {
+  // Pegado al borde de abajo de la pantalla mientras su sección está a la vista.
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  // margin-top: auto lo manda al fondo de la sección (que es una columna flex).
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  // Arriba del texto, el tramo donde el difuminado se desvanece (la pantalla de
+  // destacadas lo agranda, porque ahí flota encima del abanico).
+  padding: $spacing-xl 0 $spacing-md;
+  // Se estira sobre el margen lateral de la página (el de HomePage-main), así el
+  // difuminado llega de borde a borde en vez de dejar franjas oscuras a los costados.
+  margin-inline: -$spacing-gutter-mobile;
+  // Difuminado verde: abajo, el fondo de la página teñido con el verde de la marca; hacia
+  // arriba se vuelve transparente. Tapa lo que haya detrás para que el texto resalte.
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, #{$color-background}, #{$color-primary} 12%) 0%,
+    color-mix(in srgb, #{$color-background}, #{$color-primary} 5%) 45%,
+    with-opacity($color-background, 0) 100%
+  );
+  pointer-events: none;
+
+  @include respond-to(md) {
+    margin-inline: -$spacing-gutter-desktop;
+  }
+
+  &-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: $spacing-xs $spacing-md;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    // Solo el botón recibe clicks: el resto del difuminado deja tocar lo que está detrás.
+    pointer-events: auto;
+    // Texto y flecha suben y bajan juntos.
+    animation: profile-scroll-hint-bounce 1.6s ease-in-out infinite;
+
+    &:hover {
+      color: $color-primary;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
+  }
+
+  &-arrow {
+    font-size: 28px;
+    color: $color-primary;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &-button {
+      animation: none;
+    }
+  }
+}

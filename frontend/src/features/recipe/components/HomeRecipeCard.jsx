@@ -3,6 +3,7 @@
 // autor + valoración), pero de ancho fijo para desplazarse en fila. onClick opcional: si
 // se pasa, la card se vuelve clickeable (navegación al detalle).
 import { useState } from 'react';
+import RatingStars from '../../../core/components/RatingStars.jsx';
 import '../styles/_home-recipe-card.scss';
 
 // Cuántas categorías entran sobre la foto; el resto se resume en un chip "+N" (mismo
@@ -85,7 +86,7 @@ function HomeRecipeCard({ recipe, onClick, onToggleSave }) {
               <span className="HomeRecipeCard-authorText">
                 <span className="HomeRecipeCard-authorName">{author}</span>
                 <span className="HomeRecipeCard-rating">
-                  <span className="material-symbols-outlined">star</span>
+                  <RatingStars rating={rating} />
                   {formatRating(rating, reviewsCount)}
                 </span>
               </span>

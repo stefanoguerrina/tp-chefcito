@@ -1,0 +1,165 @@
+// Estilos de las métricas del perfil (features/user/components/ProfileMetrics).
+// Mobile: todo apilado. Desde md: bento de 2 columnas, la grande a la izquierda y las otras
+// tres apiladas a la derecha, a la misma altura.
+@use '../../../styles/abstracts' as *;
+
+.ProfileMetrics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $spacing-sm;
+  font-family: $font-body;
+
+  @include respond-to(md) {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+  }
+
+  &,
+  & * {
+    box-sizing: border-box;
+  }
+
+  // :where() no suma especificidad: así los márgenes de cada clase de abajo le ganan.
+  :where(p) {
+    margin: 0;
+  }
+
+  // Base de las tarjetas chicas: dato a la izquierda, gráfico o ícono a la derecha.
+  &-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    min-width: 0;
+    padding: $spacing-sm $spacing-lg;
+    border: 1px solid $color-surface-container-highest;
+    border-radius: $radius-lg * 2;
+    background: $color-surface-container-low;
+  }
+
+  // Texto chico en mayúsculas ("Recetas", "Categorías"...).
+  &-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $color-on-surface-variant;
+  }
+
+  &-value {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.1;
+    color: $color-on-surface;
+  }
+
+  // --- Grande: valoración promedio, con el degradé de la marca ---
+  &-primary {
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: $spacing-md;
+    padding: $spacing-lg;
+    border: none;
+    background: $gradient-brand;
+    color: $color-on-primary;
+
+    // Las estrellas van sobre el verde: contorno y relleno del color del texto (el
+    // degradé de RatingStars no se vería sobre este mismo degradé).
+    --rating-star-size: 18px;
+
+    .RatingStars-outline {
+      color: with-opacity($color-on-primary, 0.45);
+    }
+
+    .RatingStars-fillIcon {
+      background: none;
+      color: $color-on-primary;
+    }
+  }
+
+  // Rayas diagonales finas que se desvanecen hacia abajo a la izquierda (decorativo).
+  &-pattern {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(45deg, with-opacity($color-on-primary, 0.35) 0 1px, transparent 1px 10px);
+    opacity: 0.35;
+    -webkit-mask-image: radial-gradient(ellipse 80% 50% at 100% 0%, #000 70%, transparent 110%);
+    mask-image: radial-gradient(ellipse 80% 50% at 100% 0%, #000 70%, transparent 110%);
+    pointer-events: none;
+  }
+
+  &-chip {
+    display: inline-block;
+    margin-bottom: $spacing-sm;
+    padding: 4px $spacing-sm;
+    border-radius: $radius-full;
+    background: with-opacity($color-on-primary, 0.12);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  &-primaryValue {
+    margin-bottom: $spacing-sm;
+    font-size: 48px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  &-primaryNote {
+    position: relative;
+    font-size: 14px;
+    opacity: 0.75;
+  }
+
+  // Nombre de la categoría principal: texto en vez de número, más chico y recortado.
+  &-value--text {
+    overflow: hidden;
+    font-size: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &-text {
+    min-width: 0;
+  }
+
+  // --- Las tres chicas, una debajo de la otra, repartiendo el alto de la grande ---
+  &-group {
+    display: grid;
+    grid-auto-rows: 1fr;
+    gap: $spacing-sm;
+  }
+
+  &-bars {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 30px;
+  }
+
+  &-bar {
+    width: 6px;
+    border-radius: $radius-full;
+    background: $gradient-brand;
+  }
+
+  &-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-full;
+    background: $color-surface-container-lowest;
+    box-shadow: $shadow-level-1;
+    color: $color-primary;
+    font-size: 20px;
+  }
+}

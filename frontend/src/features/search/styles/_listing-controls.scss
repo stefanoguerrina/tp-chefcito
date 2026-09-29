@@ -1,0 +1,249 @@
+// Estilos del encabezado de los listados completos de búsqueda y de sus controles
+// (features/search/components: SearchListingHeader, ListingModeToggle, ListingSortSelect
+// y ViewModeSwitch).
+@use '../../../styles/abstracts' as *;
+
+.SearchListingHeader {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-outline-variant;
+
+  @include respond-to(md) {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  &-text {
+    min-width: 0;
+  }
+
+  &-title {
+    margin: 0;
+    font-family: $font-headline;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: $color-on-surface;
+    overflow-wrap: anywhere;
+
+    span {
+      color: $color-primary;
+    }
+
+    @include respond-to(md) {
+      font-size: 30px;
+    }
+  }
+
+  &-summary {
+    margin: $spacing-xs 0 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: $color-on-surface-variant;
+  }
+
+  &-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $spacing-sm $spacing-md;
+  }
+}
+
+.ListingModeToggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+
+  &-button {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    height: 36px;
+    padding: 0 $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: $shadow-level-1;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+      color: $color-on-surface-variant;
+    }
+
+    &:hover:not(&--active) {
+      border-color: $color-primary;
+      color: $color-primary;
+    }
+
+    &--active {
+      border-color: $color-primary;
+      background: $gradient-brand;
+      color: $color-on-primary;
+
+      .material-symbols-outlined {
+        color: inherit;
+      }
+    }
+  }
+
+  &-count {
+    padding: 2px $spacing-sm;
+    border-radius: $radius-full;
+    background: with-opacity($color-on-primary, 0.2);
+    font-size: 11px;
+    font-weight: 700;
+  }
+}
+
+.ListingSortSelect {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: $color-on-surface-variant;
+    white-space: nowrap;
+  }
+
+  &-field {
+    position: relative;
+
+    select {
+      appearance: none;
+      padding: $spacing-sm ($spacing-xl) $spacing-sm $spacing-md;
+      border: 1px solid $color-outline-variant;
+      border-radius: $radius-md;
+      background: $color-surface-container-lowest;
+      color: $color-on-surface;
+      font-family: $font-body;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+
+      &:focus-visible {
+        outline: none;
+        border-color: $color-primary;
+        box-shadow: 0 0 0 3px with-opacity($color-primary, 0.15);
+      }
+    }
+
+    .material-symbols-outlined {
+      position: absolute;
+      top: 50%;
+      right: $spacing-sm;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: $color-on-surface;
+      pointer-events: none;
+    }
+  }
+}
+
+.ViewModeSwitch {
+  display: flex;
+  gap: $spacing-xs;
+  padding: $spacing-xs;
+  border-radius: $radius-md;
+  background: $color-surface-container;
+
+  &-button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-on-surface-variant;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover {
+      color: $color-on-surface;
+    }
+
+    &--active {
+      background: $color-surface-container-lowest;
+      color: $color-primary;
+      box-shadow: $shadow-level-1;
+    }
+  }
+}
+
+// Buscador por nombre dentro de un listado (features/search/components/ListingSearchInput).
+.ListingSearchInput {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-xs $spacing-xs $spacing-xs $spacing-md;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  background: $color-surface-container-lowest;
+  box-shadow: $shadow-level-1;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus-within {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px with-opacity($color-primary, 0.15);
+  }
+
+  > .material-symbols-outlined {
+    font-size: 20px;
+    color: $color-on-surface-variant;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: $spacing-sm 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: $color-on-surface;
+    font-family: $font-body;
+    // 16px y no menos: con una letra más chica, Safari de iPhone hace zoom al enfocar.
+    font-size: 16px;
+
+    &::placeholder {
+      color: $color-on-surface-variant;
+    }
+  }
+
+  &-clear {
+    flex-shrink: 0;
+    padding: $spacing-sm $spacing-md;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-primary;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: with-opacity($color-primary, 0.08);
+    }
+  }
+}

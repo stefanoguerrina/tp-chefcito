@@ -84,6 +84,7 @@ backend/
 │       ├── review/            # Reseñas de recetas
 │       ├── userRecipe/        # Recetas guardadas
 │       ├── inventory/         # Inventario de ingredientes del usuario
+│       ├── search/            # Búsqueda rápida: categorías, recetas y usuarios en un solo pedido
 │       └── database/          # Endpoint de inicialización/seed (solo dev)
 ├── uploads/                   # Imágenes subidas (se crea sola, no se commitea)
 ```

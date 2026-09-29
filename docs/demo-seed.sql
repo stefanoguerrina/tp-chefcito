@@ -345,8 +345,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_panqueques, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Panqueques', 1);
 
 -- ---------------------------------------------------------------------
--- 6. Recetas guardadas + reseñas (para métricas: rating promedio, veces
---    guardada, recetas destacadas en el perfil). Una reseña necesita una
+-- 6. Recetas guardadas + reseñas (para métricas: valoración promedio,
+--    recetas destacadas en el perfil, orden "Más populares"). Una reseña necesita una
 --    fila en userrecipe primero (relación real del modelo: review depende
 --    de userrecipe, no de recipe directamente).
 -- ---------------------------------------------------------------------
@@ -391,14 +391,19 @@ INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
 UPDATE recipe SET saveCount = 1 WHERE id = @recipe_cesar;
 
 -- ---------------------------------------------------------------------
--- 7. Inventario de ejemplo para Juan (para probar "Mi inventario")
+-- 7. Inventario de ejemplo para Juan (para probar "Mi inventario" y el
+--    filtro "Inventario" de los listados de recetas). Con esto le alcanza
+--    para 2 recetas completas (Ensalada de tomate y lechuga, Flan casero)
+--    y tiene parte de los ingredientes de varias más.
 -- ---------------------------------------------------------------------
 INSERT INTO inventory (idUser, idIngredient, unitOfMeasure, availableQuantity) VALUES
   (@user_juan, @ing_tomate, 'g', 500),
   (@user_juan, @ing_cebolla, 'g', 300),
   (@user_juan, @ing_arroz, 'g', 1000),
   (@user_juan, @ing_huevo, 'unidad', 12),
-  (@user_juan, @ing_aceite, 'ml', 750);
+  (@user_juan, @ing_aceite, 'ml', 750),
+  (@user_juan, @ing_lechuga, 'g', 300),
+  (@user_juan, @ing_leche, 'ml', 1000);
 
 COMMIT;
 
@@ -413,13 +418,15 @@ COMMIT;
 --       admindemo
 --   - 10 recetas completas (imagen, categoría, ingredientes y pasos),
 --     repartidas entre los 5 usuarios comunes
---   - Guardados + reseñas cruzadas entre usuarios, para ver ratings,
---     "recetas destacadas" y contador de guardados con datos reales
+--   - Guardados + reseñas cruzadas entre usuarios, para ver valoraciones,
+--     "recetas destacadas" y métricas del perfil con datos reales
 --   - Inventario de ejemplo para juanperez
 --
 -- Iniciá sesión como cualquiera de los usuarios comunes para recorrer la
--- home, "Mis recetas", "Recetas guardadas", el perfil propio y el de
--- otro usuario (tocando su nombre desde el detalle de una receta), o
--- como admindemo (contraseña 123456) para entrar al panel de admin y ver
--- usuarios, ingredientes, categorías y roles.
+-- home (con el buscador de recetas, categorías y usuarios), "Mis recetas",
+-- "Recetas guardadas", el perfil propio y el de otro usuario (tocando su
+-- nombre desde el detalle de una receta o buscándolo), o como admindemo
+-- (contraseña 123456) para entrar al panel de admin y ver usuarios,
+-- ingredientes, categorías y roles. El filtro "Inventario" de los listados
+-- de recetas se prueba mejor con juanperez, que es quien tiene inventario.
 -- =====================================================================

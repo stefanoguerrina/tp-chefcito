@@ -1,10 +1,10 @@
-// Home page (ruta "/") — inicio de un usuario común: accesos rápidos y la grilla de
-// recetas de la comunidad. La sidebar la pone UserLayout; las demás secciones (Mis
+// Home page (ruta "/") — inicio de un usuario común: el buscador (SearchNavbar) y la
+// grilla de recetas de la comunidad. La sidebar la pone UserLayout; las demás secciones (Mis
 // recetas, Perfil, Inventario, etc.) son rutas propias (ver App.jsx).
 // Un admin nunca llega acá: ProtectedRoute lo manda a /admin.
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import HomeFeatureCards from '../../recipe/components/HomeFeatureCards.jsx';
+import SearchNavbar from '../../search/components/SearchNavbar.jsx';
 import RecipeCarouselSection from '../../recipe/components/RecipeCarouselSection.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
@@ -56,9 +56,7 @@ function HomePage() {
 
   return (
     <>
-      <HomeFeatureCards />
-
-      <hr className="HomePage-divider" />
+      <SearchNavbar />
 
       {isLoadingRecipes && <p className="HomePage-recipesStatus">Cargando recetas...</p>}
       {recipesError && <ErrorState message={recipesError} onRetry={handleRetry} />}

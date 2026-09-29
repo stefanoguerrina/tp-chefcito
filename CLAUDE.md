@@ -110,7 +110,9 @@ extensions on relative imports since output is compiled to `dist/`).
 `useAuthContext()`) and defines the full React Router tree. Access is enforced by
 `src/app/ProtectedRoute.jsx` (`allow="guest" | "user" | "admin"`): guests live at `/bienvenida`
 (`AuthPage`), common users under `UserLayout` (sidebar + `<Outlet />`: `/`, `/recetas/:id`,
-`/mis-recetas[/nueva|/:id/editar]`, `/perfil`, `/usuarios/:id`, `/inventario`, `/guardadas`),
+`/mis-recetas[/nueva|/:id/editar]`, `/perfil`, `/usuarios/:id`, `/inventario`, `/guardadas`,
+`/buscar?q=` and `/buscar/recetas|categorias|usuarios` — the `search` feature, whose listing filters
+live in the URL query string),
 admins at `/admin/:section?`. New pages should be routes (read params with `useParams`,
 navigate with `useNavigate`), not panels toggled by local state.
 

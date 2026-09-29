@@ -60,7 +60,7 @@ function IngredientCard({ item, onEdit, onRemove }) {
           type="button"
           className="IngredientCard-iconBtn IngredientCard-iconBtn--delete"
           aria-label={`Eliminar ${item.ingredientName} del inventario`}
-          title="Eliminar de mi despensa"
+          title="Eliminar de mi inventario"
           onClick={() => onRemove(item.idIngredient)}
         >
           <span className="material-symbols-outlined">delete</span>

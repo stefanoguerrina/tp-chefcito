@@ -3,6 +3,7 @@
 // con zoom y categorías encima, botón de guardar, bajada, y pie con autor + valoración.
 // Sin Tailwind, framer-motion ni lucide-react: SASS, animaciones CSS y Material Symbols.
 import { useState } from 'react';
+import RatingStars from './RatingStars.jsx';
 import './_recipe-card.scss';
 
 // Cuántas categorías entran sobre la foto; el resto se resume en un chip "+N".
@@ -29,9 +30,11 @@ const formatRating = (rating, reviewsCount) =>
 //   editarlas: ahí la card queda limpia, sin reseñas).
 //   isSaved / onToggleSave: estado y handler del botón de guardar de arriba a la derecha.
 //   onEdit / onDelete: si se pasan (ej. "Mis recetas"), la card suma su barra de acciones.
+//   children: contenido extra opcional debajo de la bajada (ej. en la búsqueda "Con mi
+//   despensa", cuántos ingredientes de la receta tiene el usuario).
 function RecipeCard({
   recipe, onClick, showSaveButton = true, showAuthor = true, showTime = true, showRating = true,
-  isSaved, onToggleSave, onEdit, onDelete,
+  isSaved, onToggleSave, onEdit, onDelete, children,
 }) {
   const {
     title, description, image, author, authorAvatar,
@@ -62,10 +65,7 @@ function RecipeCard({
             use (ver detalle, ir al editor...): lo decide el onClick de quien la llama. */}
         {onClick && (
           <div className="RecipeCard-hoverOverlay">
-            <span className="RecipeCard-viewAction">
-              <span className="material-symbols-outlined">menu_book</span>
-              Abrir receta
-            </span>
+            <span className="RecipeCard-viewAction">Ver receta</span>
           </div>
         )}
 
@@ -100,6 +100,8 @@ function RecipeCard({
           {description && <p className="RecipeCard-description">{description}</p>}
         </div>
 
+        {children}
+
         <div className="RecipeCard-footer">
           <div className="RecipeCard-author">
             {showAuthor && (
@@ -113,7 +115,7 @@ function RecipeCard({
               {showAuthor && <span className="RecipeCard-authorName">{author}</span>}
               {showRating && (
                 <span className="RecipeCard-rating">
-                  <span className="material-symbols-outlined">star</span>
+                  <RatingStars rating={rating} />
                   {formatRating(rating, reviewsCount)}
                 </span>
               )}
