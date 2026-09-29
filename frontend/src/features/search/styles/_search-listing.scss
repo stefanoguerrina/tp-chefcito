@@ -1,0 +1,138 @@
+// Estilos de la página de listados completos de búsqueda (features/search/pages/
+// SearchListingPage) y de su zona de resultados (RecipeListing, NameOrRecipesListing y
+// ListingEmptyState).
+@use '../../../styles/abstracts' as *;
+
+.SearchListingPage {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+  font-family: $font-body;
+  color: $color-on-surface;
+}
+
+.SearchListing {
+  // Mobile: filtros arriba de los resultados. Desde lg: filtros en una columna a la izquierda.
+  &-layout {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+
+    @include respond-to(lg) {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: $spacing-xl;
+    }
+  }
+
+  &-results {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+    transition: opacity 0.15s ease;
+
+    // Mientras llega la página nueva se sigue viendo la anterior, apagada.
+    &--loading {
+      opacity: 0.6;
+    }
+  }
+
+  &-status {
+    margin: $spacing-xl 0;
+    text-align: center;
+    font-size: 15px;
+    color: $color-on-surface-variant;
+  }
+
+  // auto-fill arma tantas columnas como entren (mínimo 240px cada una), así la grilla se
+  // acomoda sola al ancho disponible con o sin la columna de filtros. min(…, 100%) evita
+  // que en un celular muy angosto la columna mínima se salga de la pantalla.
+  &-grid {
+    display: grid;
+    gap: $spacing-lg;
+
+    &--grid {
+      grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+    }
+
+    &--cards {
+      grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+      gap: $spacing-md;
+    }
+
+    // Cards de perfil (UserProfileCard): más separadas, porque su sombra en relieve se
+    // extiende por fuera de la card y con poco espacio se pisan entre sí.
+    &--profiles {
+      grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+      gap: $spacing-xl;
+      padding: $spacing-sm;
+    }
+
+    // Vista en lista: la misma RecipeCard, acomodada en horizontal (foto a la izquierda)
+    // desde sm. En mobile se ve igual que la cuadrícula, que ya es de una columna.
+    &--list {
+      grid-template-columns: minmax(0, 1fr);
+      gap: $spacing-md;
+
+      @include respond-to(sm) {
+        .RecipeCard {
+          flex-direction: row;
+        }
+
+        .RecipeCard-imageWrapper {
+          width: 240px;
+          aspect-ratio: auto;
+          min-height: 180px;
+        }
+
+        .RecipeCard-body {
+          flex: 1;
+          min-width: 0;
+        }
+      }
+    }
+  }
+}
+
+.ListingEmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-xl $spacing-md;
+  border: 1px dashed $color-outline-variant;
+  border-radius: $radius-lg;
+  text-align: center;
+  color: $color-on-surface-variant;
+
+  .material-symbols-outlined {
+    font-size: 40px;
+    color: $color-outline;
+  }
+
+  p {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  &-action {
+    margin-top: $spacing-sm;
+    padding: $spacing-sm $spacing-md;
+    border: none;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-on-primary;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: $color-primary-container;
+    }
+  }
+}

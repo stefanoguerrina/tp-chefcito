@@ -1,12 +1,10 @@
-// Estilos de la tarjeta de perfil (features/user/components/ProfileCard) y de las tarjetas
-// de estadísticas que van debajo (ProfileStats). Mobile-first: en celular todo apilado;
-// desde md, avatar | datos | acciones en una misma fila.
+// Estilos de la tarjeta de perfil (features/user/components/ProfileCard). Mobile-first: en
+// celular todo apilado; desde md, avatar | datos | acciones en una misma fila.
 @use '../../../styles/abstracts' as *;
 
 // El proyecto no tiene un reset global de box-sizing: sin esto los bordes y paddings se
 // sumarían a los anchos (avatar, tarjetas) y el bloque se saldría de su contenedor.
-.ProfileCard,
-.ProfileStats {
+.ProfileCard {
   &,
   & *,
   & *::before,
@@ -223,7 +221,8 @@
     }
   }
 
-  // --- Acciones ---
+  // --- Acciones: en el perfil propio, editar y compartir (íconos); en uno ajeno, seguir,
+  // donar y compartir. ---
   &-actions {
     grid-area: actions;
     display: flex;
@@ -273,6 +272,28 @@
         background: $color-surface-container-highest;
       }
     }
+
+    // Botón de solo ícono (editar, compartir): cuadrado del mismo alto que los demás.
+    &--icon {
+      width: 36px;
+      padding: 0;
+
+      .material-symbols-outlined {
+        font-size: 20px;
+      }
+    }
+
+    // "Seguir": con el degradé de la marca.
+    &--accent {
+      border: none;
+      background: $gradient-brand;
+      color: $color-on-primary;
+
+      &:hover {
+        filter: brightness(1.08);
+      }
+    }
+
   }
 
   // --- Biografía (debajo del avatar, a todo el ancho) ---
@@ -296,83 +317,5 @@
     font-size: 13px;
     font-weight: 600;
     color: $color-secondary;
-  }
-}
-
-// --- Estadísticas: tarjetas sueltas debajo de la tarjeta principal ---
-.ProfileStats {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: $spacing-md;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-family: $font-body;
-  text-align: left;
-
-  @include respond-to(sm) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @include respond-to(lg) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  &-stat {
-    min-width: 0;
-    padding: $spacing-lg;
-    background: $color-surface-container-lowest;
-    border: 1px solid $color-surface-container-highest;
-    border-radius: $radius-lg;
-  }
-
-  &-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: $spacing-sm;
-  }
-
-  &-label {
-    overflow: hidden;
-    font-size: 14px;
-    line-height: 20px;
-    color: $color-on-surface-variant;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  &-icon {
-    flex: none;
-    font-size: 18px;
-    color: $color-on-surface-variant;
-  }
-
-  &-value {
-    display: block;
-    margin-top: $spacing-lg;
-    font-size: 24px;
-    line-height: 32px;
-    font-weight: 700;
-    color: $color-on-surface;
-  }
-
-  &-note {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: $spacing-md;
-    font-size: 12px;
-    line-height: 16px;
-    color: $color-on-surface-variant;
-
-    .material-symbols-outlined {
-      font-size: 13px;
-    }
-
-    // Crecimiento real (ej. recetas publicadas este mes): verde con flecha hacia arriba.
-    &--positive {
-      color: $color-secondary;
-    }
   }
 }

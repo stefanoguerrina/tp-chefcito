@@ -1,156 +1,158 @@
-// Galería completa de recetas del perfil: buscador por nombre, filtro por categorías y
-// paginación visual ("Ver más recetas"), en una grilla masonry con la RecipeCard de siempre.
-// Los filtros se aplican en el navegador sobre las recetas ya cargadas, sin endpoints extra.
-import { useState } from 'react';
-import { recipeToCardProps } from '../../recipe/models/recipeModel.js';
+// Galería completa de recetas del perfil: buscador por nombre, "Todo" / "Con mi despensa",
+// categoría y orden, en una grilla masonry con paginación. Usa el mismo listado que el
+// buscador y "Recetas guardadas" (GET /api/search/recipes, acá con authorId) y, como
+// ellos, guarda los filtros en la URL (ej. /perfil?despensa=1).
+import { useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
-import MasonryGrid from '../../../core/components/MasonryGrid.jsx';
-import CategoryFilterDropdown from './CategoryFilterDropdown.jsx';
+import ErrorState from '../../../core/components/ErrorState.jsx';
+import ListingSearchInput from '../../search/components/ListingSearchInput.jsx';
+import ListingModeToggle from '../../search/components/ListingModeToggle.jsx';
+import ListingSortSelect from '../../search/components/ListingSortSelect.jsx';
+import PantryNotice from '../../search/components/PantryNotice.jsx';
+import PantryMatchInfo from '../../search/components/PantryMatchInfo.jsx';
+import ListingEmptyState from '../../search/components/ListingEmptyState.jsx';
+import SearchPagination from '../../search/components/SearchPagination.jsx';
+import { useSearchListing } from '../../search/hooks/useSearchListing.js';
+import { getRecipeListing } from '../../search/services/searchService.js';
+import {
+  getRecipeSortOptions, parseRecipeFilters, recipeFiltersToApiQuery, recipeFiltersToParams,
+} from '../../search/models/searchListingModel.js';
+import '../../search/styles/_search-listing.scss';
 
-// Cuántas recetas muestra de entrada la galería, y cuántas suma cada vez que se
-// toca "Ver más recetas". El backend ya devuelve todas las recetas del usuario
-// en una sola llamada: el corte es solo visual, para no volcar 50 cards juntas.
-const RECIPES_PER_PAGE = 12;
+// Recibe: authorId (dueño del perfil), totalRecipes (cuántas recetas tiene en total, para el
+// botón "Todas (N)"), categories ([{ id, name }] de sus recetas, para el filtro),
+// isOwnProfile, ownerName y onRecipeClick(recipeId).
+function ProfileRecipeGallery({ authorId, totalRecipes, categories, isOwnProfile, ownerName, onRecipeClick }) {
+  const sectionRef = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = parseRecipeFilters(searchParams, { authorId });
+  const { data, isLoading, error, retry } = useSearchListing(getRecipeListing, recipeFiltersToApiQuery(filters));
 
-// Recibe: recipes (crudas del backend), recipeReviewStats (rating por id de receta),
-// isOwnProfile, ownerName (nombre del dueño, para los textos del perfil ajeno) y
-// onRecipeClick (recibe el id de la receta tocada).
-function ProfileRecipeGallery({ recipes, recipeReviewStats, isOwnProfile, ownerName, onRecipeClick }) {
-  // Cuántas recetas se están mostrando (ver RECIPES_PER_PAGE).
-  const [visibleRecipeCount, setVisibleRecipeCount] = useState(RECIPES_PER_PAGE);
-  const [searchQuery, setSearchQuery] = useState('');
-  // Ids de las categorías elegidas en el menú de "Categorías". Vacío = todas.
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
+  // replace: los filtros quedan en la URL (se recuperan al volver de una receta) pero no
+  // suman pasos al historial, así "Atrás" sale del perfil en vez de deshacer filtros.
+  const updateFilters = (nextFilters) => setSearchParams(recipeFiltersToParams(nextFilters), { replace: true });
 
-  // Cualquier cambio de filtro vuelve la galería a la primera tanda: si no,
-  // después de achicar el resultado quedaba un "Mostrando 12 de 3" sin sentido.
-  const resetPagination = () => setVisibleRecipeCount(RECIPES_PER_PAGE);
+  // Cualquier cambio de filtro u orden vuelve a la página 1 (la actual podría no existir más).
+  const changeFilters = (changes) => updateFilters({ ...filters, ...changes, page: 1 });
+  const handleClearFilters = () => changeFilters({ categoryId: null, pantry: false });
 
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategoryIds([]);
-    resetPagination();
+  // La galería no está arriba de la página: al cambiar de página se vuelve a su título.
+  const handlePageChange = (page) => {
+    updateFilters({ ...filters, page });
+    sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  // Categorías para el selector, sacadas de las propias recetas (sin pedirlas
-  // aparte al backend).
-  const categoryOptions = Array.from(
-    new Map(
-      recipes
-        .map((recipe) => recipe.recipecategory?.[0]?.category)
-        .filter(Boolean)
-        .map((category) => [category.id, category])
-    ).values()
-  );
-
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-  const filteredRecipes = recipes
-    .filter((recipe) => !normalizedQuery || recipe.name?.toLowerCase().includes(normalizedQuery))
-    // Sin categorías elegidas se muestran todas; con varias, alcanza con que la
-    // receta pertenezca a alguna de ellas.
-    .filter((recipe) => selectedCategoryIds.length === 0 || selectedCategoryIds.includes(recipe.recipecategory?.[0]?.idCategory));
-
-  const hasActiveFilters = Boolean(searchQuery || selectedCategoryIds.length > 0);
-
-  // La paginación corre sobre el resultado filtrado, no sobre todas las recetas.
-  const visibleRecipes = filteredRecipes.slice(0, visibleRecipeCount);
-  const remainingRecipeCount = filteredRecipes.length - visibleRecipes.length;
+  const categoryOptions = [
+    { value: '', label: 'Todas' },
+    ...categories.map((category) => ({ value: String(category.id), label: category.name })),
+  ];
+  const hasClearableFilters = Boolean(filters.categoryId) || filters.pantry;
+  // Con la despensa vacía ya lo explica PantryNotice: no hace falta el "no encontramos".
+  const isPantryEmpty = filters.pantry && data?.pantry?.inventoryCount === 0;
 
   return (
-    <section className="ProfilePage-allRecipes">
+    <section className="ProfilePage-allRecipes" ref={sectionRef}>
       <div className="ProfilePage-sectionHeader">
-        <div>
-          <span className="ProfilePage-eyebrow">Galería completa</span>
-          <h3 className="ProfilePage-sectionTitle">
-            {isOwnProfile ? 'Todas mis recetas' : `Todas las recetas de ${ownerName}`}
-          </h3>
-        </div>
-        <span className="ProfilePage-galleryCount">
-          Mostrando {visibleRecipes.length} de {filteredRecipes.length}
-          {hasActiveFilters && ` (de ${recipes.length} en total)`}
-        </span>
-      </div>
-
-      <div className="ProfilePage-galleryFilters">
-        <div className="ProfilePage-searchBar">
-          <span className="material-symbols-outlined">search</span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(event) => {
-              setSearchQuery(event.target.value);
-              resetPagination();
-            }}
-            placeholder={isOwnProfile ? 'Buscar en mis recetas...' : `Buscar en las recetas de ${ownerName}...`}
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                resetPagination();
-              }}
-              aria-label="Limpiar búsqueda"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          )}
-        </div>
-
-        <CategoryFilterDropdown
-          categories={categoryOptions}
-          selectedIds={selectedCategoryIds}
-          onChange={(nextIds) => {
-            setSelectedCategoryIds(nextIds);
-            resetPagination();
-          }}
-        />
-
-        {hasActiveFilters && (
-          <button type="button" className="ProfilePage-clearFilters" onClick={handleClearFilters}>
-            <span className="material-symbols-outlined">restart_alt</span>
-            Limpiar filtros
-          </button>
+        <h3 className="ProfilePage-sectionTitle">
+          {isOwnProfile ? 'Mis recetas' : `Recetas de ${ownerName}`}
+        </h3>
+        {data && (
+          <span className="ProfilePage-galleryCount">
+            {data.total} {data.total === 1 ? 'receta' : 'recetas'}
+          </span>
         )}
       </div>
 
-      {filteredRecipes.length === 0 && (
-        <p className="ProfilePage-empty">Ninguna receta coincide con estos filtros.</p>
-      )}
+      <div className="ProfilePage-galleryFilters">
+        <ListingSearchInput
+          value={filters.term}
+          onChange={(term) => changeFilters({ term })}
+          placeholder="Buscar por nombre"
+          label="Buscar recetas del perfil por nombre"
+        />
 
-      <MasonryGrid>
-        {visibleRecipes.map((recipe) => {
-          const stats = recipeReviewStats[recipe.id];
-          return (
-            <RecipeCard
-              key={recipe.id}
-              recipe={{
-                ...recipeToCardProps(recipe),
-                rating: stats?.averageRating ?? 0,
-                reviewsCount: stats?.totalReviews ?? 0,
-              }}
-              onClick={() => onRecipeClick(recipe.id)}
-              showSaveButton={false}
-              // En el perfil propio la card abre el editor: sin autor (sos vos) ni reseñas.
-              showAuthor={!isOwnProfile}
-              showRating={!isOwnProfile}
+        <div className="ProfilePage-galleryControls">
+          <ListingModeToggle
+            label="Qué recetas mostrar"
+            value={filters.pantry}
+            onChange={(pantry) => changeFilters({ pantry })}
+            options={[
+              { value: false, label: `Todas (${totalRecipes})` },
+              { value: true, label: 'Inventario', icon: 'kitchen' },
+            ]}
+          />
+
+          {categories.length > 0 && (
+            <ListingSortSelect
+              id="profile-recipes-category"
+              label="Categoría:"
+              options={categoryOptions}
+              value={filters.categoryId ? String(filters.categoryId) : ''}
+              onChange={(value) => changeFilters({ categoryId: Number(value) || null })}
             />
-          );
-        })}
-      </MasonryGrid>
+          )}
 
-      {remainingRecipeCount > 0 && (
-        <div className="ProfilePage-loadMore">
-          <button
-            type="button"
-            className="ProfilePage-button ProfilePage-button--outline"
-            onClick={() => setVisibleRecipeCount((count) => count + RECIPES_PER_PAGE)}
-          >
-            <span className="material-symbols-outlined">expand_more</span>
-            Ver más recetas ({remainingRecipeCount} restante{remainingRecipeCount !== 1 ? 's' : ''})
-          </button>
+          {/* Con la despensa, el orden lo define cuánto de cada receta tenés. */}
+          {!filters.pantry && (
+            <ListingSortSelect
+              id="profile-recipes-sort"
+              options={getRecipeSortOptions(filters)}
+              value={filters.sort}
+              onChange={(sort) => changeFilters({ sort })}
+            />
+          )}
         </div>
-      )}
+      </div>
+
+      <div className={`ProfilePage-results${isLoading && data ? ' ProfilePage-results--loading' : ''}`} aria-busy={isLoading}>
+        {error && <ErrorState title="No pudimos cargar las recetas" message={error} onRetry={retry} />}
+        {!error && !data && <p className="ProfilePage-empty">Cargando recetas...</p>}
+
+        {!error && data && (
+          <>
+            {filters.pantry && data.pantry && <PantryNotice pantry={data.pantry} total={data.total} />}
+
+            {data.total === 0 && !isPantryEmpty && (
+              <ListingEmptyState
+                message="No hay recetas con estos filtros."
+                actionLabel={hasClearableFilters ? 'Limpiar filtros' : undefined}
+                onAction={handleClearFilters}
+              />
+            )}
+
+            {data.items.length > 0 && (
+              <>
+                {/* Grilla pareja (la del buscador): todas las cards de una fila miden lo mismo. */}
+                <div className="SearchListing-grid SearchListing-grid--grid">
+                  {data.items.map((recipe) => (
+                    <RecipeCard
+                      key={recipe.id}
+                      recipe={recipe}
+                      onClick={() => onRecipeClick(recipe.id)}
+                      showSaveButton={false}
+                      // En el perfil propio el autor sos vos: no hace falta mostrarlo.
+                      showAuthor={!isOwnProfile}
+                    >
+                      {recipe.pantryMatch && <PantryMatchInfo match={recipe.pantryMatch} />}
+                    </RecipeCard>
+                  ))}
+                </div>
+
+                <SearchPagination
+                  page={data.page}
+                  totalPages={data.totalPages}
+                  total={data.total}
+                  pageSize={data.pageSize}
+                  itemLabel="recetas"
+                  onPageChange={handlePageChange}
+                  scrollToTop={false}
+                />
+              </>
+            )}
+          </>
+        )}
+      </div>
     </section>
   );
 }

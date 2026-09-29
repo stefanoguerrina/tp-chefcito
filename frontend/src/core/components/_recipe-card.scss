@@ -75,9 +75,6 @@
   }
 
   &-viewAction {
-    display: inline-flex;
-    align-items: center;
-    gap: $spacing-xs;
     padding: 10px $spacing-lg;
     border-radius: $radius-full;
     background: $color-primary;
@@ -86,10 +83,6 @@
     font-size: 14px;
     font-weight: 700;
     box-shadow: $shadow-level-2;
-
-    .material-symbols-outlined {
-      font-size: 18px;
-    }
   }
 
   &-categories {
@@ -144,14 +137,15 @@
       transform: scale(0.92);
     }
 
+    // Guardada: degradé de la marca (el mismo de los botones seleccionados).
     &--saved {
-      background: $color-secondary-container;
-      color: $color-on-secondary-container;
+      background: $gradient-brand;
+      color: $color-on-primary;
 
       // Sin esto, el &:hover de más arriba (más específico por el pseudo-clase) le
-      // ganaría a este fondo y el botón perdería el tinte de "guardada" al pasar el mouse.
+      // ganaría a este fondo y el botón perdería el degradé al pasar el mouse.
       &:hover {
-        background: $color-secondary-container;
+        background: $gradient-brand;
       }
 
       // Repetimos los otros ejes de la fuente variable (definidos en el reset
@@ -265,11 +259,12 @@
     font-size: 11px;
     font-weight: 600;
     color: $color-on-surface-variant;
+    // Tamaño de las 5 estrellas (ver RatingStars).
+    --rating-star-size: 12px;
 
-    .material-symbols-outlined {
-      font-size: 12px;
-      color: $color-tertiary-fixed-dim;
-      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    // Separación entre las estrellas y el número.
+    .RatingStars {
+      margin-right: $spacing-xs;
     }
   }
 

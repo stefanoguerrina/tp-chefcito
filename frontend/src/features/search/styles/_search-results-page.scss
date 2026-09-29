@@ -1,0 +1,221 @@
+// Estilos de la página de resultados de búsqueda (features/search/pages/SearchResultsPage)
+// y de sus piezas propias: SearchResultsSection y SearchMoreCard.
+@use '../../../styles/abstracts' as *;
+
+.SearchResultsPage {
+  // Ancho máximo de lectura; la barra de búsqueda de arriba es más angosta todavía.
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+  font-family: $font-body;
+  color: $color-on-surface;
+
+  &-header {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &-title {
+    margin: 0;
+    font-family: $font-headline;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    // Una búsqueda larga sin espacios no tiene que desbordar la pantalla.
+    overflow-wrap: anywhere;
+
+    span {
+      color: $color-primary;
+    }
+
+    @include respond-to(sm) {
+      font-size: 30px;
+    }
+
+    @include respond-to(md) {
+      font-size: 36px;
+    }
+  }
+
+  &-summary {
+    margin: 0;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+
+    strong {
+      color: $color-on-surface;
+    }
+
+    @include respond-to(md) {
+      font-size: 16px;
+    }
+  }
+
+  &-status {
+    margin: $spacing-xl 0;
+    text-align: center;
+    font-size: 15px;
+    color: $color-on-surface-variant;
+  }
+
+  &-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-xl $spacing-md;
+    text-align: center;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined {
+      font-size: 48px;
+      color: $color-outline;
+    }
+
+    p {
+      margin: 0;
+      font-size: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    strong {
+      color: $color-on-surface;
+    }
+  }
+}
+
+.SearchResultsSection {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  &-title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $color-on-surface;
+  }
+
+  // Mobile: una columna. Categorías y perfiles pasan a 3 desde md; las recetas a 2 desde
+  // sm y a 4 desde lg (con menos ancho, 4 RecipeCard quedan demasiado angostas).
+  &-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: $spacing-md;
+
+    &--categories,
+    &--users {
+      @include respond-to(md) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    &--recipes {
+      @include respond-to(sm) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      @include respond-to(lg) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+  }
+}
+
+.SearchMoreCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+  min-height: 80px;
+  box-sizing: border-box;
+  padding: $spacing-md;
+  border: 1px solid with-opacity($color-primary, 0.25);
+  border-radius: $radius-lg;
+  background: with-opacity($color-primary, 0.08);
+  color: $color-primary;
+  text-decoration: none;
+  box-shadow: $shadow-level-1;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: $shadow-level-2;
+  }
+
+  &-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding-left: $spacing-xs;
+  }
+
+  &-count {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  &-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: $color-primary-container;
+  }
+
+  &-action {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-full;
+    background: $color-primary-container;
+    color: $color-on-primary;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background-color 0.15s ease, gap 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+  }
+
+  &:hover &-action {
+    background: $color-primary;
+    gap: $spacing-sm;
+  }
+
+  // En la grilla de recetas: centrada y apilada, con el mismo alto que las RecipeCard de
+  // su fila (la grilla la estira). El min-height es para mobile, donde queda sola en su fila.
+  &--tall {
+    flex-direction: column;
+    justify-content: center;
+    gap: $spacing-md;
+    min-height: 240px;
+    padding: $spacing-lg;
+    text-align: center;
+
+    .SearchMoreCard-text {
+      align-items: center;
+      padding-left: 0;
+    }
+
+    .SearchMoreCard-count {
+      font-size: 36px;
+      line-height: 1;
+    }
+
+    .SearchMoreCard-label {
+      margin-top: $spacing-xs;
+      font-size: 16px;
+      font-weight: 600;
+    }
+  }
+}

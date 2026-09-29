@@ -14,6 +14,8 @@ import RecipeEditorPage from '../features/recipe/pages/RecipeEditorPage.jsx';
 import RecipeDetailPage from '../features/recipe/pages/RecipeDetailPage.jsx';
 import InventoryPage from '../features/inventory/pages/InventoryPage.jsx';
 import SavedRecipesPage from '../features/userRecipe/pages/SavedRecipesPage.jsx';
+import SearchResultsPage from '../features/search/pages/SearchResultsPage.jsx';
+import SearchListingPage from '../features/search/pages/SearchListingPage.jsx';
 import AdminPage from '../features/admin/pages/AdminPage.jsx';
 
 function App() {
@@ -39,6 +41,8 @@ function App() {
                 <Route path="usuarios/:userId" element={<ProfilePage />} />
                 <Route path="inventario" element={<InventoryPage />} />
                 <Route path="guardadas" element={<SavedRecipesPage />} />
+                <Route path="buscar" element={<SearchResultsPage />} />
+                <Route path="buscar/:searchType" element={<SearchListingPage />} />
               </Route>
             </Route>
 

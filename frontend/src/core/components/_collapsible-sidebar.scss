@@ -159,7 +159,7 @@
     height: 40px;
     flex-shrink: 0;
     border-radius: $radius-md;
-    background: $color-primary;
+    background: $gradient-brand;
     color: $color-on-primary;
     display: flex;
     align-items: center;
@@ -233,17 +233,21 @@
       cursor: not-allowed;
     }
 
+    // Ítem de la página actual: degradé de la marca (el mismo del título de las destacadas).
     &--active {
-      background: $color-secondary-container;
-      color: $color-on-secondary-container;
+      background: $gradient-brand;
+      color: $color-on-primary;
       font-weight: 600;
 
       .material-symbols-outlined {
         font-variation-settings: 'FILL' 1;
       }
 
-      &:hover:not(:disabled) {
-        background: $color-secondary-container;
+      // Mismo selector que el hover genérico de arriba (incluido :is(a, button)): con
+      // menos especificidad ese hover le pisaba el degradé con un gris.
+      &:is(a, button):hover:not(:disabled) {
+        background: $gradient-brand;
+        filter: brightness(1.08);
       }
     }
 
@@ -281,6 +285,39 @@
     // Solo la cuenta del usuario común es un link (a su perfil); la del admin es fija.
     &:not(a) {
       cursor: default;
+    }
+
+    // En su página (el perfil) no se pinta el ítem entero como los demás: queda sin
+    // fondo y el avatar lleva un aro con el degradé de la marca.
+    &.CollapsibleSidebar-item--active {
+      background: transparent;
+      color: $color-on-surface-variant;
+
+      .CollapsibleSidebar-itemIcon {
+        position: relative;
+
+        // Aro hueco: el degradé se pinta en un círculo con 2px de borde y una máscara
+        // recorta el centro (la técnica estándar para un borde con degradé y radio).
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          padding: 2px;
+          border-radius: $radius-full;
+          background: $gradient-brand;
+          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+      }
+    }
+
+    // Mismo selector que el hover del ítem activo (más arriba, con :is(a, button)):
+    // acá el hover es el gris común, no el degradé.
+    &.CollapsibleSidebar-item--active:is(a, button):hover:not(:disabled) {
+      background: $color-surface-container-highest;
+      filter: none;
     }
   }
 

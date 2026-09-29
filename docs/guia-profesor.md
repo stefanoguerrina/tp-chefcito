@@ -10,6 +10,8 @@ suben al repositorio, hay que crearlos a mano siguiendo esta guía.
 - Node.js 20 o superior.
 - Un servidor MySQL corriendo en tu máquina (o accesible por red), con una base de
   datos vacía creada para el proyecto.
+- Un navegador actualizado (Chrome, Edge o Firefox en su última versión): la interfaz usa
+  funciones de CSS recientes que en versiones viejas pueden verse mal.
 
 ## 2. Backend (`backend/.env`)
 
@@ -105,5 +107,7 @@ Todos los usuarios de prueba (los carga el paso 3) tienen la **misma contraseña
 | Usuario común | `martinlopez` / `martin.lopez.demo@chefcito.com` | `123456` |
 
 Se puede iniciar sesión con el email o con el nombre de usuario indistintamente. Los 5
-usuarios comunes ya tienen recetas, reseñas, recetas guardadas e inventario cargados
-para poder recorrer la app sin partir de cero.
+usuarios comunes ya tienen recetas, reseñas y recetas guardadas cargadas para poder
+recorrer la app sin partir de cero. **`juanperez`** además tiene ingredientes en su
+inventario: es el indicado para probar el filtro **"Inventario"** de los listados de
+recetas (muestra qué recetas se pueden preparar con lo que hay cargado).

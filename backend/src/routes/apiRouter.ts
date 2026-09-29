@@ -10,6 +10,7 @@ import { roleRouter } from '../features/rol/routes/roleRouter.js';
 import { recipeRouter } from '../features/recipe/routes/recipeRouter.js';
 import { savedRecipesRouter } from '../features/userRecipe/routes/savedRecipesRouter.js';
 import { inventoryRouter } from '../features/inventory/routes/inventoryRouter.js';
+import { searchRouter } from '../features/search/routes/searchRouter.js';
 
 const apiRouter = Router();
 
@@ -36,5 +37,8 @@ apiRouter.use('/recipes', recipeRouter);
 apiRouter.use('/saved-recipes', savedRecipesRouter);
 // Inventory routes (anidado bajo /users/:userId/inventory)
 apiRouter.use('/users/:userId/inventory', inventoryRouter);
+
+// Búsqueda rápida (buscador de la home): categorías, recetas y usuarios en un solo pedido
+apiRouter.use('/search', searchRouter);
 
 export { apiRouter };

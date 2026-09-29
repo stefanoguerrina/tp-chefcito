@@ -12,9 +12,9 @@ const average = (ratings) =>
   ratings.length > 0 ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : null;
 
 // Pide el usuario y sus recetas, y después las reseñas de cada receta en paralelo.
-// El backend solo expone reseñas por receta (no un agregado por usuario), por eso los
-// totales se calculan acá. No toca el estado: devuelve todo ya calculado.
-// Recibe: userId. Devuelve: { user, recipes, recipeReviewStats, reviewStats }.
+// El backend solo expone reseñas por receta, por eso el promedio de cada una se calcula
+// acá. No toca el estado: devuelve todo ya calculado.
+// Recibe: userId. Devuelve: { user, recipes, recipeReviewStats }.
 const loadProfileData = async (userId) => {
   const [user, recipes] = await Promise.all([
     getUserByIdService(userId),
@@ -35,10 +35,7 @@ const loadProfileData = async (userId) => {
     recipeReviewStats[recipe.id] = { averageRating: average(ratings) ?? 0, totalReviews: ratings.length };
   });
 
-  const allRatings = reviewsPerRecipe.flatMap((data) => data.reviews.map((review) => review.rating));
-  const reviewStats = { totalReviews: allRatings.length, averageRating: average(allRatings) };
-
-  return { user, recipes, recipeReviewStats, reviewStats };
+  return { user, recipes, recipeReviewStats };
 };
 
 // Recibe: userId. Devuelve los datos del perfil, los estados de carga/error, retry
@@ -47,7 +44,6 @@ export const useProfileData = (userId) => {
   const [user, setUser] = useState(null);
   const [recipes, setRecipes] = useState([]);
   const [recipeReviewStats, setRecipeReviewStats] = useState({});
-  const [reviewStats, setReviewStats] = useState({ totalReviews: 0, averageRating: null });
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
 
@@ -59,7 +55,6 @@ export const useProfileData = (userId) => {
         setUser(data.user);
         setRecipes(data.recipes);
         setRecipeReviewStats(data.recipeReviewStats);
-        setReviewStats(data.reviewStats);
         setFetchError('');
       })
       .catch((err) => setFetchError(err.message))
@@ -75,5 +70,5 @@ export const useProfileData = (userId) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  return { user, setUser, recipes, recipeReviewStats, reviewStats, isLoading, fetchError, retry };
+  return { user, setUser, recipes, recipeReviewStats, isLoading, fetchError, retry };
 };

@@ -1,0 +1,12 @@
+// Degradé de los verdes de la marca (se adapta solo al modo claro/oscuro porque parte de
+// las variables del tema). Lo usan el título "Recetas destacadas", el nombre de la 1ª
+// receta y los botones seleccionados (con $color-on-primary como color de texto).
+@use 'variables' as *;
+@use 'functions' as *;
+
+$gradient-brand: linear-gradient(
+  135deg,
+  $color-primary-container 0%,
+  $color-primary 45%,
+  shade($color-primary, 40%) 100%
+);

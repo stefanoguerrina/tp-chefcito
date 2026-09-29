@@ -4,10 +4,17 @@
 .ProfilePage {
   display: flex;
   flex-direction: column;
-  // Separación entre bloques de primer nivel (header, métricas, tabs, recetas,
-  // colección, filtros). Adentro de cada bloque las separaciones son más chicas,
-  // así un título queda claramente pegado a su contenido y no flotando entre dos.
-  gap: $spacing-lg;
+  // Separación entre las 3 secciones (perfil, destacadas y todas las recetas): más
+  // grande que la de adentro de cada una, así se leen como bloques separados.
+  gap: $spacing-xl * 1.5;
+
+  // Contenido animado de cada pantalla (el ScrollReveal): apila sus bloques con una
+  // separación menor.
+  &-section {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
 
   // Botón "Volver": solo aparece en el perfil de otro usuario (ver onBack en
   // ProfilePage.jsx), mismo estilo que RecipeDetailPage-backBtn.
@@ -35,108 +42,109 @@
     }
   }
 
-  &-button {
-    display: inline-flex;
-    align-items: center;
-    gap: $spacing-xs;
-    padding: $spacing-sm $spacing-md;
-    border-radius: $radius-full;
-    font-family: $font-body;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-    border: none;
-
-    .material-symbols-outlined {
-      font-size: 17px;
-    }
-
-    &:active {
-      transform: scale(0.96);
-    }
-
-    &--primary {
-      background: $color-primary;
-      color: $color-on-primary;
-
-      &:hover {
-        background: $color-primary-container;
-      }
-    }
-
-    &--outline {
-      background: transparent;
-      border: 1px solid $color-outline-variant;
-      color: $color-on-surface;
-
-      &:hover {
-        background: $color-surface-container-low;
-      }
-    }
-  }
-
-  // Label chico en mayúsculas usado arriba de varios títulos de sección
-  // ("Gestión de contenido", "Explorador personal", "Mi colección especial").
-  &-eyebrow {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: $color-primary;
-    margin-bottom: 2px;
-  }
-
-  // --- 3. Tabs: solo "Mis recetas" está implementado ---
-  &-tabs {
+  // --- Pantallas: cada una es un <section> fijo (el que encaja y al que bajan las
+  // flechas) con su ScrollReveal adentro, estirado a todo su alto. ---
+  &-screen {
     display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-    overflow-x: auto;
-    padding-bottom: $spacing-xs;
-    border-bottom: 1px solid $color-surface-container-highest;
-  }
+    flex-direction: column;
+    // Deja lugar a la barra superior de mobile al llegar con "Ver recetas" o las flechas.
+    scroll-margin-top: $layout-topbar-height + $spacing-md;
 
-  &-tab {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: $spacing-xs;
-    padding: $spacing-sm $spacing-md;
-    border-radius: $radius-md;
-    border: 1px solid transparent;
-    background: transparent;
-    color: $color-on-surface-variant;
-    font-family: $font-body;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-
-    .material-symbols-outlined {
-      font-size: 18px;
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    &--active {
-      background: $color-surface-container-lowest;
-      border-color: $color-primary;
-      color: $color-primary;
-      box-shadow: $shadow-level-1;
+    > .ProfilePage-section {
+      flex: 1;
     }
   }
 
-  // --- 4. Secciones de recetas (destacadas y galería completa) ---
-  // Comparten layout: encabezado arriba y, separada, la grilla de cards.
-  &-featured,
+  // Lo de la 2ª pantalla (título + abanico) va centrado en el alto disponible. El padding
+  // de abajo lo sube un poco: el aviso con la flecha ocupa el pie y, sin esto, el conjunto
+  // se veía más bajo que el centro real de la pantalla.
+  &-screenBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    @include respond-to(md) {
+      padding-bottom: 14vh;
+    }
+  }
+
+  // Desde md, con recetas, las pantallas encajan al scrollear (ver scroll-snap al final
+  // del archivo): la 1ª y la 2ª ocupan exactamente la pantalla, así se ve una sola por vez.
+  // La 3ª (la galería) mide lo que necesite.
+  &--screens {
+    @include respond-to(md) {
+      gap: 0;
+
+      .ProfilePage-screen {
+        scroll-snap-align: start;
+        scroll-margin-top: 0;
+      }
+
+      // 1ª: el contenido arranca 32px más abajo (padding de HomePage-main); con este
+      // margen su punto de encaje es el tope de la página y termina justo en el borde de abajo.
+      .ProfilePage-screen--intro {
+        min-height: calc(100svh - #{$spacing-xl});
+        scroll-margin-top: $spacing-xl;
+
+        // Las métricas se estiran hasta el aviso: así no queda un hueco entre ellas y el
+        // "Recetas destacadas" de abajo, solo un margen chico.
+        .ProfileMetrics {
+          flex: 1;
+        }
+
+        .ProfileScrollHint {
+          margin-top: -$spacing-sm;
+        }
+      }
+
+      .ProfilePage-screen--featured {
+        min-height: 100svh;
+
+        > .ProfilePage-section {
+          position: relative;
+        }
+
+        // Esta pantalla siempre entra entera: el aviso va encima del borde de abajo sin
+        // ocupar lugar, así el abanico queda centrado en el alto completo de la pantalla.
+        // right/left negativos: mismo estirado de borde a borde que el margin-inline del aviso.
+        .ProfileScrollHint {
+          position: absolute;
+          right: -$spacing-gutter-desktop;
+          bottom: 0;
+          left: -$spacing-gutter-desktop;
+          margin-inline: 0;
+          padding-top: 72px;
+        }
+      }
+
+      // La galería no queda pegada al borde de arriba al llegar con la flecha. Mide como
+      // mínimo una pantalla: con pocas recetas la página no alcanzaba a scrollear hasta
+      // dejarla arriba de todo, y se seguía viendo el pie de la pantalla anterior.
+      .ProfilePage-screen--recipes {
+        box-sizing: border-box;
+        min-height: 100svh;
+        padding-top: $spacing-xl;
+      }
+    }
+  }
+
+  // --- Galería completa: título arriba y contenido debajo ---
   &-allRecipes {
     display: flex;
     flex-direction: column;
     gap: $spacing-lg;
+
+    // Cards más grandes que en el buscador: como mínimo 280px y nunca más de 5 por fila
+    // (cada columna mide al menos un quinto del ancho, descontando los 4 espacios).
+    .SearchListing-grid--grid {
+      grid-template-columns: repeat(
+        auto-fill,
+        minmax(max(min(280px, 100%), calc((100% - 4 * #{$spacing-lg}) / 5)), 1fr)
+      );
+    }
+    // Al paginar se vuelve al título de la galería (ver ProfileRecipeGallery).
+    scroll-margin-top: $layout-topbar-height + $spacing-md;
   }
 
   &-sectionHeader {
@@ -146,7 +154,7 @@
     gap: $spacing-md;
   }
 
-  // "Mostrando N de M" al lado del título de la galería.
+  // Cantidad de recetas al lado del título de la galería.
   &-galleryCount {
     font-size: 13px;
     font-weight: 500;
@@ -154,102 +162,70 @@
     white-space: nowrap;
   }
 
-  &-loadMore {
+  // Mobile: buscador arriba y los filtros debajo. Desde md, en una misma fila: el
+  // buscador ocupa la mitad y los filtros arrancan donde termina.
+  &-galleryFilters {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    @include respond-to(md) {
+      flex-direction: row;
+      align-items: center;
+
+      .ListingSearchInput {
+        flex: 0 0 50%;
+      }
+    }
   }
 
-  // --- Buscador y filtros de la galería: todo en una misma fila (se envuelve
-  // en mobile) en vez de buscador arriba y chips en una fila aparte. ---
-  &-galleryFilters {
+  &-galleryControls {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: $spacing-sm;
+    gap: $spacing-sm $spacing-md;
+    min-width: 0;
   }
 
-  &-searchBar {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-    // Alto fijo en vez de padding vertical: es lo que le permite al botón de
-    // categorías de al lado igualar la altura exactamente (ver
-    // _category-filter-dropdown.scss, que usa este mismo valor).
-    height: 44px;
-    padding: 0 $spacing-md;
-    border: 1px solid $color-outline-variant;
-    border-radius: $radius-full;
-    background: $color-surface-container-lowest;
-    box-shadow: $shadow-level-1;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    // Comparte la fila con el botón de categorías, pero se lleva el ancho que
-    // sobre hasta este tope.
-    flex: 1;
-    max-width: 440px;
+  // Buscador, "Todo / Con mi despensa" y los selectores miden lo mismo (el alto del
+  // buscador), así la fila queda pareja. Solo en el perfil: el resto de los listados
+  // conserva sus tamaños.
+  &-galleryFilters {
+    --gallery-control-height: 44px;
 
-    // Al escribir, el borde toma el color primario con un halo suave, en vez de
-    // quedar igual que en reposo.
-    &:focus-within {
-      border-color: $color-primary;
-      box-shadow: 0 0 0 3px with-opacity($color-primary, 0.15);
+    .ListingSearchInput {
+      box-sizing: border-box;
+      height: var(--gallery-control-height);
+      padding-top: 0;
+      padding-bottom: 0;
     }
 
-    .material-symbols-outlined {
-      color: $color-on-surface-variant;
-      font-size: 20px;
+    .ListingModeToggle-button,
+    .ListingSortSelect-field select {
+      box-sizing: border-box;
+      height: var(--gallery-control-height);
+      border-radius: $radius-lg;
     }
 
-    input {
-      flex: 1;
-      min-width: 0;
-      border: none;
-      background: transparent;
-      font-family: $font-body;
-      font-size: 14px;
-      color: $color-on-surface;
-
-      &::placeholder {
-        color: $color-outline;
-      }
-
-      &:focus {
-        outline: none;
-      }
+    // "Todas (N)" e "Inventario" en negrita.
+    .ListingModeToggle-button {
+      font-weight: 700;
     }
 
-    button {
-      border: none;
-      background: transparent;
-      color: $color-on-surface-variant;
-      cursor: pointer;
+    .ListingSortSelect-field {
       display: flex;
-
-      &:hover {
-        color: $color-on-surface;
-      }
     }
   }
 
-  &-clearFilters {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    border: none;
-    background: transparent;
-    color: $color-on-surface-variant;
-    font-family: $font-body;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    cursor: pointer;
+  &-results {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+    transition: opacity 0.2s ease;
 
-    .material-symbols-outlined {
-      font-size: 15px;
-    }
-
-    &:hover {
-      color: $color-primary;
+    // Mientras llega la página nueva se sigue viendo la anterior, atenuada.
+    &--loading {
+      opacity: 0.6;
     }
   }
 
@@ -266,25 +242,6 @@
     font-size: 14px;
   }
 
-  // Galería "Todas mis recetas": las cards se acomodan en columnas (MasonryGrid)
-  // y, solo acá, la foto conserva su relación de aspecto real en vez del recorte
-  // 4/3 de RecipeCard. Eso es lo que hace que las columnas queden desparejas.
-  &-allRecipes {
-    .RecipeCard-imageWrapper {
-      aspect-ratio: auto;
-      // Tope de alto: la foto puede variar (eso arma el masonry), pero una foto
-      // muy vertical se recorta acá en vez de estirar la card a lo largo.
-      max-height: 240px;
-    }
-
-    // height: auto mantiene la proporción real de la foto, así nunca se deforma;
-    // lo que sobra del alto lo recorta el overflow del wrapper.
-    .RecipeCard-image {
-      height: auto;
-    }
-  }
-
-  // --- 6. Colección destacada (categoría con más recetas propias) ---
   &-status {
     color: $color-on-surface-variant;
     font-size: 15px;
@@ -294,5 +251,14 @@
     &--error {
       color: $color-error;
     }
+  }
+}
+
+// Encaje por pantallas: solo mientras está abierto un perfil con recetas (:has) y desde md.
+// Va en <html> porque es el que scrollea la página. "mandatory" siempre termina alineado a
+// una pantalla; dentro de la galería (más alta que la pantalla) se puede scrollear libre.
+html:has(.ProfilePage--screens) {
+  @include respond-to(md) {
+    scroll-snap-type: y mandatory;
   }
 }

@@ -1,0 +1,205 @@
+// Estilos del panel de búsqueda rápida y de sus secciones
+// (features/search/components/QuickSearchPanel y QuickSearchSection).
+// Los estilos de cada tipo de resultado están en _search-result-items.scss (los carga cada
+// componente de resultado, porque también se usan en la página /buscar).
+@use '../../../styles/abstracts' as *;
+
+.QuickSearchPanel {
+  // Flota sobre la home (no la empuja hacia abajo), justo debajo de la barra.
+  position: absolute;
+  top: calc(100% + #{$spacing-sm});
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+  padding: $spacing-md;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-2;
+  text-align: left;
+
+  @include respond-to(md) {
+    max-height: min(75vh, 680px);
+    padding: $spacing-lg;
+  }
+
+  &-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+    font-size: 14px;
+    color: $color-on-surface;
+  }
+
+  &-headerText {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+    // Un texto largo sin espacios no tiene que empujar el panel más allá de la pantalla.
+    overflow-wrap: anywhere;
+
+    .material-symbols-outlined {
+      flex-shrink: 0;
+      font-size: 20px;
+      color: $color-primary;
+    }
+
+    strong {
+      color: $color-primary;
+    }
+  }
+
+  // "ESC para cerrar" solo tiene sentido con teclado físico: en mobile no se muestra.
+  &-hint {
+    display: none;
+    flex-shrink: 0;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-full;
+    background: $color-surface-container;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: $color-on-surface-variant;
+    white-space: nowrap;
+
+    @include respond-to(md) {
+      display: inline;
+    }
+  }
+
+  &-status {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-primary;
+    white-space: nowrap;
+  }
+
+  // Solo el cuerpo scrollea: el encabezado queda siempre visible.
+  &-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+    scrollbar-width: thin;
+  }
+
+  &-message {
+    margin: $spacing-md 0;
+    text-align: center;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+  }
+
+  &-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-lg $spacing-md;
+    text-align: center;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined {
+      font-size: 36px;
+      color: $color-outline;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    strong {
+      color: $color-on-surface;
+    }
+  }
+}
+
+.QuickSearchSection {
+  &-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  &-title {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $color-tertiary;
+  }
+
+  &-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+  }
+
+  // Mobile: todo en una columna. Las recetas pasan a 2 columnas desde sm; las
+  // categorías a 3 recién desde md, porque con menos ancho sus nombres se cortan.
+  &-items {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: $spacing-sm;
+
+    &--grid3 {
+      @include respond-to(md) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    &--grid2 {
+      @include respond-to(sm) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    &--list {
+      gap: $spacing-xs;
+    }
+  }
+
+  &-seeAll {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    margin-top: $spacing-md;
+    padding: 0 $spacing-xs;
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-primary;
+    text-decoration: none;
+    transition: color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+      transition: transform 0.15s ease;
+    }
+
+    &:hover {
+      color: $color-primary-container;
+
+      .material-symbols-outlined {
+        transform: translateX(3px);
+      }
+    }
+  }
+}
