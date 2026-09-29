@@ -72,28 +72,11 @@
       padding: $spacing-sm;
     }
 
-    // Vista en lista: la misma RecipeCard, acomodada en horizontal (foto a la izquierda)
-    // desde sm. En mobile se ve igual que la cuadrícula, que ya es de una columna.
+    // Vista en lista: una columna con la RecipeCard en horizontal (prop horizontal, ver
+    // RecipeListing). En mobile se ve igual que la cuadrícula, que ya es de una columna.
     &--list {
       grid-template-columns: minmax(0, 1fr);
       gap: $spacing-md;
-
-      @include respond-to(sm) {
-        .RecipeCard {
-          flex-direction: row;
-        }
-
-        .RecipeCard-imageWrapper {
-          width: 240px;
-          aspect-ratio: auto;
-          min-height: 180px;
-        }
-
-        .RecipeCard-body {
-          flex: 1;
-          min-width: 0;
-        }
-      }
     }
   }
 }

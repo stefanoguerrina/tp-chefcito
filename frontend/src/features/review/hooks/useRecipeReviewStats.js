@@ -1,5 +1,5 @@
 // Hook que trae el promedio de valoraciones y la cantidad de reseñas de cada receta de
-// una lista, para mostrarlos en su card (RecipeCard/HomeRecipeCard). El backend solo
+// una lista, para mostrarlos en su card (RecipeCard). El backend solo
 // expone las reseñas por receta individual (no un agregado para una lista completa), así
 // que se piden todas en paralelo. Mismo patrón que ya usa useProfileData para las
 // recetas propias del perfil.

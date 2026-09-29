@@ -4,6 +4,8 @@
 // Sin Tailwind, framer-motion ni lucide-react: SASS, animaciones CSS y Material Symbols.
 import { useState } from 'react';
 import RatingStars from './RatingStars.jsx';
+import RecipeHoverOverlay from './RecipeHoverOverlay.jsx';
+import SaveRecipeButton from './SaveRecipeButton.jsx';
 import './_recipe-card.scss';
 
 // Cuántas categorías entran sobre la foto; el resto se resume en un chip "+N".
@@ -30,11 +32,17 @@ const formatRating = (rating, reviewsCount) =>
 //   editarlas: ahí la card queda limpia, sin reseñas).
 //   isSaved / onToggleSave: estado y handler del botón de guardar de arriba a la derecha.
 //   onEdit / onDelete: si se pasan (ej. "Mis recetas"), la card suma su barra de acciones.
+//   horizontal: foto cuadrada a la izquierda y el texto a la derecha (desde sm; en mobile se
+//   apila igual que la vertical). Es la vista "lista" de los listados y las recetas de amigos
+//   de la home. El lado de la foto es --recipe-card-image-size (200px por defecto).
+//   saveButtonInCorner: el botón de guardar va en la esquina de arriba a la derecha de la
+//   card (más chico) en vez de sobre la foto. Pensado para la disposición horizontal.
+//   authorNote: texto corto al lado del nombre del autor (ej. "hace 3 días").
 //   children: contenido extra opcional debajo de la bajada (ej. en la búsqueda "Con mi
 //   despensa", cuántos ingredientes de la receta tiene el usuario).
 function RecipeCard({
   recipe, onClick, showSaveButton = true, showAuthor = true, showTime = true, showRating = true,
-  isSaved, onToggleSave, onEdit, onDelete, children,
+  horizontal = false, saveButtonInCorner = false, authorNote, isSaved, onToggleSave, onEdit, onDelete, children,
 }) {
   const {
     title, description, image, author, authorAvatar,
@@ -47,27 +55,29 @@ function RecipeCard({
   const [avatarBroken, setAvatarBroken] = useState(false);
   const authorInitial = author?.replace('@', '')[0]?.toUpperCase() ?? '?';
 
-  // Los botones viven dentro de la card clickeable: stopPropagation evita que el click
-  // también abra la receta.
-  const handleToggleSave = (event) => {
-    event.stopPropagation();
-    onToggleSave?.();
-  };
+  const saveButton = showSaveButton && (
+    <SaveRecipeButton
+      className="RecipeCard-saveButton"
+      size={saveButtonInCorner ? 'sm' : 'md'}
+      isSaved={isSaved}
+      onToggle={onToggleSave}
+    />
+  );
+
+  const classes = [
+    'RecipeCard',
+    onClick && 'RecipeCard--clickable',
+    horizontal && 'RecipeCard--horizontal',
+    saveButtonInCorner && 'RecipeCard--saveInCorner',
+  ].filter(Boolean).join(' ');
 
   return (
-    <article className={`RecipeCard${onClick ? ' RecipeCard--clickable' : ''}`} onClick={onClick}>
+    <article className={classes} onClick={onClick}>
       <div className="RecipeCard-imageWrapper">
         <img className="RecipeCard-image" src={image} alt={title} />
         <div className="RecipeCard-imageShade" />
 
-        {/* Aparece al pasar el mouse. Es solo visual (un span, no un botón): el click lo
-            maneja la card entera. Texto genérico porque el destino varía según quién la
-            use (ver detalle, ir al editor...): lo decide el onClick de quien la llama. */}
-        {onClick && (
-          <div className="RecipeCard-hoverOverlay">
-            <span className="RecipeCard-viewAction">Ver receta</span>
-          </div>
-        )}
+        {onClick && <RecipeHoverOverlay />}
 
         {visibleCategories.length > 0 && (
           <div className="RecipeCard-categories">
@@ -80,18 +90,7 @@ function RecipeCard({
           </div>
         )}
 
-        {showSaveButton && (
-          <button
-            type="button"
-            className={`RecipeCard-saveButton${isSaved ? ' RecipeCard-saveButton--saved' : ''}`}
-            aria-label={isSaved ? 'Quitar receta guardada' : 'Guardar receta'}
-            title={isSaved ? 'Quitar de guardadas' : 'Guardar receta'}
-            aria-pressed={Boolean(isSaved)}
-            onClick={handleToggleSave}
-          >
-            <span className="material-symbols-outlined">bookmark</span>
-          </button>
-        )}
+        {!saveButtonInCorner && saveButton}
       </div>
 
       <div className="RecipeCard-body">
@@ -112,7 +111,12 @@ function RecipeCard({
               )
             )}
             <span className="RecipeCard-authorText">
-              {showAuthor && <span className="RecipeCard-authorName">{author}</span>}
+              {showAuthor && (
+                <span className="RecipeCard-authorLine">
+                  <span className="RecipeCard-authorName">{author}</span>
+                  {authorNote && <span className="RecipeCard-authorNote">· {authorNote}</span>}
+                </span>
+              )}
               {showRating && (
                 <span className="RecipeCard-rating">
                   <RatingStars rating={rating} />
@@ -153,6 +157,8 @@ function RecipeCard({
           </div>
         )}
       </div>
+
+      {saveButtonInCorner && saveButton}
     </article>
   );
 }

@@ -19,8 +19,12 @@ const formatJoinedDate = (createdAt) =>
     : null;
 
 // Recibe: user, recipesCount (para el texto de compartir), isOwnProfile, onEditProfile
-// (abre el modal de edición) y, del perfil ajeno, onFollow y onDonate.
-function ProfileCard({ user, recipesCount, isOwnProfile, onEditProfile, onFollow, onDonate }) {
+// (abre el modal de edición), followStatus ({ isFollowing, ... } o null si todavía no cargó;
+// ver useFollow) y, del perfil ajeno, isFollowPending, onFollow (sigue o deja de seguir) y
+// onDonate. Los contadores de seguidores y seguidos van en ProfileMetrics.
+function ProfileCard({
+  user, recipesCount, isOwnProfile, onEditProfile, followStatus, isFollowPending, onFollow, onDonate,
+}) {
   const [shareFeedback, setShareFeedback] = useState('');
   // Se activa si la foto no llega a cargar: se cae al círculo con iniciales. ProfilePage
   // monta este componente con key={user.avatarUrl}, así que se reinicia al cambiar la foto.
@@ -130,8 +134,20 @@ function ProfileCard({ user, recipesCount, isOwnProfile, onEditProfile, onFollow
               </button>
             ) : (
               <>
-                <button type="button" className="ProfileCard-btn ProfileCard-btn--accent" onClick={onFollow}>
-                  Seguir
+                {/* "Seguir" con el degradé; ya siguiéndolo pasa a un botón neutro con tilde.
+                    Se deshabilita mientras carga el estado o hay un pedido en curso. */}
+                <button
+                  type="button"
+                  className={`ProfileCard-btn ${followStatus?.isFollowing ? 'ProfileCard-btn--outline' : 'ProfileCard-btn--accent'}`}
+                  onClick={onFollow}
+                  disabled={!followStatus || isFollowPending}
+                  aria-pressed={Boolean(followStatus?.isFollowing)}
+                  title={followStatus?.isFollowing ? 'Dejar de seguir' : undefined}
+                >
+                  {followStatus?.isFollowing && (
+                    <span className="material-symbols-outlined" aria-hidden="true">check</span>
+                  )}
+                  {followStatus?.isFollowing ? 'Siguiendo' : 'Seguir'}
                 </button>
                 <button type="button" className="ProfileCard-btn ProfileCard-btn--primary" onClick={onDonate}>
                   Donar

@@ -1,6 +1,6 @@
 // Estilos de las métricas del perfil (features/user/components/ProfileMetrics).
-// Mobile: todo apilado. Desde md: bento de 2 columnas, la grande a la izquierda y las otras
-// tres apiladas a la derecha, a la misma altura.
+// Mobile: todo apilado. Desde md: bento de 2 columnas, la grande (recetas publicadas y
+// valoración) a la izquierda y las otras tres apiladas a la derecha, a la misma altura.
 @use '../../../styles/abstracts' as *;
 
 .ProfileMetrics {
@@ -23,11 +23,11 @@
     margin: 0;
   }
 
-  // Base de las tarjetas chicas: dato a la izquierda, gráfico o ícono a la derecha.
+  // Base de las tarjetas chicas: ícono a la izquierda y el dato a su lado.
   &-card {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: $spacing-md;
     min-width: 0;
     padding: $spacing-sm $spacing-lg;
@@ -52,7 +52,7 @@
     color: $color-on-surface;
   }
 
-  // --- Grande: valoración promedio, con el degradé de la marca ---
+  // --- Grande: recetas publicadas y valoración promedio, con el degradé de la marca ---
   &-primary {
     position: relative;
     overflow: hidden;
@@ -102,16 +102,47 @@
     text-transform: uppercase;
   }
 
+  // Caja del número grande: se estira hasta ocupar todo lo que sobra entre la etiqueta de
+  // arriba y la valoración de abajo. container-type: size la vuelve "contenedor" para poder
+  // medir el número en unidades de su alto (cqh) y de su ancho (cqw); a cambio, su tamaño no
+  // depende de lo que tenga adentro, por eso el min-height (en mobile, donde la tarjeta no
+  // se estira a lo alto, sería 0).
+  &-primaryValueBox {
+    flex: 1;
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    container-type: size;
+  }
+
+  // Cantidad de recetas publicadas: el número grande de la tarjeta. Los dígitos miden
+  // ~0.72em de alto y ~0.6em de ancho, así que el tamaño es el que llena el alto de la caja
+  // (130cqh) sin pasarse del ancho según cuántos dígitos haya (--metrics-digits).
   &-primaryValue {
-    margin-bottom: $spacing-sm;
-    font-size: 48px;
+    font-size: min(130cqh, calc(150cqw / var(--metrics-digits, 1)));
     font-weight: 500;
     line-height: 1;
     letter-spacing: -0.04em;
   }
 
-  &-primaryNote {
+  // Valoración promedio, abajo de la tarjeta grande: las estrellas, el número y la nota.
+  &-rating {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &-ratingLine {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &-primaryNote {
     font-size: 14px;
     opacity: 0.75;
   }
@@ -133,20 +164,6 @@
     display: grid;
     grid-auto-rows: 1fr;
     gap: $spacing-sm;
-  }
-
-  &-bars {
-    flex-shrink: 0;
-    display: flex;
-    align-items: flex-end;
-    gap: 4px;
-    height: 30px;
-  }
-
-  &-bar {
-    width: 6px;
-    border-radius: $radius-full;
-    background: $gradient-brand;
   }
 
   &-icon {

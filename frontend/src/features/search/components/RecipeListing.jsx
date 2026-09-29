@@ -131,6 +131,7 @@ function RecipeListing({ filters, onFiltersChange }) {
                       <RecipeCard
                         key={recipe.id}
                         recipe={recipe}
+                        horizontal={viewMode === 'list'}
                         onClick={() => navigate(`/recetas/${recipe.id}`)}
                         // Guardar una receta propia no tiene sentido (ya está en "Mis recetas").
                         showSaveButton={savedOnly || recipe.authorId !== userId}

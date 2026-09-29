@@ -1,8 +1,9 @@
 # Análisis del estado del proyecto — Chefcito
 
-> **Última actualización:** 29/09/2026 · **Rama analizada:** `task/Frontend-Updates` (sobre
-> `develop`, commit `aad0e47`, PR #18) con el buscador, los listados con filtros y el rediseño del
-> perfil, listos para commitear (ver [Registro de avances](#registro-de-avances)).
+> **Última actualización:** 29/09/2026 · **Rama analizada:** `develop` (commit `5e6c3e5`: ya
+> incluye el PR #19 con el buscador, los listados con filtros y el rediseño del perfil) **más los
+> cambios sin commitear de "Seguir" y la home nueva** (ver [Registro de avances](#registro-de-avances)
+> y 5.6).
 > **Objetivo:** saber qué falta para la **Aprobación Directa (AD)**, qué hay que mejorar y cómo
 > repartirnos el trabajo. Se compara lo que pide la cátedra ([README.md](README.md),
 > [FAQ.md](FAQ.md), [docs.md](docs.md)) y lo que prometimos en la [propuesta](proposal.md) contra
@@ -36,6 +37,10 @@ Qué se fue resolviendo desde el primer análisis (28/09/2026, commit `f3080a3`)
 | 29/09 | `task/Frontend-Updates` | **Filtro "Inventario"** (se llamó "Con mi despensa" al principio) en el listado de recetas: cruza el inventario del usuario con los ingredientes de cada receta (considera cantidades); primero las que se pueden hacer completas, después las más cercanas, con "Tenés 2 de 3 · Te falta: …". Lógica pura en `pantryMatchService.ts`. | **5.3** ✅ |
 | 29/09 | `task/Frontend-Updates` | **Perfil en 3 secciones con scroll reveal** (`ScrollReveal` en core): portada + métricas del usuario (valoración promedio, recetas por mes, categorías); las 3 recetas mejor valoradas en abanico; encajan por pantallas (scroll snap) con avisos de sección siguiente y la galería completa (hasta 5 por fila, alturas parejas) con buscador, "Inventario", categoría y orden (filtros en la URL). En la tarjeta del perfil, "Editar" y "Compartir" pasan a íconos y el perfil ajeno suma "Seguir" (sin funcionalidad todavía, avisa "Próximamente"); se quitan "Preferencias y dieta", "Borradores" y "Ver recetas". Backend: `GET /api/search/recipes?authorId=`. | 5.3 (también en el perfil) |
 | 29/09 | `task/Frontend-Updates` | **Ajustes visuales generales:** degradé verde de la marca compartido (`abstracts/_gradients.scss`) en el logo, el ítem activo de la sidebar, los botones seleccionados y el de "receta guardada"; el ítem de la cuenta en la sidebar marca el perfil con un aro en el avatar; valoración de las cards con **5 estrellas** que se rellenan hasta el promedio (`RatingStars` en core); "Abrir receta" → "Ver receta"; barra de búsqueda flotante, alineada con el logo, con un difuminado oscuro al scrollear. Datos de demo: `juanperez` tiene inventario suficiente para 2 recetas completas. | — |
+| 29/09 | `develop` (sin commitear) | **"Seguir" a otros usuarios.** Tabla nueva `follow` (PK `idFollower + idFollowed`, borrado en cascada) y feature `follow` en el backend: `GET` / `POST` / `DELETE /api/users/:userId/follow` (no se puede seguir a uno mismo ni dos veces; quien sigue sale del token). El botón "Seguir / Siguiendo" del perfil ajeno ya funciona. ⚠️ **Cambia el esquema: hay que correr `npx prisma db push`.** | 7.1 (Seguir ✅) |
+| 29/09 | `develop` (sin commitear) | **Home nueva ("Inicio")**, en 3 pantallas con el mismo esquema del perfil (scroll reveal, encaje por pantallas y avisos con flecha): **Recetas por amigos** (una card grande + hasta 3 en formato lista), **Top 10 de la semana** (carrusel del #1 al #10 con las mejor valoradas de los últimos 7 días; el #1 con borde degradé) y **Reseñas de amigos**. "Amigos" = a quienes seguís. Backend: feature `feed` con `GET /api/feed/friends/recipes`, `/friends/reviews` y `/top-recipes?days=&limit=`. Reemplaza la grilla "Recetas de la comunidad" (todas las recetas de otros): el carrusel viejo (`RecipeCarouselSection`, `HomeRecipeCard`) se borró. | **Adicional "top 10 en un plazo" ✅**, 6.6 (la home ya no hace N+1), 7.9 |
+| 29/09 | `develop` (sin commitear) | **Perfil, métricas:** la tarjeta grande pasa a "Recetas publicadas" (número grande que se adapta al espacio) con la valoración promedio del usuario, y las chicas son Seguidores, Seguidos y Categoría principal (se quitan "Recetas por mes" y "Categorías"). Las métricas se ven también en perfiles sin recetas. La etiqueta de especialidad usa el degradé de la marca. | — |
+| 29/09 | `develop` (sin commitear) | **Piezas compartidas y datos de demo.** En `core`: `UserAvatar`, `RatingBadge`, `SaveRecipeButton`, `RecipeHoverOverlay`, hook `useDragScroll` y mixin `gradient-text`; `RecipeCard` suma la disposición `horizontal` (foto **cuadrada de tamaño fijo**: también corrige la vista "lista" de Recetas guardadas y de los listados, donde la foto cambiaba de proporción según el texto). Backend: `core/middleware/validationMiddleware.ts` compartido (lo usan `follow` y `feed`). `demo-seed.sql` suma la **sección 8** (seguidos + reseñas de la última semana, se puede correr sola sobre una base ya cargada) y `guia-profesor.md` explica cómo probar el inicio y "Seguir". | 6.4 (parcial) |
 
 ---
 
@@ -70,8 +75,14 @@ pasan sin errores (verificado el 29/09).
    metodología y links a los PRs en la propuesta.
 9. 🟠 **Video demo** + evidencia de ejecución de tests.
 10. 🟡 Varias mejoras de código (sección 6 y 7) para llegar prolijos a la defensa.
-11. 🔴 **Commitear `task/Frontend-Updates` y abrir el PR a `develop`** (todo lo del 29/09:
-    buscador, listados, filtro "Inventario" y rediseño del perfil).
+11. ✅ ~~**Commitear `task/Frontend-Updates` y abrir el PR a `develop`**~~: ya está mergeado
+    (PR #19, `5e6c3e5`).
+12. 🔴 **Commitear "Seguir" + home nueva** (hoy solo están en el disco, sin commitear): rama nueva
+    desde `develop`, PR con descripción breve y **avisar al equipo que hay que correr
+    `npx prisma db push`** (la tabla `follow` es nueva) y cargar la sección 8 de `demo-seed.sql`.
+13. 🟠 **Tests para lo nuevo** (`followService`, `feedService.getTopRecipes`, `formatRelativeTime`):
+    ver 9. Y 🟡 recorrer la home y el perfil en celular/tablet y modo claro (ver 5.6).
+14. 🟠 **Actualizar la propuesta y el DER** con la tabla `follow` y el alcance nuevo (ver 8.3).
 
 ---
 
@@ -116,11 +127,11 @@ Fechas de la cátedra: **1ª entrega Regularidad/AD 12/10–16/10**, recuperator
 | Framework de frontend | Reg | ✅ | React 19 + Vite. La cátedra da soporte a Angular: **hay que declararlo en la propuesta** (FAQ). |
 | HTML5 | Reg | ✅ | `index.html` tiene `lang="en"` → cambiar a `es` (7.8). |
 | CSS con metodología / preprocesador | Reg | ✅ | SASS con variables y mixins |
-| Mobile-first + 3 breakpoints | Reg | ✅ | `respond-to(sm\|md\|lg)` en [_breakpoints.scss](../frontend/src/styles/abstracts/_breakpoints.scss). Revisar a mano cada pantalla en 375 / 768 / 1280 px antes de entregar (incluidas las 3 pantallas nuevas del buscador). |
-| UX sin manual | Reg | ⚠️ | Mejoró: ya no están las tarjetas *Próximamente* de búsqueda e IA en la home. Quedan: **Donar** (detalle de receta y perfil), **Seguir** (perfil de otro usuario), "Explorar" y "Notificaciones" deshabilitados en la sidebar, el botón del asistente IA en el buscador y datos falsos en la landing (ver 7.1 y 7.2). |
+| Mobile-first + 3 breakpoints | Reg | ✅ | `respond-to(sm\|md\|lg)` en [_breakpoints.scss](../frontend/src/styles/abstracts/_breakpoints.scss). Revisar a mano cada pantalla en 375 / 768 / 1280 px antes de entregar (incluidas las 3 pantallas nuevas del buscador, **la home nueva con su carrusel y las métricas del perfil**). |
+| UX sin manual | Reg | ⚠️ | Mejoró: ya no están las tarjetas *Próximamente* de búsqueda e IA en la home. Quedan: **Donar** (detalle de receta y perfil), "Explorar" y "Notificaciones" deshabilitados en la sidebar, el botón del asistente IA en el buscador y datos falsos en la landing (ver 7.1 y 7.2). |
 | Eventos, errores amigables, reactividad, input/output property | Reg | ✅ | props (input), callbacks `onX` (output), `AlertModal`/`ErrorState` |
 | Al menos un servicio | Reg | ✅ | Un `services/` por feature sobre `apiFetch` |
-| Modelos con clases/tipos custom | Reg | ⚠️ | Hay modelos en recipe, review, inventory, auth, admin, userRecipe, landing y search, y en user solo el de métricas del perfil (`profileMetricsModel.js`); **faltan** el del usuario en sí, category, ingredient, role, etc. (ver 7.6) |
+| Modelos con clases/tipos custom | Reg | ⚠️ | Hay modelos en recipe, review, inventory, auth, admin, userRecipe, landing, search, **follow y feed**, y en user solo el de métricas del perfil (`profileMetricsModel.js`); **faltan** el del usuario en sí, category, ingredient, role, etc. (ver 7.6) |
 | Patrón de diseño OO (si es posible) | Reg | ✅ | `ApiError extends Error`, Singleton de Prisma, Repository. Preparar cómo explicarlos. |
 | 1 test unitario de componente | AD | ❌ | — |
 | 1 test E2E | AD | ❌ | — |
@@ -137,7 +148,7 @@ Fechas de la cátedra: **1ª entrega Regularidad/AD 12/10–16/10**, recuperator
 | Detalle al seleccionar (request al back, ≥2 clases) | Reg | — | ✅ `/recetas/:id` muestra receta + creador + ingredientes + pasos + reseñas. Todas las cards de los listados de búsqueda llevan ahí (o al perfil `/usuarios/:id`). |
 | CU/Epic c/2 integrantes | Reg | 2 | ✅ Crear y publicar recetas · Reseñar recetas |
 | CRUDs de **todas** las clases de negocio | AD | — | ❌ Falta Donación (ver 5.4) |
-| 1 CU por integrante, ≥2 relacionados | AD | 4 | ⚠️ **3 de 4** (falta "donaciones"). "Recetas según ingredientes" usa lo que carga Inventario y lo que se carga al Crear recetas → cumple "≥2 relacionados". |
+| 1 CU por integrante, ≥2 relacionados | AD | 4 | ⚠️ **3 de 4** (falta "donaciones"). "Recetas según ingredientes" usa lo que carga Inventario y lo que se carga al Crear recetas → cumple "≥2 relacionados". **Nuevo (29/09):** "Seguir cocineros y ver su actividad" (5.6) es un CU extra que además se alimenta de los otros dos (recetas publicadas y reseñas): sirve de respaldo para "≥2 relacionados" y suma como alcance adicional. Falta decidir quién lo defiende. |
 
 ### 3.4 Entregas y documentación ([docs.md](docs.md))
 
@@ -175,10 +186,10 @@ Fechas de la cátedra: **1ª entrega Regularidad/AD 12/10–16/10**, recuperator
 | CU Consultar recetas según ingredientes disponibles | ✅ | (29/09) Filtro "Inventario" en `/buscar/recetas`, "Recetas guardadas" y el perfil (ver 5.3). |
 | CU Sistema de donaciones | ❌ | T-4.3 |
 | *Adicional:* listado por tiempo de preparación | ✅ | (29/09) Filtro "Tiempo de preparación" + orden "Menor tiempo". |
-| *Adicional:* top 10 mejor valoradas en un plazo | ❌ | Opcional. Parte del trabajo ya está (orden "Mejor puntuadas"); faltaría filtrar las reseñas por fecha. |
+| *Adicional:* top 10 mejor valoradas en un plazo | ✅ | (29/09) `GET /api/feed/top-recipes?days=N&limit=10`: el promedio se calcula solo con las reseñas del plazo. La home muestra el de los últimos 7 días ("Top 10 de la semana", en carrusel) y cada card abre el detalle con los datos completos de la receta y del creador. |
 | *Adicional:* filtro por necesidades nutricionales | ❌ | Opcional |
 | *Adicional:* ChatBot IA | ❌ | Opcional. El banner de Chefcito Bot quedó armado en el buscador con el botón sin acción: si no se hace, pasarlo a "trabajo futuro" y sacar los botones (7.1). |
-| **Extra no prometido y ya hecho** | ✅ | CRUD Rol + asignación a usuarios, Inventario, Valor nutricional, Pasos, Imágenes (subida real con multer), Recetas guardadas, Dashboard admin con métricas, fotos de perfil y portada, **buscador global con resultados rápidos, página de resultados y listados de categorías y perfiles**, métricas del usuario en su perfil (29/09). **Agregarlos a la propuesta**: suman como alcance adicional. |
+| **Extra no prometido y ya hecho** | ✅ | CRUD Rol + asignación a usuarios, Inventario, Valor nutricional, Pasos, Imágenes (subida real con multer), Recetas guardadas, Dashboard admin con métricas, fotos de perfil y portada, **buscador global con resultados rápidos, página de resultados y listados de categorías y perfiles**, métricas del usuario en su perfil (29/09), **seguir a otros usuarios (tabla `follow`), home con recetas y reseñas de amigos y top 10 de la semana** (29/09, ver 5.6). **Agregarlos a la propuesta**: suman como alcance adicional. |
 
 ---
 
@@ -203,10 +214,14 @@ Se resolvió dentro del buscador en vez de con una página `/explorar` aparte:
   con filtro "con/sin recetas" y orden), y la página de resultados `/buscar?q=`.
 
 **Pendiente relacionado:**
-- ⚪ Conectar el ítem "Explorar" de la sidebar ([Sidebar.jsx](../frontend/src/features/user/components/Sidebar.jsx),
-  hoy deshabilitado) a `/buscar/recetas` (sin texto lista todas las recetas).
-- 🟡 Recorrer las pantallas nuevas (buscador, listados y perfil) en 375 / 768 px y en modo
-  claro: se revisaron en escritorio y modo oscuro, pero no en celular/tablet ni en modo claro.
+- ⚪ → 🟡 Conectar el ítem "Explorar" de la sidebar ([Sidebar.jsx](../frontend/src/features/user/components/Sidebar.jsx),
+  hoy deshabilitado) a `/buscar/recetas` (sin texto lista todas las recetas). **Se volvió más
+  importante (29/09):** la home ya no muestra todas las recetas de la comunidad (ahora muestra
+  las de amigos y el top de la semana), así que sin "Explorar" no hay un camino directo para
+  descubrir recetas de gente que no seguís, salvo el buscador.
+- 🟡 Recorrer las pantallas nuevas (buscador, listados, perfil **y home**) en 375 / 768 px y en
+  modo claro: se fueron ajustando en escritorio y modo oscuro, pero no en celular/tablet ni en
+  modo claro.
 
 ### 5.2 🔴 Editar reseña
 
@@ -272,6 +287,47 @@ de Chefcito Bot en el buscador ([AssistantBanner.jsx](../frontend/src/features/s
 botón visible sin acción, decisión del 29/09). Si **no** se hace: sacarlos antes de entregar y
 pasar el ChatBot a "trabajo futuro" en la propuesta.
 
+### 5.6 ✅ Seguir a otros usuarios y home social (feed de amigos) — 29/09
+
+Era algo que no estaba en la propuesta ni en el análisis: se sumó porque el botón "Seguir" del
+perfil ajeno estaba como *Próximamente* (7.1) y la home necesitaba contenido propio de cada
+usuario. "Amigos" son las personas que seguís (relación de **un solo sentido**, como en una red
+social: no hace falta que te sigan de vuelta).
+
+- **Backend, `follow`:** tabla `follow` (PK `idFollower + idFollowed`) y
+  `GET` / `POST` / `DELETE /api/users/:userId/follow`. Reglas en el service (con el patrón
+  `{ ok, reason }` de siempre): no seguirse a uno mismo (400), no seguir dos veces (409), solo
+  usuarios activos (404). Cada respuesta devuelve el estado nuevo (`isFollowing`, seguidores y
+  seguidos), así el botón y los contadores se actualizan sin otro pedido.
+- **Backend, `feed`:** `GET /api/feed/friends/recipes`, `/friends/reviews` (`?limit`) y
+  `/top-recipes` (`?days`, `limit`). El top calcula el promedio **solo con las reseñas del plazo**
+  (una consulta `review.groupBy`), desempata por cantidad de reseñas, saltea a los usuarios dados
+  de baja y, si una receta queda afuera por eso, se completa con la siguiente. Las secciones
+  vacías responden `200` con `items: []` y `followingCount`, para que la UI distinga "no seguís
+  a nadie" de "tus amigos no publicaron nada".
+- **Frontend:** `features/follow` (servicio, modelo y hook `useFollow`) y `features/feed`
+  (una sección por componente; cada una carga por separado con `useSearchListing`, con sus estados
+  de carga, error con reintento y vacío). El carrusel del top usa el hook `useDragScroll` de `core`
+  (arrastre, flechas y `scroll-snap`) y decide cuántas cards muestran según el ancho con
+  `@container`. Los seguidores y seguidos se ven en las métricas del perfil.
+- **Para probarlo:** cargar la sección 8 de `demo-seed.sql` (ver [guía](guia-profesor.md)) y
+  entrar como `juanperez`: sigue a María, Carlos y Lucía, y **no** sigue a Martín → entrar al
+  perfil de Martín y tocar "Seguir".
+- **Relación con otros CU:** usa las recetas publicadas y las reseñas → cumple "≥2 CU
+  relacionados" (ver 3.3).
+
+**Pendiente relacionado:**
+- 🟠 Tests: `followService` (self-follow, duplicado, usuario inexistente) y
+  `feedService.getTopRecipes` (orden, desempate, plazo, usuario dado de baja). Ver 9.
+- 🟡 Recorrer la home y el perfil en 375 / 768 px y en modo claro (ver 5.1).
+- 🟡 **La demo se queda sin Top 10 pasada una semana:** las fechas del seed son relativas al
+  momento en que se corre, y el top cuenta solo los últimos 7 días. Correr la sección 8 el día
+  de la demo, del video y de la carga en el deploy (ver 11).
+- ⚪ Hoy solo hay **contadores** de seguidores y seguidos: no hay listado de quiénes son (ni
+  endpoint para pedirlo).
+- ⚪ La home usa `@container` y `:has()`: alcanza con navegadores actuales (la guía ya lo pide),
+  pero conviene probarla en el que se use en la defensa.
+
 ---
 
 ## 6. Mejoras en el backend
@@ -281,9 +337,9 @@ pasar el ChatBot a "trabajo futuro" en la propuesta.
 | 6.1 | 🟠 | Faltan scripts para producción y tests | [package.json](../backend/package.json) | `"build": "prisma generate && tsc"`, `"start": "node dist/app.js"`, `"test": "vitest run"`. Corregir `"main"` y `"description"`. |
 | 6.2 | 🟠 | `PORT` y orígenes CORS hardcodeados | [app.ts](../backend/src/app.ts) | `const PORT = Number(process.env.PORT) \|\| 3000;` y `CORS_ORIGINS` separado por comas en el `.env`. Sin esto el deploy no funciona. |
 | 6.3 | 🟠 | `app.ts` hace `listen` al importarse: no se puede testear con Supertest | [app.ts](../backend/src/app.ts) | Separar: `app.ts` arma y **exporta** `app`; nuevo `server.ts` hace `app.listen`. Actualizar el script `dev`. |
-| 6.4 | 🟡 | `handleValidationErrors` copiado en **15 archivos** (se sumó el de `search`, con el mismo formato que el resto), y con dos formatos distintos: auth responde `{ errores }` y el resto `{ message, errors }` | `features/*/middleware/*ValidationMiddleware.ts` | Mover uno solo a `core/middleware/validationMiddleware.ts` con un único formato (`{ message, errors: [{ campo, mensaje }] }`). El front ya acepta los dos, así que no rompe nada. |
+| 6.4 | 🟡 | 🔄 **Parcial (29/09).** `handleValidationErrors` sigue copiado en **15 archivos** (con `search`), y con dos formatos distintos: auth responde `{ errores }` y el resto `{ message, errors }`. **Ya existe la versión única** en [validationMiddleware.ts](../backend/src/core/middleware/validationMiddleware.ts) y la usan las features nuevas (`follow`, `feed`) | `features/*/middleware/*ValidationMiddleware.ts` | Falta migrar las 15 copias: borrar cada `handleValidationErrors` local e importar el de `core` (mismo formato `{ message, errors: [{ campo, mensaje }] }`; el front ya acepta los dos, así que no rompe nada). |
 | 6.5 | 🟡 | 11 controllers vuelven a llamar `validationResult` aunque el middleware ya lo hizo | `features/*/controllers/*.ts` | Borrar ese bloque duplicado (código muerto; en la defensa pueden preguntar por qué está). El controller de `search` ya no lo hace. |
-| 6.6 | 🟡 | 🔄 **Parcial (29/09).** Las recetas de `GET /api/recipes` no traen su promedio de valoración → el front hace **1 request por receta** (N+1) en la home, el perfil, el dashboard admin y la sección "Recetas sugeridas" de `/buscar` | `recipeRepository.ts`, [useRecipeReviewStats.js](../frontend/src/features/review/hooks/useRecipeReviewStats.js), [useProfileData.js](../frontend/src/features/user/hooks/useProfileData.js), [useAdminDashboard.js](../frontend/src/features/admin/hooks/useAdminDashboard.js) | El listado `/api/search/recipes` ya lo resuelve con `review.groupBy` (ver `searchRepository.findReviewStats`): reutilizar esa misma consulta en `recipeService` y agregar `averageRating`/`reviewCount` a cada receta, así se puede borrar el N+1. |
+| 6.6 | 🟡 | 🔄 **Parcial (29/09).** Las recetas de `GET /api/recipes` no traen su promedio de valoración → el front hace **1 request por receta** (N+1) en el perfil, el dashboard admin y la sección "Recetas sugeridas" de `/buscar` (✅ la home ya no: el feed trae la valoración calculada en el backend con `groupBy`) | `recipeRepository.ts`, [useRecipeReviewStats.js](../frontend/src/features/review/hooks/useRecipeReviewStats.js), [useProfileData.js](../frontend/src/features/user/hooks/useProfileData.js), [useAdminDashboard.js](../frontend/src/features/admin/hooks/useAdminDashboard.js) | El listado `/api/search/recipes` ya lo resuelve con `review.groupBy` (ver `searchRepository.findReviewStats`): reutilizar esa misma consulta en `recipeService` y agregar `averageRating`/`reviewCount` a cada receta, así se puede borrar el N+1. |
 | 6.7 | 🟡 | `recipe.saveCount` **nunca se actualiza** (solo tiene el valor del seed) → ya no se muestra en el perfil (se quitaron las métricas), pero sigue sin actualizarse | `userRecipeService.ts` | Incrementar/decrementar en la misma transacción al guardar/desguardar, o calcularlo con `_count` y dejar de usar la columna. (El orden "Más populares" del buscador ya cuenta los guardados reales con `userrecipe.groupBy`, no usa esta columna.) |
 | 6.8 | 🟡 | Dos caminos a la BD: el health check usa un pool `mysql2` aparte ([database.ts](../backend/src/database.ts)) y devuelve `error.message` crudo al cliente | `features/database/`, `database.ts` | Usar ``prisma.$queryRaw`SELECT 1` `` y borrar `database.ts`. Así se puede quitar `mysql2` y las variables `DB_HOST/PORT/USER/PASSWORD/NAME`: el `.env` queda solo con `DATABASE_URL` y `JWT_SECRET` (más simple para el profe y para el deploy). |
 | 6.9 | 🟡 | Listados vacíos responden **404** en vez de `200 []` | category, ingredient, ingredientCategory, recipe, rol, user controllers | Un listado vacío no es "no encontrado". Devolver `200 []`. `fetchListOrEmpty` del front sigue funcionando igual. Los endpoints nuevos de `search` ya responden `200` con la lista vacía. |
@@ -291,7 +347,9 @@ pasar el ChatBot a "trabajo futuro" en la propuesta.
 | 6.11 | ⚪ | Una ruta `/api/xxx` inexistente o un error inesperado devuelven HTML de Express | [app.ts](../backend/src/app.ts) | Al final: un middleware 404 JSON y un error handler `(err, req, res, next)` que responda `500 { message }`. |
 | 6.12 | ⚪ | El chequeo "dueño o admin" está reimplementado a mano en inventario y en recetas guardadas | `inventoryRouter.ts`, `userRecipeController.ts` | Parametrizar `verifyOwnerOrAdmin(paramName = 'id')` en `authMiddleware.ts`. |
 | 6.13 | ⚪ | `GET /api/categories` pide token, a diferencia de los demás catálogos (públicos) | [categoryRouter.ts](../backend/src/features/category/routes/categoryRouter.ts) | Hacerlo público si la landing lo necesita sin sesión (el buscador es solo para usuarios logueados, así que no lo necesita). |
-| 6.14 | ⚪ | Se usa `prisma db push` sin migraciones | `prisma/` | Para el deploy alcanza con `db push`. Si hay tiempo, `prisma migrate dev --name init` deja historial versionado. |
+| 6.14 | ⚪ | Se usa `prisma db push` sin migraciones. **Cada cambio de esquema (como la tabla `follow` del 29/09) obliga a todo el equipo a correr `db push`**: no hay otro aviso que el PR | `prisma/` | Para el deploy alcanza con `db push`. Si hay tiempo, `prisma migrate dev --name init` deja historial versionado. Mientras tanto, avisar en la descripción de cada PR que toque `schema.prisma`. |
+| 6.15 | ⚪ | La consulta "promedio y cantidad de reseñas por receta" está escrita dos veces: `searchRepository.findReviewStats` y `feedRepository.findReviewStats` (esta última admite plazo y lista de recetas) | `features/search/repository/`, `features/feed/repository/` | Dejar una sola en un lugar compartido (ej. `review/repository`) y que `search` y `feed` la usen. También sirve para resolver 6.6. |
+| 6.16 | ⚪ | `feedService.getTopRecipes` pide las cards de **todas** las recetas con reseñas en el plazo (para completar el top si alguna es de un usuario dado de baja) | [feedService.ts](../backend/src/features/feed/services/feedService.ts) | Con pocas recetas no se nota. Si crece: pedir solo las primeras `limit + margen` del ranking. |
 
 ---
 
@@ -299,15 +357,15 @@ pasar el ChatBot a "trabajo futuro" en la propuesta.
 
 | # | Prio | Qué | Dónde | Cómo |
 |:-:|:-:|---|---|---|
-| 7.1 | 🔴 | 🔄 **Parcial (29/09).** Botones *Próximamente*. ✅ Las tarjetas de búsqueda e IA de la home ya no están (las reemplazó el buscador). Quedan: **Donar** (detalle de receta y perfil), **Seguir** (perfil de otro usuario, agregado el 29/09 a la espera de su funcionalidad), "Explorar" y "Notificaciones" en la sidebar, el `FloatingAssistantButton` de la landing y el botón del asistente IA en el buscador | [RecipeDetailPage.jsx](../frontend/src/features/recipe/pages/RecipeDetailPage.jsx), [ProfilePage.jsx](../frontend/src/features/user/pages/ProfilePage.jsx), [Sidebar.jsx](../frontend/src/features/user/components/Sidebar.jsx), `FloatingAssistantButton`, [AssistantBanner.jsx](../frontend/src/features/search/components/AssistantBanner.jsx) | Donar se resuelve con 5.4; "Explorar" se conecta a `/buscar/recetas` (5.1); "Seguir" necesita su tabla y sus endpoints (seguidores). Lo que no se haga, se saca de la UI antes de entregar. |
+| 7.1 | 🔴 | 🔄 **Parcial (29/09).** Botones *Próximamente*. ✅ Las tarjetas de búsqueda e IA de la home ya no están (las reemplazó el buscador). ✅ **Seguir** ya funciona (29/09, feature `follow`). Quedan: **Donar** (detalle de receta y perfil), "Explorar" y "Notificaciones" en la sidebar, el `FloatingAssistantButton` de la landing y el botón del asistente IA en el buscador | [RecipeDetailPage.jsx](../frontend/src/features/recipe/pages/RecipeDetailPage.jsx), [ProfilePage.jsx](../frontend/src/features/user/pages/ProfilePage.jsx), [Sidebar.jsx](../frontend/src/features/user/components/Sidebar.jsx), `FloatingAssistantButton`, [AssistantBanner.jsx](../frontend/src/features/search/components/AssistantBanner.jsx) | Donar se resuelve con 5.4; "Explorar" se conecta a `/buscar/recetas` (5.1). Lo que no se haga, se saca de la UI antes de entregar. |
 | 7.2 | 🟡 | La landing muestra **recetas inventadas** ([landingMockData.js](../frontend/src/features/landing/models/landingMockData.js)) | `ExploreSection`, `WeeklyRecipe`, `CommunitySection` | `GET /api/recipes` es público: mostrar recetas reales (ej. las mejor valoradas). Si nos preguntan "¿de dónde salen estos datos?", la respuesta tiene que ser "del backend". |
 | 7.3 | 🟡 | Cambio de contraseña sin UI: [changePasswordService.js](../frontend/src/features/user/services/changePasswordService.js) no se usa en ningún lado | `EditProfileModal.jsx` | Agregar sección "Cambiar contraseña" (actual + nueva + confirmación) o borrar el servicio. |
 | 7.4 | ✅ | ~~El filtro por categoría del perfil solo miraba la primera categoría de cada receta~~ (29/09): la galería del perfil ahora usa el listado del buscador (`authorId`), que filtra por cualquiera de las categorías, y las opciones del filtro salen de todas. | [ProfileRecipeGallery.jsx](../frontend/src/features/user/components/ProfileRecipeGallery.jsx) | — |
 | 7.5 | 🟡 | `CategoryFormModal` duplicado (category/ e ingredientCategory/) y las tablas admin de categorías casi idénticas (239 líneas cada una) | `features/category/`, `features/ingredientCategory/`, `features/admin/components/` | Un solo modal/tabla genérica en `core/components/` que reciba título y servicio por props. |
 | 7.6 | 🟡 | Faltan modelos (requisito de la cátedra + CLAUDE.md §7) | `features/user/models/` (solo tiene el de métricas del perfil), category, ingredient, role, nutritionalValue, image, step | Factory functions simples, ej. `createUserFromApi(raw)` y `toUpdateUserPayload(form)`, y que los servicios mapeen la respuesta cruda al modelo (como hace `search`: `searchModel.js` / `searchListingModel.js`). |
-| 7.7 | 🟡 | Componentes > 200 líneas (CLAUDE.md §6) — medido el 29/09 | `AdminUsersTable` 353 · `AdminPage` 286 · `AdminIngredientsTable` 286 · `EditProfileModal` 279 · `NutritionalValuePanel` 262 · `RecipeEditorPage` 261 · `InventoryPage` 260 · `AdminRecipeCategoriesTable` 239 · `AdminIngredientCategoriesTable` 239 · `SearchUsersForm` 236 · `RecipePage` 209 | Extraer subcomponentes (filas, paginación, formularios) y hooks. `NutritionalValuePanel` está en `pages/` pero es un panel dentro de un modal → moverlo a `components/`. `RecipeEditorPage` ya se partió en secciones (PR #18) pero sigue arriba de 200 porque orquesta la carga, el guardado y el layout. Ningún componente del buscador ni del perfil nuevo pasa de 200 (`ProfilePage` 193). |
+| 7.7 | 🟡 | Componentes > 200 líneas (CLAUDE.md §6) — medido el 29/09 | `AdminUsersTable` 353 · `AdminPage` 286 · `AdminIngredientsTable` 286 · `EditProfileModal` 279 · `NutritionalValuePanel` 262 · `RecipeEditorPage` 261 · `InventoryPage` 260 · `AdminRecipeCategoriesTable` 239 · `AdminIngredientCategoriesTable` 239 · `SearchUsersForm` 236 · `RecipePage` 209 | Extraer subcomponentes (filas, paginación, formularios) y hooks. `NutritionalValuePanel` está en `pages/` pero es un panel dentro de un modal → moverlo a `components/`. `RecipeEditorPage` ya se partió en secciones (PR #18) pero sigue arriba de 200 porque orquesta la carga, el guardado y el layout. Ningún componente del buscador, del perfil ni de la home nueva pasa de 200 (`ProfilePage` 180, `RecipeCard` 149, `FriendsRecipesSection` 89, `HomePage` 70; se volvió a medir el 29/09). |
 | 7.8 | ⚪ | `index.html` con `lang="en"` y título "chefcito" | [index.html](../frontend/index.html) | `lang="es"`, `<title>Chefcito</title>` y `<meta name="description">`. |
-| 7.9 | ⚪ | Archivos y código sin uso | `src/assets/react.svg`, `vite.svg`, `hero.png`; `.gitkeep` en carpetas que ya tienen archivos (`auth/styles`, `user/styles`, `user/models`, `styles/`); `MasonryGrid` (core) quedó sin uso desde que la galería del perfil pasó a la grilla pareja del buscador (también lo nombra `CLAUDE.md`); desde el 29/09 también `getSavedRecipesByUser` + `savedRecipeFromApi` ([userRecipeService.js](../frontend/src/features/userRecipe/services/userRecipeService.js)), porque "Recetas guardadas" ahora usa el listado del buscador | Borrarlos (el endpoint `GET /saved-recipes/:idUser` del backend puede quedar: no molesta y sigue documentado). |
+| 7.9 | ⚪ | Archivos y código sin uso | `src/assets/react.svg`, `vite.svg`, `hero.png`; `.gitkeep` en carpetas que ya tienen archivos (`auth/styles`, `user/styles`, `user/models`, `styles/`); `MasonryGrid` (core) quedó sin uso desde que la galería del perfil pasó a la grilla pareja del buscador (también lo nombra `CLAUDE.md`); desde el 29/09 también `getSavedRecipesByUser` + `savedRecipeFromApi` ([userRecipeService.js](../frontend/src/features/userRecipe/services/userRecipeService.js)), porque "Recetas guardadas" ahora usa el listado del buscador. ✅ (29/09) Ya se borraron `RecipeCarouselSection` y `HomeRecipeCard`, que la home nueva dejó sin uso | Borrar lo que queda (el endpoint `GET /saved-recipes/:idUser` del backend puede quedar: no molesta y sigue documentado). |
 | 7.10 | ⚪ | Sin `.env.example` | `frontend/` | Crear `frontend/.env.example` con `VITE_API_BASE_URL=http://localhost:3000/api` (este sí se commitea). |
 | 7.11 | ⚪ | SPA con `BrowserRouter`: al recargar `/admin` o `/buscar/recetas` en el deploy da 404 | raíz del frontend | Según el hosting: `vercel.json` con un rewrite a `/index.html`, o `public/_redirects` en Netlify. |
 
@@ -359,14 +417,17 @@ Si se mueven los archivos de la consigna, actualizar las rutas que los mencionan
 - **Declarar el stack** (lo exige el FAQ para tecnologías distintas a las de la cátedra):
   React + Vite (en lugar de Angular), TypeScript en el backend, Express 5, Prisma, MySQL.
 - **Actualizar el DER**: el de la imagen es anterior a cambios del schema (tablas `role`/`userrole`,
-  `ingredientcategoryingredient` N:M, etc.). Mejor un `erDiagram` de Mermaid versionado en el repo
+  `ingredientcategoryingredient` N:M, **`follow`** —relación N:M de `User` con `User`, nueva del
+  29/09— etc.). Mejor un `erDiagram` de Mermaid versionado en el repo
   (docs.md lo recomienda) que una imagen suelta en `user-attachments` + Google Drive.
 - **Reclasificar CRUD Receta** como dependiente (depende de Usuario y Categoría).
 - **Agregar el alcance extra ya hecho** (Rol, Inventario, Valor nutricional, Pasos, Imágenes,
-  Recetas guardadas, Dashboard admin, **buscador con listados de categorías y perfiles**).
+  Recetas guardadas, Dashboard admin, **buscador con listados de categorías y perfiles**,
+  **seguir a otros usuarios y la home con recetas y reseñas de amigos**).
 - **Agregar la sección de links a los PRs** (obligatoria en ambas entregas).
-- Marcar como hecho el listado adicional "por tiempo de preparación" y decidir qué pasa con el
-  ChatBot y los otros dos listados adicionales.
+- Marcar como hechos los listados adicionales "por tiempo de preparación" y **"top 10 mejor
+  valoradas en un plazo"** (este último, nuevo del 29/09) y decidir qué pasa con el ChatBot y el
+  listado por necesidades nutricionales.
 
 ### 8.4 [CLAUDE.md](../CLAUDE.md)
 
@@ -381,7 +442,8 @@ Si se mueven los archivos de la consigna, actualizar las rutas que los mencionan
 
 ### 8.5 [backend/README.md](../backend/README.md)
 
-- ✅ (29/09) Ya lista la feature `search/` en el árbol de carpetas.
+- ✅ (29/09) Ya lista las features `search/`, `follow/` y `feed/`, `core/middleware/validationMiddleware.ts`
+  y la tabla `follow`.
 - Describe `database/` como "endpoint de inicialización/seed (solo dev)"; es solo un health check.
 - El ejemplo de `handleValidationErrors` no coincide con el formato real.
 - Dice que los handlers llevan prefijo `handle`; los controllers se llaman `searchX`, `createX`,
@@ -391,7 +453,8 @@ Si se mueven los archivos de la consigna, actualizar las rutas que los mencionan
 ### 8.6 [tasks-division.md](tasks-division.md)
 
 - Agregar una columna **Estado** (✅ / 🔄 / ⏳) a cada T-X.X. Hoy: T-4.1 ✅, **T-4.2 ✅** y
-  **T-4.4 🔄** (filtros por tiempo y valoración ✅, guardar recetas ✅, recomendaciones ⏳),
+  **T-4.4 🔄** (filtros por tiempo y valoración ✅, guardar recetas ✅, recomendaciones 🔄: la
+  home ya muestra recetas de amigos y el top de la semana, pero no hay "recomendadas para vos"),
   T-4.3 ⏳, Fase 5 ⏳.
 - La convención de ramas documentada es `feature/T-X.X-...` y la de commits `[T-X.X] ...`, pero
   en la práctica se usa `task/...` y mensajes libres. **Elegir una y respetarla** de acá en
@@ -408,9 +471,9 @@ Si se mueven los archivos de la consigna, actualizar las rutas que los mencionan
 
 | Test | Tipo | Qué probar (sugerencia) | Dependencias |
 |---|---|---|---|
-| Backend × 4 (1 por integrante) | Unitario | **El más fácil de arrancar:** `computePantryMatch` y `comparePantryMatches` de [pantryMatchService.ts](../backend/src/features/search/services/pantryMatchService.ts) (funciones puras, no hace falta mockear nada; casos: completa, falta cantidad, cantidad en 0, no la tiene, receta sin ingredientes, orden). Además, services con el repository mockeado (`vi.mock`): `reviewService.createReview` (rechaza reseñar la propia / duplicada), `recipeService.updateRecipe` (403 si no es dueño), `authService.login` (credenciales inválidas, `isAdmin`), `searchService.listRecipes` (filtro por valoración y orden), reglas de donación | `vitest` |
+| Backend × 4 (1 por integrante) | Unitario | **El más fácil de arrancar:** `computePantryMatch` y `comparePantryMatches` de [pantryMatchService.ts](../backend/src/features/search/services/pantryMatchService.ts) (funciones puras, no hace falta mockear nada; casos: completa, falta cantidad, cantidad en 0, no la tiene, receta sin ingredientes, orden). Además, services con el repository mockeado (`vi.mock`): `reviewService.createReview` (rechaza reseñar la propia / duplicada), `recipeService.updateRecipe` (403 si no es dueño), `authService.login` (credenciales inválidas, `isAdmin`), `searchService.listRecipes` (filtro por valoración y orden), reglas de donación, **`followService`** (no seguirse a uno mismo, no seguir dos veces, usuario inexistente, dejar de seguir sin seguirlo) y **`feedService.getTopRecipes`** (orden por promedio, desempate por cantidad de reseñas, solo reseñas del plazo, receta de un usuario dado de baja) | `vitest` |
 | Backend × 1 | Integración | Con Supertest sobre `app` (requiere 6.3) contra una BD de test (`.env.test` con otra `DATABASE_URL`): login → token → `GET` de ruta protegida (200) y sin token (401), o crear receta y encontrarla con `GET /api/search/recipes?q=` | `supertest`, `@types/supertest` |
-| Frontend × 1 | Unitario de componente | `ErrorState` (muestra el mensaje y llama `onRetry` al hacer click), `StarRating`, `ConfirmModal` o `SearchPagination` (deshabilita "anterior" en la página 1 y llama `onPageChange`) | `vitest`, `@testing-library/react`, `@testing-library/user-event`, `jsdom` |
+| Frontend × 1 | Unitario de componente | `ErrorState` (muestra el mensaje y llama `onRetry` al hacer click), `StarRating`, `ConfirmModal` o `SearchPagination` (deshabilita "anterior" en la página 1 y llama `onPageChange`); o `RatingBadge` / `UserAvatar` (nuevos, muy simples: cae a las iniciales si la foto falla). Además, sin componentes: `formatRelativeTime` es una función pura fácil de probar ("hace 5 minutos", "ayer", "hace 2 semanas", fecha pasado un mes) | `vitest`, `@testing-library/react`, `@testing-library/user-event`, `jsdom` |
 | Frontend × 1 | E2E | Con back y front levantados y el seed cargado: login con `juanperez` → buscar "fideos" → abrir la receta; o crear receta → aparece en "Mis recetas"; o login admin → redirige a `/admin` | `@playwright/test` |
 
 - Agregar `"test"` en los `package.json` y `"test:e2e"` en el front.
@@ -438,7 +501,7 @@ Si se mueven los archivos de la consigna, actualizar las rutas que los mencionan
 
 | Parte | Opciones | A tener en cuenta |
 |---|---|---|
-| Base de datos | MySQL gestionado: Railway, Aiven (free), Clever Cloud, TiDB Serverless (compatible con MySQL) | Correr `npx prisma db push` contra esa URL y cargar `demo-seed.sql`. ⚠️ El buscador confía en que la collation de MySQL no distinga mayúsculas ni tildes ("maria" encuentra "María"): verificar que la BD en la nube use la misma (ej. `utf8mb4_0900_ai_ci`). |
+| Base de datos | MySQL gestionado: Railway, Aiven (free), Clever Cloud, TiDB Serverless (compatible con MySQL) | Correr `npx prisma db push` contra esa URL y cargar `demo-seed.sql`. ⚠️ **La sección 8 del seed usa fechas relativas y el Top 10 cuenta solo los últimos 7 días:** volver a cargarla justo antes de la demo / del video / de la entrega (se puede correr sola, ver 5.6) o la home queda sin ranking. ⚠️ El buscador confía en que la collation de MySQL no distinga mayúsculas ni tildes ("maria" encuentra "María"): verificar que la BD en la nube use la misma (ej. `utf8mb4_0900_ai_ci`). |
 | Backend | Render o Railway | Necesita 6.1 y 6.2. Variables: `DATABASE_URL`, `JWT_SECRET` (**uno nuevo**, no el de la guía, que es público en el repo), `CORS_ORIGINS`, `PORT`. |
 | Frontend | Vercel o Netlify | `VITE_API_BASE_URL` apuntando al backend deployado. Rewrites para la SPA (7.11). |
 | Imágenes | — | ⚠️ Las fotos se guardan en `backend/uploads/` (disco local). En Render free el disco se borra en cada redeploy → las fotos subidas se pierden. Opciones: Railway con volumen persistente, o aceptar que en la demo se usen links externos. Decidirlo antes de elegir hosting. |
@@ -449,17 +512,20 @@ Después: `docs/deploy.md` con los links y las credenciales de demo (admin + un 
 
 ## 12. Reparto sugerido
 
-Actualizado el 29/09. **5.1 y 5.3 ya están hechos**, así que sale de la lista lo que eran T-4.2 y
-T-4.4. Lo que sigue importando para la cátedra es que **cada integrante tenga su propio test y
+Actualizado el 29/09. **5.1, 5.3 y 5.6 ya están hechos**, así que sale de la lista lo que eran
+T-4.2 y T-4.4 (y el "Seguir" que estaba como *Próximamente*). Lo que sigue importando para la cátedra es que **cada integrante tenga su propio test y
 pueda defender un CU** (aunque no lo haya programado él: en la defensa tiene que saber
 explicarlo). Es una propuesta: ajustarla en la próxima reunión.
 
 | Integrante | Funcionalidad pendiente | Test propio (backend) | Otras tareas | CU que defiende |
 |---|---|---|---|---|
-| **Stéfano** (Dev A) | Deploy completo (6.1, 6.2, 6.3, 7.11, 11) · editar reseña (5.2) · commitear `task/Frontend-Updates` y abrir el PR a `develop` | Integración (Supertest) + unitario de `reviewService` | README raíz, índice de docs, propuesta, GitHub Project, revisar PRs | Reseñar recetas |
+| **Stéfano** (Dev A) | Deploy completo (6.1, 6.2, 6.3, 7.11, 11) · editar reseña (5.2) · **commitear "Seguir" + home nueva (5.6) en una rama desde `develop` y abrir el PR** | Integración (Supertest) + unitario de `reviewService` | README raíz, índice de docs, propuesta, GitHub Project, revisar PRs | Reseñar recetas |
 | **Elías** (Dev B) | Documentación de la API (10) · quitar el N+1 de valoraciones (6.6) | Unitario de `pantryMatchService` (despensa) | Revisar a mano las pantallas del buscador en los 3 breakpoints | Consultar recetas según ingredientes |
 | **Juan** (Dev C) | T-4.3 Donaciones (5.4) | Unitario de `donationService` | Test E2E con Playwright (T-5.3) · sacar los *Próximamente* que queden (7.1) | Donar a creadores |
 | **Gastón** (Dev D) | Conectar "Explorar" de la sidebar (5.1) · landing con datos reales (7.2) | Unitario de `recipeService` (permisos) o de `searchService.listRecipes` | Test unitario de componente (front) · minutas | Crear y publicar recetas (+ listados) |
+
+**Sin dueño todavía:** el CU nuevo "Seguir cocineros y ver su actividad" (5.6). Definirlo en la
+próxima reunión (y quién escribe sus tests: `followService` y `feedService`).
 
 Las mejoras 🟡/⚪ de las secciones 6 y 7 se reparten al final, entre quien tenga tiempo.
 
@@ -489,6 +555,10 @@ Cada integrante tiene que poder explicar, además de su feature:
   (`useQuickSearch`), por qué los filtros viven en la URL, por qué el listado de recetas se arma
   en dos pasos (filtrar/ordenar con datos mínimos y después pedir solo las 12 cards de la página),
   y cómo se calcula el filtro "Inventario".
+- **Seguir y la home:** qué es la tabla `follow` (relación N:M de usuario con usuario, PK
+  compuesta, un solo sentido), por qué quien sigue sale del token, cómo se arma el Top 10 de la
+  semana (promedio solo con las reseñas del plazo, una consulta agrupada) y por qué cada sección
+  de la home carga por separado (si una falla, las otras se ven).
 - **Tests:** qué prueba el suyo y cómo se corre.
 
 ---
@@ -500,6 +570,7 @@ Formulario: https://kutt.to/DSWEntregaSistemaFinal
 - [x] Listados con filtro (categoría y valoración) + detalle — 29/09
 - [ ] Editar reseña en la UI
 - [x] CU Recetas según ingredientes — 29/09
+- [x] Seguir usuarios + home con recetas y reseñas de amigos y Top 10 de la semana — 29/09 (falta commitear y abrir el PR)
 - [ ] CRUD + CU Donaciones
 - [ ] Sin botones *Próximamente* ni datos falsos en la UI (quedan Donar, Explorar/Notificaciones, asistente IA y la landing)
 - [ ] 4 tests unitarios backend + 1 integración, pasando
@@ -509,6 +580,7 @@ Formulario: https://kutt.to/DSWEntregaSistemaFinal
 - [ ] `.env.example` en back y front
 - [ ] Deploy funcionando (back + front + BD en la nube) y probado desde un celular
 - [ ] Credenciales de demo en la entrega
+- [ ] Cargar la sección 8 de `demo-seed.sql` justo antes de grabar el video y de entregar (si no, el Top 10 de la semana queda vacío)
 - [ ] `README.md` raíz con instalación y link a `docs/README.md`
 - [ ] `docs/README.md` como índice
 - [ ] Propuesta actualizada con stack, DER y links a los PRs
@@ -557,6 +629,8 @@ Al día al 29/09. Base: `/api`. **Público** = sin token · **Token** = cualquie
 | | `GET /saved-recipes/:idUser` | Dueño/Admin |
 | Búsqueda rápida | `GET /search?q=texto` (primeras coincidencias + total de categorías, recetas y usuarios) | Token |
 | Listados de búsqueda | `GET /search/recipes` (`?q`, `categoryId`, `authorId`, `maxTime`, `minTime`, `minRating`, `ingredientIds`, `pantry`, `savedOnly`, `sort`, `page`) · `GET /search/categories` y `GET /search/users` (`?q`, `onlyWithRecipes`, `sort`, `page`) | Token (la despensa y las guardadas son las del usuario del token) |
+| Seguir | `GET /users/:userId/follow` (¿lo sigo? + seguidores y seguidos) · `POST` (seguir) · `DELETE` (dejar de seguir) | Token (el que sigue es el usuario del token) |
+| Feed de la home | `GET /feed/friends/recipes` y `GET /feed/friends/reviews` (`?limit`) · `GET /feed/top-recipes` (`?days`, `limit`) | Token ("amigos" = a quienes sigue el usuario del token) |
 | Salud | `GET /database/health` | Público |
 | Archivos | `GET /uploads/recipes/<archivo>` · `GET /uploads/users/<archivo>` (estático, fuera de `/api`) | Público |
 | **Donaciones** | — | **No existe todavía** |
@@ -594,3 +668,18 @@ Al día al 29/09. Base: `/api`. **Público** = sin token · **Token** = cualquie
 - `GET /api/search/recipes?authorId=` probado contra la base con el seed (por autor, con
   inventario, por categoría, orden y el 422 con un `authorId` inválido).
 - La UI del perfil, el buscador y las cards se revisó en el navegador en escritorio y modo oscuro.
+
+**29/09 (Seguir + home nueva + métricas del perfil, sobre `develop` `5e6c3e5`, sin commitear):**
+- `frontend`: `npm run lint` → sin errores · `npm run build` → OK. `backend`: `npx tsc --noEmit` → sin errores.
+- **El esquema cambió** (tabla `follow`): `npx prisma db push` aplicado en la base local. La sección 8
+  de `demo-seed.sql` se cargó en esa base y se comprobó que corre sola sobre una base ya cargada
+  (`ON DUPLICATE KEY` para las recetas que ya estaban guardadas).
+- Endpoints probados **contra la base con el seed** (usuario `juanperez`, backend levantado):
+  - `feed`: los tres devuelven lo esperado (3 seguidos; top de 10 ordenado por promedio y
+    desempate por cantidad de reseñas; recetas de amigos con su valoración); `limit=50` y
+    `days=0` → 422; sin token → 401.
+  - `follow`: estado (200), seguir (201), seguir de nuevo (409), dejar de seguir (200), dejar de
+    seguir sin seguirlo (404), seguirse a uno mismo (400), usuario inexistente (404), id no
+    numérico (422). Se dejó la base como estaba.
+- La UI se fue ajustando mirando el navegador en escritorio y modo oscuro. **No se recorrió en
+  celular/tablet ni en modo claro** (ver 5.1 y 5.6). No hay tests automáticos de lo nuevo (ver 9).

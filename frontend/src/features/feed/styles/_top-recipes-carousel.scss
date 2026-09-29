@@ -1,0 +1,185 @@
+// Estilos del carrusel del Top 10 de la semana (features/feed/components/TopRecipesCarousel).
+// El arrastre sale del carrusel de la vieja home; la etiqueta sobre la foto y el efecto de
+// "sobresalir" al pasar el mouse, de las recetas destacadas del perfil (_featured-recipes.scss).
+@use '../../../styles/abstracts' as *;
+
+// Cuántas cards se ven a la vez según el ancho del carrusel (ver @container más abajo).
+// Cada una mide (ancho disponible - separaciones) / cantidad: así siempre entran enteras y
+// la última no queda cortada por el borde.
+@function card-width($count) {
+  @return calc((100% - #{($count - 1) * $spacing-lg}) / #{$count});
+}
+
+// Margen del carrusel hacia afuera de la sección, a cada lado: da lugar al "crecer" y a la
+// sombra de las cards al pasar el mouse. Tiene que ser MENOR que la separación entre
+// cards ($spacing-lg): si no, en ese margen asomaría un pedazo de la card siguiente.
+$carousel-side-room: $spacing-md;
+// Margen de arriba y abajo por lo mismo: el levantado del hover y su sombra (que cae
+// hacia abajo) se cortarían contra el borde del carrusel.
+$carousel-top-room: 28px;
+$carousel-bottom-room: 44px;
+
+.TopRecipesCarousel {
+  min-width: 0;
+  // Permite preguntar por el ancho del carrusel (@container) para decidir cuántas cards
+  // entran, en vez de usar el ancho de la pantalla (que incluye la sidebar).
+  container-type: inline-size;
+  // Se sale de la sección lo que necesita de margen, pero le resta lo mismo de espacio
+  // vacío: las cards siguen alineadas con el título y el alto total casi no cambia.
+  margin: (-$carousel-top-room + $spacing-sm) (-$carousel-side-room) (-$carousel-bottom-room + $spacing-sm);
+
+  &-track {
+    display: flex;
+    gap: $spacing-lg;
+    margin: 0;
+    padding: $carousel-top-room $carousel-side-room $carousel-bottom-room;
+    list-style: none;
+    // overflow-x: auto también recorta en vertical: por eso los márgenes de arriba.
+    overflow-x: auto;
+    // mandatory: al soltar o usar las flechas siempre queda alineada una card, nunca a medias.
+    scroll-snap-type: x mandatory;
+    // Las cards se alinean con el borde de la sección, no con el del carrusel.
+    scroll-padding-inline: $carousel-side-room;
+    // Se desplaza arrastrando o con las flechas: la barra nativa sobra.
+    scrollbar-width: none;
+    cursor: grab;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    // Mientras se arrastra con el mouse: sin scroll-snap (si no, cada movimiento "salta" a
+    // la card más cercana) y sin seleccionar texto por accidente.
+    &--dragging {
+      scroll-snap-type: none;
+      cursor: grabbing;
+      user-select: none;
+    }
+  }
+
+  &-item {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    // Mobile: una card casi entera y un pedazo de la siguiente, que invita a deslizar.
+    width: 82%;
+    scroll-snap-align: start;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-level-2;
+    // Mismo efecto que las recetas destacadas del perfil: el que sobresale es el item (no
+    // la RecipeCard), así la etiqueta de valoración se mueve junto con su card.
+    transform-origin: center bottom;
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease;
+
+    // Más ancho → más cards, siempre enteras. El ancho mínimo de cada una queda cerca de los
+    // 250px. (Se pregunta por el ancho del carrusel y no por el de la pantalla, porque con
+    // la sidebar abierta o cerrada el espacio real cambia.)
+    @container (min-width: 560px) {
+      width: card-width(2);
+    }
+
+    @container (min-width: 860px) {
+      width: card-width(3);
+    }
+
+    @container (min-width: 1180px) {
+      width: card-width(4);
+    }
+
+    // Sin el levantado propio de la card: lo hace el item.
+    .RecipeCard:hover {
+      transform: none;
+    }
+
+    // Fotos más altas que en los listados, como en las destacadas del perfil.
+    .RecipeCard-imageWrapper {
+      aspect-ratio: 4 / 3;
+    }
+
+    // La que tiene el mouse encima pasa al frente de todas, sobresale y brilla en verde.
+    &:hover {
+      z-index: 3;
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 35px -10px with-opacity($color-primary, 0.25), $shadow-level-2;
+    }
+
+    // El #1: borde con el degradé de la marca y el nombre con el mismo degradé (como el
+    // título de la sección). El borde es de la propia RecipeCard, no del contenedor: uno
+    // por fuera se veía como una segunda card detrás.
+    &--first {
+      z-index: 2;
+
+      // Truco del borde con degradé: el borde es transparente y se pinta el degradé "por
+      // debajo" (border-box); encima, el fondo normal de la card solo en su interior
+      // (padding-box), así el degradé queda visible únicamente en el borde.
+      .RecipeCard {
+        border: 2px solid transparent;
+        background:
+          linear-gradient($color-surface-container-lowest, $color-surface-container-lowest) padding-box,
+          $gradient-brand border-box;
+      }
+
+      .RecipeCard-title {
+        @include gradient-text;
+      }
+    }
+
+    // Si el sistema pide reducir animaciones, las cards quedan quietas.
+    @media (prefers-reduced-motion: reduce) {
+      &,
+      &:hover {
+        transform: none;
+        transition: none;
+      }
+    }
+  }
+
+  // Puesto + valoración arriba a la izquierda de la foto (RatingBadge).
+  &-badge {
+    position: absolute;
+    top: $spacing-md;
+    left: $spacing-md;
+    z-index: 2;
+  }
+
+  // Flechas "anterior / siguiente" del encabezado.
+  &-arrow {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    // Degradé verde de la marca, igual que los botones seleccionados de la app.
+    background: $gradient-brand;
+    color: $color-on-primary;
+    box-shadow: $shadow-level-1;
+    cursor: pointer;
+    transition: filter 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 22px;
+    }
+
+    &:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.94);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
+
+    // En un extremo del carrusel no hay más para ver de ese lado.
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+  }
+}

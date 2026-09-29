@@ -195,9 +195,10 @@
     line-height: 22px;
     white-space: nowrap;
 
+    // Especialidad: con el degradé verde de la marca, como los botones seleccionados.
     &--specialty {
-      background: $color-secondary-container;
-      color: $color-on-secondary-container;
+      background: $gradient-brand;
+      color: $color-on-primary;
     }
   }
 
@@ -245,10 +246,22 @@
     white-space: nowrap;
     cursor: pointer;
     transition: background-color 0.15s ease, border-color 0.15s ease;
+    // Separación entre el ícono y el texto (ej. la tilde de "Siguiendo").
+    gap: $spacing-xs;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
 
     &:focus-visible {
       outline: 2px solid $color-outline;
       outline-offset: 2px;
+    }
+
+    // "Seguir" mientras carga el estado o espera la respuesta del backend.
+    &:disabled {
+      cursor: default;
+      opacity: 0.6;
     }
 
     // Como el "Follow" del diseño de referencia: botón claro sobre la tarjeta oscura (en

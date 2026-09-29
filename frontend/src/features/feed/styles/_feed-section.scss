@@ -1,0 +1,124 @@
+// Estilos compartidos por las 3 secciones de la home (features/feed): encabezado
+// (FeedSectionHeader), estado vacío (FeedEmptyState) y el texto de "Cargando...".
+@use '../../../styles/abstracts' as *;
+
+.FeedSection {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+  font-family: $font-body;
+  color: $color-on-surface;
+
+  &-status {
+    margin: $spacing-xl 0;
+    text-align: center;
+    font-size: 15px;
+    color: $color-on-surface-variant;
+  }
+}
+
+.FeedSectionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: $spacing-sm $spacing-md;
+
+  &-text {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    min-width: 0;
+  }
+
+  // Mismo título que "Recetas destacadas" del perfil (FeaturedRecipes-title), alineado a
+  // la izquierda porque a la derecha van las acciones.
+  &-title {
+    margin: 0;
+    font-family: $font-headline;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    @include gradient-text;
+
+    @include respond-to(md) {
+      font-size: 34px;
+    }
+  }
+
+  &-subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+  }
+
+  &-actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+}
+
+.FeedEmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-xl $spacing-md;
+  border: 1px dashed $color-outline-variant;
+  border-radius: $radius-lg;
+  background: $color-surface-container-lowest;
+  text-align: center;
+
+  &-icon {
+    font-size: 44px;
+    color: $color-primary;
+  }
+
+  &-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: $color-on-surface;
+  }
+
+  &-message {
+    max-width: 440px;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: $color-on-surface-variant;
+  }
+
+  // Mismo degradé que los botones seleccionados de la app.
+  &-action {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    margin-top: $spacing-sm;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-full;
+    background: $gradient-brand;
+    color: $color-on-primary;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: $shadow-level-1;
+    transition: filter 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover {
+      filter: brightness(1.08);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
+  }
+}

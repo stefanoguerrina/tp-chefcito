@@ -1,6 +1,7 @@
 // Página de perfil, en 3 "pantallas" que encajan al scrollear (scroll snap desde md) y
 // aparecen con animación cada vez que entran en pantalla (ScrollReveal):
-// 1. portada, avatar y datos, y debajo las métricas del usuario;
+// 1. portada, avatar y datos, y debajo las métricas del usuario (recetas publicadas,
+//    valoración promedio, seguidores, seguidos y categoría principal);
 // 2. las 3 recetas mejor valoradas, en abanico;
 // 3. la galería completa de recetas, con buscador, inventario, categoría y orden.
 // Al pie de las dos primeras, un aviso con flecha (ProfileScrollHint) lleva a la siguiente.
@@ -8,11 +9,12 @@
 // Sirve tanto para el perfil propio (editable) como para el de otro usuario, de
 // solo lectura, al que se llega tocando su nombre desde el detalle de una receta
 // (ver isOwnProfile más abajo): ahí no hay nada para editar, y "Editar perfil" se
-// reemplaza por "Seguir" y "Donar" (todavía sin funcionalidad: muestran un aviso
-// "Próximamente").
+// reemplaza por "Seguir" (useFollow: las personas que seguís son tus "amigos" en la
+// home) y "Donar" (todavía sin funcionalidad: muestra un aviso "Próximamente").
 import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useProfileData } from '../hooks/useProfileData.js';
+import { useFollow } from '../../follow/hooks/useFollow.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
@@ -68,9 +70,11 @@ function ProfilePage() {
   const { user, setUser, recipes, recipeReviewStats, isLoading, fetchError, retry } =
     useProfileData(userId);
 
+  const { followStatus, isFollowPending, handleToggleFollow, followError, clearFollowError } =
+    useFollow(userId);
+
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  // Mensaje del aviso "Próximamente" al tocar "Donar" o "Seguir" (ninguna de las dos
-  // funciones existe todavía); vacío = sin aviso.
+  // Mensaje del aviso "Próximamente" al tocar "Donar" (todavía no existe); vacío = sin aviso.
   const [comingSoonMessage, setComingSoonMessage] = useState('');
 
   // Recetas Destacadas: las 3 propias con mejor valoración promedio (0 si todavía
@@ -91,7 +95,7 @@ function ProfilePage() {
     return <p className="ProfilePage-status">No pudimos encontrar este perfil.</p>;
   }
 
-  // Sin recetas no hay métricas ni destacadas: el perfil queda en una sola pantalla normal.
+  // Sin recetas no hay destacadas: el perfil queda en una sola pantalla normal.
   const hasRecipes = recipes.length > 0;
 
   return (
@@ -118,16 +122,18 @@ function ProfilePage() {
             recipesCount={recipes.length}
             isOwnProfile={isOwnProfile}
             onEditProfile={() => setIsEditingProfile(true)}
-            onFollow={() => setComingSoonMessage('Seguir a otros usuarios todavía no está disponible en Chefcito. ¡Estamos trabajando en eso!')}
+            followStatus={followStatus}
+            isFollowPending={isFollowPending}
+            onFollow={handleToggleFollow}
             onDonate={() => setComingSoonMessage('Las donaciones a creadores todavía no están disponibles en Chefcito. ¡Estamos trabajando en eso!')}
           />
 
-          {hasRecipes && (
-            <>
-              <ProfileMetrics metrics={buildProfileMetrics(recipes, recipeReviewStats)} />
-              <ProfileScrollHint label="Recetas destacadas" targetId={FEATURED_SECTION_ID} />
-            </>
-          )}
+          {/* Las métricas se ven siempre (también sin recetas): ahí están los seguidores. */}
+          <ProfileMetrics
+            metrics={buildProfileMetrics(recipes, recipeReviewStats)}
+            followStatus={followStatus}
+          />
+          {hasRecipes && <ProfileScrollHint label="Recetas destacadas" targetId={FEATURED_SECTION_ID} />}
         </ScrollReveal>
       </section>
 
@@ -185,6 +191,10 @@ function ProfilePage() {
 
       {comingSoonMessage && (
         <AlertModal title="Próximamente" message={comingSoonMessage} onClose={() => setComingSoonMessage('')} />
+      )}
+
+      {followError && (
+        <AlertModal title="No se pudo actualizar el seguimiento" message={followError} onClose={clearFollowError} />
       )}
     </div>
   );
