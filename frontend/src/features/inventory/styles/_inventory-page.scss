@@ -686,6 +686,11 @@
     border-radius: 12px;
     padding: 3px 4px;
     box-sizing: border-box;
+
+    // Cantidad inválida al agregar: borde rojo, como los demás campos con error.
+    &--invalid {
+      border-color: $color-error;
+    }
   }
 
   &-stepBtn {
@@ -798,10 +803,9 @@
     &:active { transform: scale(0.98); }
   }
 
-  &-error {
-    margin: $spacing-sm 0 0;
-    font-size: 12px;
-    color: $color-error;
+  // El error de la cantidad va debajo de toda la fila (ver AddIngredientForm).
+  > .FieldError {
+    margin-top: $spacing-sm;
   }
 }
 

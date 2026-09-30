@@ -51,7 +51,7 @@ export const toCategoryResult = (category) => ({
 });
 
 // Convierte una receta cruda en las props de RecipeCard (la misma forma que usa toda la
-// app), más authorId para no ofrecer "Guardar" en las recetas propias.
+// app, con su valoración), más authorId para no ofrecer "Guardar" en las recetas propias.
 export const toRecipeResult = (recipe) => ({
   ...recipeToCardProps(recipe),
   authorId: recipe.idUser,

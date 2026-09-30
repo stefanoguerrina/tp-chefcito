@@ -63,6 +63,13 @@ export const roleRepository = {
       include: { user: true },
     }),
 
+  // Devuelve TODAS las asignaciones user↔role con el nombre del rol, en una sola consulta
+  // (para la tabla de usuarios del dashboard, que muestra el rol de cada fila).
+  findAllUserRoles: () =>
+    prisma.userRole.findMany({
+      select: { userId: true, role: { select: { id: true, name: true } } },
+    }),
+
   // Devuelve los roles asignados a un usuario dado (para el panel de usuarios).
   findRolesByUser: (userId: number) =>
     prisma.userRole.findMany({

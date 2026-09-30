@@ -6,12 +6,14 @@ import { useState } from 'react';
 import RecipeIngredientCard from './RecipeIngredientCard.jsx';
 import RecipeSearchModal from './RecipeSearchModal.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
+import RequiredMark from '../../../core/components/RequiredMark.jsx';
+import FieldError from '../../../core/components/FieldError.jsx';
 import '../styles/_recipe-ingredients-stage.scss';
 
 // Recibe: ingredients (array de { idIngredient, quantity }), ingredientsCatalog
 // (todos los ingredientes disponibles para elegir), onIngredientsChange (recibe el
-// array completo ya modificado).
-function RecipeIngredientsStage({ ingredients, ingredientsCatalog, onIngredientsChange }) {
+// array completo ya modificado) y error (mensaje si se intentó publicar sin ingredientes).
+function RecipeIngredientsStage({ ingredients, ingredientsCatalog, onIngredientsChange, error }) {
   const [showAddModal, setShowAddModal] = useState(false);
   // Índice del ingrediente que se está por borrar (null = no hay modal abierto).
   const [pendingDeleteIndex, setPendingDeleteIndex] = useState(null);
@@ -39,7 +41,11 @@ function RecipeIngredientsStage({ ingredients, ingredientsCatalog, onIngredients
     <section className="RecipeEditorCard RecipeIngredientsStage">
       <div className="RecipeEditorCard-header">
         <div className="RecipeIngredientsStage-titleGroup">
-          <h2 className="RecipeEditorCard-title">Ingredientes</h2>
+          <h2 className="RecipeEditorCard-title">
+            Ingredientes
+            {/* Solo es obligatorio si hay ingredientes para elegir (ver RecipeEditorPage). */}
+            {ingredientsCatalog.length > 0 && <RequiredMark />}
+          </h2>
           {ingredientsCatalog.length > 0 && (
             <span className="RecipeIngredientsStage-counter">
               {ingredients.length} {ingredients.length === 1 ? 'añadido' : 'añadidos'}
@@ -53,6 +59,8 @@ function RecipeIngredientsStage({ ingredients, ingredientsCatalog, onIngredients
           </button>
         )}
       </div>
+
+      <FieldError id="recipe-ingredients-error" message={error} />
 
       {ingredientsCatalog.length === 0 ? (
         <p className="RecipeEditorCard-empty">

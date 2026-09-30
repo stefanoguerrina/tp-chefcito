@@ -1,12 +1,15 @@
 // Modal de reseña: permite al usuario calificar una receta (1-5 estrellas con medias),
 // escribir un comentario y guardar la receta (bookmark). Muestra una vista previa
 // de la receta con imagen, título, autor, tiempo y dificultad.
+// Sirve para crear una reseña nueva o, si recibe `review`, para editar la propia (el
+// formulario arranca con su puntaje y comentario y al enviar hace PATCH en vez de POST).
 // Se abre desde el detalle de receta y maneja sus propios estados de carga/error.
 import { useState } from 'react';
 import StarPicker from './StarPicker.jsx';
-import { createReviewPayload } from '../models/reviewModel.js';
-import { createReview } from '../services/reviewService.js';
+import { createReviewPayload, updateReviewPayload } from '../models/reviewModel.js';
+import { createReview, updateReview } from '../services/reviewService.js';
 import { getRecipeImageUrl } from '../../recipe/models/recipeModel.js';
+import RequiredMark from '../../../core/components/RequiredMark.jsx';
 import './_review-modal.scss';
 
 // Recibe:
@@ -15,9 +18,11 @@ import './_review-modal.scss';
 //   onSuccess — se llama cuando la review se guardó correctamente
 //   onSave    — se llama cuando el usuario pulsa "Guardar receta" (bookmark)
 //   isSaved   — boolean: indica si la receta ya está guardada
-function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved }) {
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
+//   review    — (opcional) la reseña propia a editar (ver reviewFromApi); sin ella, crea una
+function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved, review = null }) {
+  const isEditing = review !== null;
+  const [rating, setRating] = useState(review?.rating ?? 0);
+  const [comment, setComment] = useState(review?.comment ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,8 +40,11 @@ function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved }) {
     setIsSubmitting(true);
     setError('');
     try {
-      const payload = createReviewPayload({ rating, comment });
-      await createReview(recipe.id, payload);
+      if (isEditing) {
+        await updateReview(recipe.id, review.idReview, updateReviewPayload({ rating, comment }));
+      } else {
+        await createReview(recipe.id, createReviewPayload({ rating, comment }));
+      }
       onSuccess();
     } catch (err) {
       setError(err.message);
@@ -96,7 +104,11 @@ function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved }) {
 
         {/* Formulario de reseña */}
         <form className="ReviewModal-form" onSubmit={handleSubmit}>
-          <p className="ReviewModal-label">¿Qué te pareció esta receta?</p>
+          {/* La puntuación es obligatoria (sin estrellas no se puede enviar); el comentario, no. */}
+          <p className="ReviewModal-label">
+            {isEditing ? 'Editá tu reseña' : '¿Qué te pareció esta receta?'}
+            <RequiredMark />
+          </p>
 
           <StarPicker value={rating} onChange={setRating} />
 
@@ -126,7 +138,8 @@ function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved }) {
               className="ReviewModal-btn ReviewModal-btn--submit"
               disabled={isSubmitting || rating === 0}
             >
-              {isSubmitting ? 'Enviando...' : 'Publicar reseña'}
+              {isSubmitting && (isEditing ? 'Guardando...' : 'Enviando...')}
+              {!isSubmitting && (isEditing ? 'Guardar cambios' : 'Publicar reseña')}
             </button>
           </div>
         </form>

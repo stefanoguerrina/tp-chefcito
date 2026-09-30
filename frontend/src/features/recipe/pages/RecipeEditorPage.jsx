@@ -13,6 +13,7 @@ import RecipeStepsEditorStage from '../components/RecipeStepsEditorStage.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import RequiredFieldsNote from '../../../core/components/RequiredFieldsNote.jsx';
 import { getRecipeById, createRecipe, updateRecipe } from '../services/recipeService.js';
 import { getAllCategories } from '../../category/services/categoryService.js';
 import { getAllIngredients } from '../../ingredient/services/ingredientService.js';
@@ -20,6 +21,7 @@ import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import { replaceSteps } from '../../step/services/stepService.js';
 import { replaceRecipeIngredients } from '../../recipeIngredient/services/recipeIngredientService.js';
 import { useRecipePhotos } from '../hooks/useRecipePhotos.js';
+import { useRecipeValidation } from '../hooks/useRecipeValidation.js';
 import {
   createEmptyRecipeDraft,
   recipeToDraft,
@@ -58,6 +60,8 @@ function RecipeEditorPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [submitError, setSubmitError] = useState('');
+  // Campos obligatorios sin completar al intentar publicar (cada sección muestra el suyo).
+  const validation = useRecipeValidation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
@@ -100,6 +104,17 @@ function RecipeEditorPage() {
 
   const handleFieldChange = (field, value) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
+    if (field === 'name') validation.clearError('name');
+  };
+
+  const handleIngredientsChange = (nextIngredients) => {
+    setIngredients(nextIngredients);
+    validation.clearError('ingredients');
+  };
+
+  const handleStepsChange = (nextSteps) => {
+    setSteps(nextSteps);
+    validation.updateStepErrors(nextSteps, steps.length);
   };
 
   const handleCategoriesChange = (categoryIds) => {
@@ -109,22 +124,15 @@ function RecipeEditorPage() {
   const handlePublish = async () => {
     setSubmitError('');
 
-    if (!draft.name.trim()) {
-      setSubmitError('El título del plato es requerido.');
-      return;
-    }
-    // Si todavía no hay ningún ingrediente cargado en el catálogo, no hay nada
-    // para elegir: se omite la validación y el paso de guardado de ingredientes.
-    // El backend exige al menos un ingrediente al reemplazar la lista (ver
-    // replaceRecipeIngredients), así que se valida acá antes de mandarlo.
-    if (ingredientsCatalog.length > 0 && ingredients.length === 0) {
-      setSubmitError('Agregá al menos un ingrediente.');
-      return;
-    }
-    if (steps.some((step) => !step.instruction.trim())) {
-      setSubmitError('Todos los pasos necesitan una instrucción.');
-      return;
-    }
+    // Si el catálogo de ingredientes está vacío no hay nada para elegir: ahí no se exigen
+    // (y tampoco se guarda la lista, ver más abajo).
+    const isValid = validation.validate({
+      draft,
+      ingredients,
+      steps,
+      hasIngredientsCatalog: ingredientsCatalog.length > 0,
+    });
+    if (!isValid) return;
 
     setIsSubmitting(true);
     try {
@@ -161,6 +169,7 @@ function RecipeEditorPage() {
     <div className="RecipeEditorPage">
       <header className="RecipeEditorPage-header">
         <h1 className="RecipeEditorPage-title">{isEditing ? 'Editar receta' : 'Crear receta'}</h1>
+        <RequiredFieldsNote />
       </header>
 
       <div className="RecipeEditorPage-topbar">
@@ -212,20 +221,29 @@ function RecipeEditorPage() {
           onRemove={photos.remove}
         />
 
-        <RecipeStepsEditorStage steps={steps} onStepsChange={setSteps} />
+        <RecipeStepsEditorStage
+          steps={steps}
+          onStepsChange={handleStepsChange}
+          invalidStepIndexes={validation.errors.invalidStepIndexes}
+        />
       </div>
 
       {/* Fila de abajo: título/descripción a la izquierda y, a la derecha, ingredientes +
           categorías apilados, estirada a la misma altura que la columna de la izquierda
           para que ocupen el mismo espacio. */}
       <div className="RecipeEditorPage-grid">
-        <RecipeBasicInfoSection values={draft} onFieldChange={handleFieldChange} />
+        <RecipeBasicInfoSection
+          values={draft}
+          onFieldChange={handleFieldChange}
+          nameError={validation.errors.name}
+        />
 
         <div className="RecipeEditorPage-column">
           <RecipeIngredientsStage
             ingredients={ingredients}
             ingredientsCatalog={ingredientsCatalog}
-            onIngredientsChange={setIngredients}
+            onIngredientsChange={handleIngredientsChange}
+            error={validation.errors.ingredients}
           />
 
           <RecipeCategoryPicker

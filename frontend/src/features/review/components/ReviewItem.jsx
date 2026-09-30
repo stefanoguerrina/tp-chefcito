@@ -1,5 +1,5 @@
 // Una reseña dentro de ReviewList: avatar, nombre, hace cuánto se escribió, estrellas y
-// comentario. Si es del usuario logueado, suma el botón para eliminarla.
+// comentario. Si es del usuario logueado, suma los botones para editarla y eliminarla.
 import { useState } from 'react';
 import StarRating from '../../../core/components/StarRating.jsx';
 
@@ -25,8 +25,9 @@ const getInitials = ({ name, lastName, username }) =>
   `${name?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase() || username?.[0]?.toUpperCase() || '?';
 
 // Recibe: review (ver reviewFromApi en models/reviewModel.js), isOwn (si la escribió el
-// usuario logueado) y onDelete (pide confirmación para eliminarla).
-function ReviewItem({ review, isOwn, onDelete }) {
+// usuario logueado), onEdit (abre el modal de reseña para editarla) y onDelete (pide
+// confirmación para eliminarla).
+function ReviewItem({ review, isOwn, onEdit, onDelete }) {
   const [avatarBroken, setAvatarBroken] = useState(false);
   const { author } = review;
   const fullName = `${author.name} ${author.lastName}`.trim() || `@${author.username}`;
@@ -55,10 +56,16 @@ function ReviewItem({ review, isOwn, onDelete }) {
       {isOwn && (
         <div className="ReviewItem-footer">
           <span className="ReviewItem-ownTag">Tu reseña</span>
-          <button type="button" className="ReviewItem-deleteBtn" onClick={onDelete}>
-            <span className="material-symbols-outlined">delete</span>
-            Eliminar
-          </button>
+          <div className="ReviewItem-actions">
+            <button type="button" className="ReviewItem-editBtn" onClick={onEdit}>
+              <span className="material-symbols-outlined">edit</span>
+              Editar
+            </button>
+            <button type="button" className="ReviewItem-deleteBtn" onClick={onDelete}>
+              <span className="material-symbols-outlined">delete</span>
+              Eliminar
+            </button>
+          </div>
         </div>
       )}
     </li>

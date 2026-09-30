@@ -8,7 +8,6 @@ import { getAllRecipes, deleteRecipe } from '../services/recipeService.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import { recipeToCardProps } from '../models/recipeModel.js';
-import { useRecipeReviewStats } from '../../review/hooks/useRecipeReviewStats.js';
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
@@ -28,8 +27,6 @@ function RecipePage() {
   const [actionError, setActionError] = useState('');
   // Texto de búsqueda sobre las recetas propias ya cargadas (mismo patrón que InventoryPage).
   const [searchQuery, setSearchQuery] = useState('');
-  // Promedio de valoraciones + cantidad de reseñas de cada receta, para su card.
-  const reviewStatsByRecipe = useRecipeReviewStats(recipes.map((recipe) => recipe.id));
 
   // Carga las recetas propias (un 404 = todavía no creó ninguna).
   // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
@@ -171,11 +168,7 @@ function RecipePage() {
               {filteredRecipes.map((recipe) => (
                 <RecipeCard
                   key={recipe.id}
-                  recipe={{
-                    ...recipeToCardProps(recipe),
-                    rating: reviewStatsByRecipe[recipe.id]?.averageRating,
-                    reviewsCount: reviewStatsByRecipe[recipe.id]?.reviewsCount,
-                  }}
+                  recipe={recipeToCardProps(recipe)}
                   showSaveButton={false}
                   showAuthor={false}
                   showTime={false}

@@ -17,12 +17,13 @@ const AuthPage = () => {
         showLoginForm,
         showRegisterForm,
         showAuthGate,
+        loginIdentifier,
         handleShowLoginForm,
         handleHideLoginForm,
         handleLoginSessionSubmit,
         handleRegisterForm,
         handleHideRegisterForm,
-        handleRegisterSubmit,
+        handleRegisteredGoToLogin,
         handleSwitchToRegister,
         handleSwitchToLogin,
         handleShowAuthGate,
@@ -65,12 +66,13 @@ const AuthPage = () => {
                     onClose={handleHideLoginForm}
                     onLoginSession={handleLoginSessionSubmit}
                     onSwitchToRegister={handleSwitchToRegister}
+                    initialIdentifier={loginIdentifier}
                 />
             )}
             {showRegisterForm && (
                 <RegisterForm
                     onClose={handleHideRegisterForm}
-                    onRegisterSubmit={handleRegisterSubmit}
+                    onGoToLogin={handleRegisteredGoToLogin}
                     onSwitchToLogin={handleSwitchToLogin}
                 />
             )}

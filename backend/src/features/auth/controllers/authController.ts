@@ -25,13 +25,17 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const result = await authService.register({ username, password, name, lastName, email, phone, birthDate });
 
     if (!result.ok) {
-      // Mensajes específicos según la razón del fallo.
+      // Mensajes específicos según la razón del fallo. Van también en `errores` (mismo
+      // formato que los 422 de validación) para que el frontend los muestre debajo del
+      // campo que corresponde.
       if (result.reason === 'username_taken') {
-        res.status(409).json({ message: 'El nombre de usuario ya está en uso.' });
+        const mensaje = 'El nombre de usuario ya está en uso.';
+        res.status(409).json({ message: mensaje, errores: [{ campo: 'username', mensaje }] });
         return;
       }
       if (result.reason === 'email_taken') {
-        res.status(409).json({ message: 'El email ingresado ya está registrado.' });
+        const mensaje = 'El email ingresado ya está registrado.';
+        res.status(409).json({ message: mensaje, errores: [{ campo: 'email', mensaje }] });
         return;
       }
     }

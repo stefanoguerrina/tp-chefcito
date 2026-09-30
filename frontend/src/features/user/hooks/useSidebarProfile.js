@@ -1,16 +1,10 @@
-// Hook que trae los datos del usuario logueado (nombre, apellido, avatar) para
-// mostrarlos en el pie de la sidebar. El JWT solo trae { id, username, isAdmin }, así
-// que hace falta este pedido extra para tener el nombre real y la foto de la persona.
+// Hook que arma los datos del pie de la sidebar (nombre, @usuario, iniciales y foto) a
+// partir del usuario logueado que ya comparte CurrentUserContext: no hace ningún pedido
+// propio, y al editar el perfil se actualiza solo (lee la misma copia que el perfil).
 // Mismo patrón que features/admin/hooks/useAdminProfile.js, pero para la sidebar de usuario.
-import { useState, useEffect } from 'react';
-import { getUserByIdService } from '../services/getUserByIdService.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
+import { useCurrentUser } from '../../../app/CurrentUserContext.jsx';
 import { resolveImageUrl } from '../../../shared/utils/imageUrl.js';
-
-// Evento que se dispara al guardar el perfil propio (ver ProfilePage), con el usuario
-// actualizado en event.detail: así el pie de la sidebar muestra el nombre y la foto nuevos
-// sin tener que recargar la página.
-export const PROFILE_UPDATED_EVENT = 'chefcito:profile-updated';
 
 // Iniciales para el avatar de respaldo (nombre + apellido, o la primera letra del
 // username si todavía no llegó el nombre real).
@@ -20,41 +14,27 @@ const getInitials = (name, lastName, username) => {
   return `${first}${second}`.toUpperCase();
 };
 
+// Devuelve: { fullName, username, initials, avatarUrl }.
 export const useSidebarProfile = () => {
-  // Arranca con el username del token como respaldo, por si el fetch todavía no
-  // resolvió o llega a fallar: la sidebar nunca se queda con el pie vacío. Sin "@"
-  // acá: ese prefijo lo pone el JSX en la línea de username, que ya lo muestra aparte.
-  const { userId, username } = useAuthContext();
-  const [fullName, setFullName] = useState(username ?? 'Mi cuenta');
-  const [initials, setInitials] = useState(username?.[0]?.toUpperCase() ?? '?');
-  const [avatarUrl, setAvatarUrl] = useState(null);
+  // Mientras el usuario no llegó (o si falló), se usa el username del token como
+  // respaldo: la sidebar nunca se queda con el pie vacío. Sin "@" acá: ese prefijo lo
+  // pone el JSX en la línea de username, que ya lo muestra aparte.
+  const { username } = useAuthContext();
+  const { currentUser } = useCurrentUser();
 
-  // Copia al estado los datos del usuario que muestra el pie de la sidebar.
-  const applyUser = (user) => {
-    setFullName(`${user.name} ${user.lastName}`.trim());
-    setInitials(getInitials(user.name, user.lastName, user.username));
-    setAvatarUrl(resolveImageUrl(user.avatarUrl));
+  if (!currentUser) {
+    return {
+      fullName: username ?? 'Mi cuenta',
+      username,
+      initials: username?.[0]?.toUpperCase() ?? '?',
+      avatarUrl: null,
+    };
+  }
+
+  return {
+    fullName: `${currentUser.name} ${currentUser.lastName}`.trim(),
+    username,
+    initials: getInitials(currentUser.name, currentUser.lastName, currentUser.username),
+    avatarUrl: resolveImageUrl(currentUser.avatarUrl),
   };
-
-  useEffect(() => {
-    if (!userId) return;
-
-    (async () => {
-      try {
-        const user = await getUserByIdService(userId);
-        if (user) applyUser(user);
-      } catch {
-        // Si falla, se queda con el respaldo (@username) armado más arriba.
-      }
-    })();
-  }, [userId]);
-
-  // Refleja al instante los cambios guardados desde "Editar perfil".
-  useEffect(() => {
-    const handleProfileUpdated = (event) => applyUser(event.detail);
-    window.addEventListener(PROFILE_UPDATED_EVENT, handleProfileUpdated);
-    return () => window.removeEventListener(PROFILE_UPDATED_EVENT, handleProfileUpdated);
-  }, []);
-
-  return { fullName, username, initials, avatarUrl };
 };

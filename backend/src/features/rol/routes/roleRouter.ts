@@ -10,6 +10,7 @@ import {
   deleteRoleById,
   getUsersByRole,
   getRolesByUserId,
+  getAllUserRoles,
   assignRoleToUser,
   removeRoleFromUser,
 } from '../controllers/roleController.js';
@@ -28,6 +29,9 @@ const roleRouter = Router();
 
 // GET /api/roles — devuelve todos los roles (solo admin)
 roleRouter.get('/', verifyToken, verifyAdmin, searchRoles);
+
+// GET /api/roles/users — asignaciones de roles de todos los usuarios, en un solo pedido (solo admin)
+roleRouter.get('/users', verifyToken, verifyAdmin, getAllUserRoles);
 
 // GET /api/roles/users/:userId — devuelve los roles asignados a un usuario (solo admin)
 roleRouter.get('/users/:userId', verifyToken, verifyAdmin, validateUserIdParam, handleValidationErrors, getRolesByUserId);

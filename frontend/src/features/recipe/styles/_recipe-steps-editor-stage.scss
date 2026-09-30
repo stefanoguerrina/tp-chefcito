@@ -166,6 +166,19 @@
       color: $color-on-primary;
       font-weight: 700;
     }
+
+    // Paso sin descripción al intentar publicar: borde y número en rojo (si además es el
+    // que se está viendo, conserva el fondo del activo y solo cambia el borde).
+    &--invalid {
+      border-color: $color-error;
+      color: $color-error;
+    }
+
+    &--active#{&}--invalid {
+      border-color: $color-error;
+      color: $color-on-primary;
+      box-shadow: 0 0 0 2px with-opacity($color-error, 0.35);
+    }
   }
 }
 

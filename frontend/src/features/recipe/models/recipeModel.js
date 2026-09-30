@@ -37,9 +37,9 @@ export const getRecipeImageUrl = (recipe) =>
 // Convierte una receta cruda del backend a las props que espera RecipeCard
 // (core/components). Es la única forma de card de receta de la app: la usan "Mis
 // recetas", la home, el perfil, "Recetas guardadas" y la vista previa del wizard.
-// rating/reviewsCount no vienen en la receta: quien los tenga (ej. el perfil o
-// useRecipeReviewStats, con las estadísticas de reseñas) los agrega encima; si no,
-// la card muestra "Sin reseñas".
+// rating/reviewsCount salen de averageRating/reviewCount, que el backend ya calcula en
+// los listados (GET /api/recipes, búsqueda, feed); si la receta no los trae (ej. la
+// vista previa del wizard), la card muestra "Sin reseñas".
 export const recipeToCardProps = (recipe) => ({
   id: recipe.id,
   title: recipe.name,
@@ -52,6 +52,8 @@ export const recipeToCardProps = (recipe) => ({
     .map((link) => link.category?.name)
     .filter(Boolean),
   timeMinutes: recipe.preparationTime ?? null,
+  rating: recipe.averageRating,
+  reviewsCount: recipe.reviewCount,
 });
 
 // Arma el estado inicial en blanco del formulario para crear una receta nueva. Las
@@ -140,3 +142,24 @@ export const recipeIngredientsToPayload = (ingredients) =>
     idIngredient: Number(item.idIngredient),
     requiredQuantity: item.quantity ? Number(item.quantity) : undefined,
   }));
+
+// Errores del editor sin nada marcado (ver validateRecipeDraft).
+export const NO_RECIPE_ERRORS = { name: '', ingredients: '', invalidStepIndexes: [] };
+
+// Revisa lo obligatorio antes de publicar: título, al menos un ingrediente (solo si hay
+// ingredientes en el catálogo para elegir: el backend exige al menos uno al guardar la
+// lista) y la descripción de cada paso.
+// Recibe: { draft, ingredients, steps, hasIngredientsCatalog }. Devuelve: { name,
+// ingredients, invalidStepIndexes } con el mensaje de cada problema (vacío = está bien) y
+// los índices de los pasos sin descripción.
+export const validateRecipeDraft = ({ draft, ingredients, steps, hasIngredientsCatalog }) => ({
+  name: draft.name.trim() ? '' : 'Ponele un título a tu receta.',
+  ingredients: hasIngredientsCatalog && ingredients.length === 0 ? 'Agregá al menos un ingrediente.' : '',
+  invalidStepIndexes: steps
+    .map((step, index) => (step.instruction.trim() ? null : index))
+    .filter((index) => index !== null),
+});
+
+// Recibe: el resultado de validateRecipeDraft. Devuelve: true si hay algo para corregir.
+export const hasRecipeErrors = (errors) =>
+  Boolean(errors.name || errors.ingredients || errors.invalidStepIndexes.length > 0);

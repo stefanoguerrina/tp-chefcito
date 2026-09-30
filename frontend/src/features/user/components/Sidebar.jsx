@@ -17,13 +17,6 @@ const USER_NAV_LINKS = [
   { icon: 'bookmark', label: 'Recetas guardadas', to: '/guardadas' },
 ];
 
-// Accesos todavía sin feature propia: quedan visibles pero deshabilitados hasta que existan.
-// TODO: conectar con las futuras features de exploración y notificaciones.
-const PENDING_NAV_LINKS = [
-  { icon: 'explore', label: 'Explorar' },
-  { icon: 'notifications', label: 'Notificaciones' },
-].map((link) => ({ ...link, disabled: true, title: `${link.label} (próximamente)` }));
-
 function Sidebar() {
   const { logout } = useAuthContext();
   const { isDarkMode, toggleTheme } = useThemeContext();
@@ -37,7 +30,7 @@ function Sidebar() {
   return (
     <CollapsibleSidebar
       className="Sidebar"
-      items={[...USER_NAV_LINKS, ...PENDING_NAV_LINKS]}
+      items={USER_NAV_LINKS}
       footerItems={footerItems}
       account={{ name: fullName, detail: `@${username}`, initials, avatarUrl, to: '/perfil' }}
     />

@@ -1,32 +1,26 @@
-// Hook que trae los datos completos (nombre y apellido) del admin logueado, para
-// mostrarlos en el pie de la sidebar. El JWT solo trae { id, username, isAdmin }, así
-// que hace falta este pedido extra para tener el nombre real de la persona.
-import { useState, useEffect } from 'react';
-import { getUserByIdService } from '../../user/services/getUserByIdService.js';
+// Hook que arma el nombre completo y las iniciales del admin logueado, para mostrarlos en
+// el pie de la sidebar. Los toma del usuario que ya comparte CurrentUserContext (el JWT
+// solo trae { id, username, isAdmin }): no hace ningún pedido propio.
 import { useAuthContext } from '../../../app/AuthContext.jsx';
+import { useCurrentUser } from '../../../app/CurrentUserContext.jsx';
 import { getPersonInitials } from '../models/adminDashboardModel.js';
 
+// Devuelve: { fullName, initials }.
 export const useAdminProfile = () => {
-  // Arranca con el username del token como respaldo, por si el fetch todavía no resolvió
-  // o llega a fallar: la sidebar nunca se queda con el pie vacío.
-  const { userId, username } = useAuthContext();
-  const [fullName, setFullName] = useState(username ? `@${username}` : 'Administrador');
-  const [initials, setInitials] = useState(username?.[0]?.toUpperCase() ?? 'A');
+  // Mientras el usuario no llegó (o si falló), se usa el username del token como
+  // respaldo: la sidebar nunca se queda con el pie vacío.
+  const { username } = useAuthContext();
+  const { currentUser } = useCurrentUser();
 
-  useEffect(() => {
-    if (!userId) return;
+  if (!currentUser) {
+    return {
+      fullName: username ? `@${username}` : 'Administrador',
+      initials: username?.[0]?.toUpperCase() ?? 'A',
+    };
+  }
 
-    (async () => {
-      try {
-        const user = await getUserByIdService(userId);
-        if (!user) return;
-        setFullName(`${user.name} ${user.lastName}`.trim());
-        setInitials(getPersonInitials(user));
-      } catch {
-        // Si falla, se queda con el respaldo (@username) armado más arriba.
-      }
-    })();
-  }, [userId]);
-
-  return { fullName, initials };
+  return {
+    fullName: `${currentUser.name} ${currentUser.lastName}`.trim(),
+    initials: getPersonInitials(currentUser),
+  };
 };

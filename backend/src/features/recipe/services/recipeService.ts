@@ -7,18 +7,35 @@ import { recipeRepository } from '../repository/recipeRepository.js';
 import type { CreateRecipeData, UpdateRecipeData } from '../models/recipeModel.js';
 import { deleteLocalUpload } from '../../../core/fileStorage.js';
 
-// Devuelve todas las recetas con sus categorías, creador e imágenes.
+// Le suma a cada receta su valoración: averageRating (0 si no tiene reseñas) y
+// reviewCount. Mismos nombres que usan los listados de search y feed.
+// Recibe: recetas del repositorio. Devuelve: las mismas recetas con esos dos campos.
+async function withReviewStats<T extends { id: number }>(recipes: T[]) {
+  const stats = await recipeRepository.findReviewStats(recipes.map((recipe) => recipe.id));
+  const statsByRecipeId = new Map(stats.map((stat) => [stat.idRecipe, stat]));
+
+  return recipes.map((recipe) => {
+    const recipeStats = statsByRecipeId.get(recipe.id);
+    return {
+      ...recipe,
+      averageRating: recipeStats?._avg.rating ? Number(recipeStats._avg.rating) : 0,
+      reviewCount: recipeStats?._count._all ?? 0,
+    };
+  });
+}
+
+// Devuelve todas las recetas con sus categorías, creador, imágenes y valoración.
 export async function getAllRecipes() {
   const recipes = await recipeRepository.findAll();
   if (recipes.length === 0) return null;
-  return recipes;
+  return withReviewStats(recipes);
 }
 
-// Devuelve todas las recetas creadas por un usuario puntual.
+// Devuelve todas las recetas creadas por un usuario puntual, con su valoración.
 export async function getRecipesByUser(idUser: number) {
   const recipes = await recipeRepository.findAllByUser(idUser);
   if (recipes.length === 0) return null;
-  return recipes;
+  return withReviewStats(recipes);
 }
 
 // Busca una receta por ID. Devuelve null si no existe.

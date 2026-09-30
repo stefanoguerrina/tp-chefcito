@@ -23,6 +23,8 @@
 
 ```bash
 npm run dev   # Compila en modo watch y levanta el servidor (puerto 3000)
+npm run build # Build de producción: prisma generate + tsc (a dist/)
+npm start     # Levanta el build de producción (node ./dist/app.js)
 ```
 
 ---
@@ -44,6 +46,12 @@ DB_NAME=chefcito
 
 # JWT
 JWT_SECRET=tu_clave_secreta_aqui
+
+# Opcionales
+# GEMINI_API_KEY=...          # Chefcito Bot (sin esto, /api/assistant/chat responde 503)
+# PORT=3000                   # Puerto del servidor (por defecto 3000)
+# CORS_ORIGINS=https://mi-front.vercel.app,http://localhost:5173
+#                             # Orígenes permitidos, separados por comas (por defecto los de Vite en local)
 ```
 
 > ⚠️ Nunca hardcodear URLs ni credenciales en el código. Siempre usar `process.env`.
@@ -88,7 +96,8 @@ backend/
 │       ├── search/            # Búsqueda rápida: categorías, recetas y usuarios en un solo pedido
 │       ├── follow/            # "Seguir" a otros usuarios (sus "amigos" en la home)
 │       ├── feed/              # Home: recetas y reseñas de amigos, top de recetas de la semana
-│       └── database/          # Endpoint de inicialización/seed (solo dev)
+│       ├── assistant/         # Chefcito Bot: chat con IA (Google Gemini)
+│       └── database/          # Health check de la conexión a la base
 ├── uploads/                   # Imágenes subidas (se crea sola, no se commitea)
 ```
 

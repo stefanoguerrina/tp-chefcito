@@ -218,6 +218,14 @@
     font-weight: 600;
   }
 
+  // Botones de la reseña propia (Editar / Eliminar), uno al lado del otro.
+  &-actions {
+    display: flex;
+    gap: $spacing-xs;
+  }
+
+  // Misma base para los dos botones; solo cambia el color al pasar el mouse.
+  &-editBtn,
   &-deleteBtn {
     display: inline-flex;
     align-items: center;
@@ -235,10 +243,15 @@
     .material-symbols-outlined {
       font-size: 14px;
     }
+  }
 
-    &:hover {
-      color: $color-error;
-      border-color: $color-error;
-    }
+  &-editBtn:hover {
+    color: $color-primary;
+    border-color: $color-primary;
+  }
+
+  &-deleteBtn:hover {
+    color: $color-error;
+    border-color: $color-error;
   }
 }

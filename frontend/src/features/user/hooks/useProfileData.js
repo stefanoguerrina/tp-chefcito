@@ -1,74 +1,86 @@
 // Hook que carga los datos de un perfil: el usuario, sus recetas y las estadísticas de
-// reseñas (por receta y en total). Separa la carga de ProfilePage, que solo se ocupa de
+// reseñas de cada receta. Separa la carga de ProfilePage, que solo se ocupa de
 // mostrar y filtrar esos datos.
+// En el perfil propio el usuario NO se vuelve a pedir: se usa el que ya comparte
+// CurrentUserContext (el mismo que muestra la sidebar), y al editarlo se actualiza ahí.
 import { useState, useEffect } from 'react';
 import { getUserByIdService } from '../services/getUserByIdService.js';
 import { getAllRecipes } from '../../recipe/services/recipeService.js';
-import { getReviewsByRecipe } from '../../review/services/reviewService.js';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
+import { useCurrentUser } from '../../../app/CurrentUserContext.jsx';
 
-// Calcula el promedio de un array de ratings (null si está vacío).
-const average = (ratings) =>
-  ratings.length > 0 ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : null;
-
-// Pide el usuario y sus recetas, y después las reseñas de cada receta en paralelo.
-// El backend solo expone reseñas por receta, por eso el promedio de cada una se calcula
-// acá. No toca el estado: devuelve todo ya calculado.
-// Recibe: userId. Devuelve: { user, recipes, recipeReviewStats }.
-const loadProfileData = async (userId) => {
+// Pide las recetas del perfil y, si es un perfil ajeno, también el usuario (en
+// paralelo). Cada receta ya viene con su averageRating y reviewCount calculados por el
+// backend, así que no hace falta pedir las reseñas de cada una. No toca el estado:
+// devuelve todo ya calculado.
+// Recibe: userId e isOwnProfile. Devuelve: { user (null en el perfil propio), recipes,
+// recipeReviewStats }.
+const loadProfileData = async (userId, isOwnProfile) => {
   const [user, recipes] = await Promise.all([
-    getUserByIdService(userId),
+    isOwnProfile ? null : getUserByIdService(userId),
     fetchListOrEmpty(() => getAllRecipes(userId)),
   ]);
-
-  // Si falla la carga de las reseñas de una receta, esa receta queda sin valoraciones
-  // en vez de romper todo el perfil.
-  const reviewsPerRecipe = await Promise.all(
-    recipes.map((recipe) => getReviewsByRecipe(recipe.id).catch(() => ({ reviews: [] })))
-  );
 
   // Rating/cantidad de reseñas de cada receta, para su card y para ordenar
   // "mejor valoradas primero". Clave: id de receta.
   const recipeReviewStats = {};
-  recipes.forEach((recipe, index) => {
-    const ratings = reviewsPerRecipe[index].reviews.map((review) => review.rating);
-    recipeReviewStats[recipe.id] = { averageRating: average(ratings) ?? 0, totalReviews: ratings.length };
+  recipes.forEach((recipe) => {
+    recipeReviewStats[recipe.id] = {
+      averageRating: recipe.averageRating ?? 0,
+      totalReviews: recipe.reviewCount ?? 0,
+    };
   });
 
   return { user, recipes, recipeReviewStats };
 };
 
-// Recibe: userId. Devuelve los datos del perfil, los estados de carga/error, retry
-// (para el botón "Reintentar") y setUser (para reflejar la edición del perfil).
-export const useProfileData = (userId) => {
-  const [user, setUser] = useState(null);
+// Recibe: userId e isOwnProfile. Devuelve los datos del perfil, los estados de
+// carga/error, retry (para el botón "Reintentar") y setUser (para reflejar la edición
+// del perfil).
+export const useProfileData = (userId, isOwnProfile) => {
+  const { currentUser, currentUserError, isCurrentUserLoading, updateCurrentUser, reloadCurrentUser } =
+    useCurrentUser();
+
+  // Usuario de un perfil ajeno (en el propio se usa currentUser).
+  const [otherUser, setOtherUser] = useState(null);
   const [recipes, setRecipes] = useState([]);
   const [recipeReviewStats, setRecipeReviewStats] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [fetchError, setFetchError] = useState('');
 
   // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
   // llamar desde el useEffect sin renders en cascada.
   const fetchProfile = () =>
-    loadProfileData(userId)
+    loadProfileData(userId, isOwnProfile)
       .then((data) => {
-        setUser(data.user);
+        setOtherUser(data.user);
         setRecipes(data.recipes);
         setRecipeReviewStats(data.recipeReviewStats);
         setFetchError('');
       })
       .catch((err) => setFetchError(err.message))
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsLoadingProfile(false));
 
+  // Reintenta lo que haya fallado: las recetas/usuario de este perfil y, en el propio,
+  // también el usuario compartido si fue ese el que no cargó.
   const retry = () => {
-    setIsLoading(true);
+    setIsLoadingProfile(true);
+    if (isOwnProfile && currentUserError) reloadCurrentUser();
     fetchProfile();
   };
 
   useEffect(() => {
     fetchProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, isOwnProfile]);
 
-  return { user, setUser, recipes, recipeReviewStats, isLoading, fetchError, retry };
+  return {
+    user: isOwnProfile ? currentUser : otherUser,
+    setUser: isOwnProfile ? updateCurrentUser : setOtherUser,
+    recipes,
+    recipeReviewStats,
+    isLoading: isLoadingProfile || (isOwnProfile && isCurrentUserLoading),
+    fetchError: fetchError || (isOwnProfile ? currentUserError : ''),
+    retry,
+  };
 };

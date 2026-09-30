@@ -6,8 +6,9 @@
 // 3. Reseñas de amigos.
 // Al pie de las dos primeras, un aviso con flecha (ProfileScrollHint) lleva a la siguiente.
 // Cada sección carga sus datos por separado (features/feed): si una falla, las otras se
-// ven igual. La sidebar la pone UserLayout. Un admin nunca llega acá: ProtectedRoute lo
-// manda a /admin.
+// ven igual. La 1ª carga al entrar; la 2ª y la 3ª, recién cuando el usuario llega a su
+// pantalla (useHasBeenVisible), así al abrir la home no se piden las tres juntas.
+// La sidebar la pone UserLayout. Un admin nunca llega acá: ProtectedRoute lo manda a /admin.
 import SearchNavbar from '../../search/components/SearchNavbar.jsx';
 import ScrollReveal from '../../../core/components/ScrollReveal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
@@ -16,6 +17,7 @@ import FriendsRecipesSection from '../../feed/components/FriendsRecipesSection.j
 import WeeklyTopSection from '../../feed/components/WeeklyTopSection.jsx';
 import FriendsReviewsSection from '../../feed/components/FriendsReviewsSection.jsx';
 import { useSavedRecipes } from '../../userRecipe/hooks/useSavedRecipes.js';
+import { useHasBeenVisible } from '../../../core/hooks/useHasBeenVisible.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import '../styles/_home-feed.scss';
 
@@ -28,6 +30,9 @@ function HomePage() {
   // Uno solo para toda la home: si una receta aparece en dos secciones (ej. la publicó un
   // amigo y además está en el top), su listón se ve igual en las dos.
   const { savedRecipeIds, handleToggleSave, saveError, clearSaveError } = useSavedRecipes();
+  // Si el usuario ya llegó a la pantalla 2 / 3 (se monta su sección y recién ahí pide datos).
+  const { ref: weeklyTopScreenRef, hasBeenVisible: hasReachedWeeklyTop } = useHasBeenVisible();
+  const { ref: friendsReviewsScreenRef, hasBeenVisible: hasReachedFriendsReviews } = useHasBeenVisible();
 
   return (
     <>
@@ -45,24 +50,26 @@ function HomePage() {
           </ScrollReveal>
         </div>
 
-        <div id={WEEKLY_TOP_SCREEN_ID} className="HomeFeed-screen">
+        <div id={WEEKLY_TOP_SCREEN_ID} ref={weeklyTopScreenRef} className="HomeFeed-screen">
           <ScrollReveal className="HomeFeed-section">
             <div className="HomeFeed-screenBody">
-              <WeeklyTopSection
-                currentUserId={userId}
-                savedRecipeIds={savedRecipeIds}
-                onToggleSave={handleToggleSave}
-              />
+              {hasReachedWeeklyTop && (
+                <WeeklyTopSection
+                  currentUserId={userId}
+                  savedRecipeIds={savedRecipeIds}
+                  onToggleSave={handleToggleSave}
+                />
+              )}
             </div>
             <ProfileScrollHint label="Reseñas de amigos" targetId={FRIENDS_REVIEWS_SCREEN_ID} />
           </ScrollReveal>
         </div>
 
-        <div id={FRIENDS_REVIEWS_SCREEN_ID} className="HomeFeed-screen">
+        <div id={FRIENDS_REVIEWS_SCREEN_ID} ref={friendsReviewsScreenRef} className="HomeFeed-screen">
           <ScrollReveal className="HomeFeed-section">
             {/* Arriba de la pantalla (no centrada): título y reseñas quedan juntos. */}
             <div className="HomeFeed-screenBody HomeFeed-screenBody--top">
-              <FriendsReviewsSection />
+              {hasReachedFriendsReviews && <FriendsReviewsSection />}
             </div>
           </ScrollReveal>
         </div>
