@@ -1,5 +1,5 @@
-// Estilos del componente compartido RecipeHoverOverlay (core/components). Salieron tal cual
-// de RecipeCard.
+// Estilos del componente compartido RecipeHoverOverlay (core/components): la capa oscura
+// con "Ver receta" o, con acciones, un botón por acción uno al lado del otro.
 @use '../../styles/abstracts' as *;
 
 .RecipeHoverOverlay {
@@ -8,6 +8,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
   background: rgba(0, 0, 0, 0.25);
   opacity: 0;
   transition: opacity 0.25s ease;
@@ -22,5 +25,35 @@
     font-size: 14px;
     font-weight: 700;
     box-shadow: $shadow-level-2;
+  }
+
+  // Con acciones son botones de verdad. Solo reciben clicks mientras la capa se ve (la card
+  // les activa pointer-events al pasar el mouse): si no, en un celular un toque podría caer
+  // en un botón invisible en vez de en la card.
+  &-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px $spacing-md;
+    font-size: 13px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    // Botón secundario (ej. "Editar receta"): vidrio oscuro con borde blanco, siempre
+    // legible sobre la foto en los dos temas.
+    &--secondary {
+      border-color: $color-on-image;
+      background: rgba(0, 0, 0, 0.45);
+      color: $color-on-image;
+    }
   }
 }

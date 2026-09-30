@@ -116,6 +116,16 @@ A deactivated user's recipes are hidden, not flagged: every recipe query filters
 them back. Nutritional values are a weak entity of `ingredient` (PK `idIngredient, num`, cascade
 delete) and are saved together with it: `POST/PATCH /api/ingredients` accept `nutritionalValues`
 (replaces the whole set, like `categoryIds`), each value's `servingUnit` = the ingredient's unit.
+Recipe nutrition is computed on the backend, never in the browser: the pure functions in
+`features/recipe/services/recipeNutritionService.ts` add up (quantity / servingAmount) × value per
+ingredient and divide by `recipe.servings` (how many portions it yields; null = whole recipe).
+`GET /api/recipes/:id` is the recipe detail: one response with the recipe, `nutrition` and, when a
+token is sent (`readOptionalToken` in `core/middleware/authMiddleware.ts`, the route stays public),
+`viewer: { isSaved, pantryIngredientIds }`, so the detail page doesn't fetch the whole inventory or
+saved list. `GET /api/search/recipes?nutrition=high-protein,low-carb,...` filters by nutritional
+needs per portion (`NUTRITION_GOALS` in `features/search/models/searchModel.ts`); only recipes with
+servings and complete data for that nutrient match, and the nutrition tables are only queried when
+that filter is on.
 
 Auth model: JWT (`jsonwebtoken`) with an 8h expiry, payload `{ id, username, isAdmin }`, secret from
 `JWT_SECRET`. `isAdmin` is derived at login time from whether the user's roles include
@@ -136,7 +146,8 @@ logged-in user's profile — name, photos — once per session; read it with `us
 instead of calling `getUserByIdService` for the current user, and call `updateCurrentUser` after
 editing the profile so the sidebars update), and defines the full React Router tree. Access is enforced by
 `src/app/ProtectedRoute.jsx` (`allow="guest" | "user" | "admin"`): guests live at `/bienvenida`
-(`AuthPage`), common users under `UserLayout` (sidebar + `<Outlet />`: `/`, `/recetas/:id`,
+(`AuthPage`), common users under `UserLayout` (sidebar + `<Outlet />` + the floating Chefcito Bot button,
+`features/assistant/components/AssistantFloatingButton.jsx`, that opens the chat from every section: `/`, `/recetas/:id`,
 `/mis-recetas[/nueva|/:id/editar]`, `/perfil`, `/usuarios/:id`, `/inventario`, `/guardadas`,
 `/buscar?q=` and `/buscar/recetas|categorias|usuarios` — the `search` feature, whose listing filters
 live in the URL query string),
@@ -191,6 +202,8 @@ keep errors per field (`{ [field]: message }`), render them with `<FieldError />
 also gives it the red border; map backend errors with `mapApiFieldErrors(err.fieldErrors, map)`.
 Data loading inside `useEffect` must only set state inside promise callbacks
 (`.then/.catch/.finally`), otherwise the `react-hooks/set-state-in-effect` lint rule fails.
+`useSavedRecipes({ loadSavedIds: false })` + `setSaved` when the saved state already comes in a
+response (recipe detail) instead of loading every saved id.
 Recipe images: `shared/utils/compressImage.js` (canvas → WebP) before upload and
 `shared/utils/imageUrl.js` (`resolveImageUrl`) to turn `/uploads/...` paths into full URLs.
 

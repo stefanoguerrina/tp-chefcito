@@ -55,15 +55,27 @@ function ProfilePage() {
   const { userId: userIdParam } = useParams();
   const userId = userIdParam ? Number(userIdParam) : currentUserId;
   // Si no es el propio, es de solo lectura: sin edición de nada, "Seguir" y "Donar" en
-  // vez de "Editar perfil", y las recetas se ven (no se editan) al tocarlas.
+  // vez de "Editar perfil", y las recetas solo se ven (sin el botón "Editar receta").
   const isOwnProfile = userId === currentUserId;
 
-  // En el perfil propio, tocar una receta abre el editor (y al terminar vuelve acá);
-  // en uno ajeno, abre el detalle de solo lectura.
-  const handleRecipeCardClick = (recipeId) =>
-    isOwnProfile
-      ? navigate(`/mis-recetas/${recipeId}/editar`, { state: { from: '/perfil' } })
-      : navigate(`/recetas/${recipeId}`);
+  // Tocar una receta abre su detalle (el mismo que ven los demás).
+  const handleRecipeCardClick = (recipeId) => navigate(`/recetas/${recipeId}`);
+
+  // En el perfil propio, al pasar el mouse por una receta aparecen dos botones: "Ver
+  // receta" (el detalle) y "Editar receta" (el editor, que al terminar vuelve acá). En uno
+  // ajeno queda el "Ver receta" de siempre (undefined = sin botones propios).
+  // Recibe: el id de la receta. Devuelve: las acciones para RecipeCard (hoverActions).
+  const getRecipeHoverActions = isOwnProfile
+    ? (recipeId) => [
+      { label: 'Ver receta', icon: 'visibility', onClick: () => handleRecipeCardClick(recipeId) },
+      {
+        label: 'Editar receta',
+        icon: 'edit',
+        variant: 'secondary',
+        onClick: () => navigate(`/mis-recetas/${recipeId}/editar`, { state: { from: '/perfil' } }),
+      },
+    ]
+    : undefined;
 
   // Vuelve a la pantalla anterior; si se entró directo por link (sin historial), a la home.
   const handleBack = () => (location.key !== 'default' ? navigate(-1) : navigate('/'));
@@ -151,6 +163,7 @@ function ProfilePage() {
                 recipes={featuredRecipes}
                 reviewStatsByRecipe={recipeReviewStats}
                 onRecipeClick={handleRecipeCardClick}
+                getRecipeHoverActions={getRecipeHoverActions}
               />
             </div>
             <ProfileScrollHint label="Todas las recetas" targetId={RECIPES_SECTION_ID} />
@@ -181,6 +194,7 @@ function ProfilePage() {
                 isOwnProfile={isOwnProfile}
                 ownerName={user.name}
                 onRecipeClick={handleRecipeCardClick}
+                getRecipeHoverActions={getRecipeHoverActions}
               />
             )
           )}

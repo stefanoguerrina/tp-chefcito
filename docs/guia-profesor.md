@@ -85,6 +85,12 @@ GEMINI_API_KEY=
 > `-- 8. Seguidos` hasta el `COMMIT;` final): carga quién sigue a quién y reseñas de esta
 > semana, sin duplicar lo que ya tenías.
 
+> Si tu base es anterior a los **valores nutricionales de las recetas** (la tabla "Valores
+> nutricionales" del detalle y el filtro "Necesidades nutricionales" del buscador), después
+> del `db push` ejecutá solo la **sección 9** de `demo-seed.sql` (desde `-- 9. Valores
+> nutricionales` hasta el `COMMIT;` final): carga los valores nutricionales de los
+> ingredientes de prueba y cuántas porciones rinde cada receta.
+
 > **¿Ves los acentos raros en la app (por ejemplo "buenÃ­sima" en vez de "buenísima")?**
 > Pasaba con versiones anteriores de `demo-seed.sql` cuando se cargaba desde un cliente de
 > MySQL que no usaba UTF-8 (por ejemplo, la terminal de Windows): los datos quedaban
@@ -142,3 +148,8 @@ Lucía, así que ve sus recetas y reseñas en "Recetas por amigos" y "Reseñas d
 "Top 10 de la semana" con las recetas mejor valoradas de los últimos 7 días. Para probar
 **"Seguir"**, entrá al perfil de `martinlopez` (buscándolo arriba, en la barra de búsqueda) y
 tocá "Seguir": al volver a Inicio aparecen también sus recetas y reseñas.
+
+Cualquier receta de prueba muestra sus **valores nutricionales por porción** al lado de los
+ingredientes. Para el **listado por necesidades nutricionales**, entrá a "Todas las recetas"
+(buscador → "Ver todas") y marcá, por ejemplo, "Alta en proteínas" y "Baja en grasas" en los
+filtros: quedan el guiso de lentejas y el arroz con pollo, cada uno con sus valores por porción.

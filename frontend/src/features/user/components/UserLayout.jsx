@@ -1,8 +1,10 @@
 // Layout de todas las páginas de un usuario común: sidebar fija + el contenido de la ruta
 // activa (<Outlet />). Cada sección (Inicio, Mis recetas, Perfil, etc.) es una ruta hija
 // definida en App.jsx, así que se puede navegar con la URL, usar "Atrás" y recargar (F5).
+// Abajo a la derecha, en todas las secciones, el botón flotante de Chefcito Bot.
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
+import AssistantFloatingButton from '../../assistant/components/AssistantFloatingButton.jsx';
 import '../styles/_home-page.scss';
 
 function UserLayout() {
@@ -15,6 +17,8 @@ function UserLayout() {
           <Outlet />
         </main>
       </div>
+
+      <AssistantFloatingButton />
     </div>
   );
 }

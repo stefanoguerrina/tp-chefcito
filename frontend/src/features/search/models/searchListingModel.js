@@ -61,6 +61,18 @@ export const RATING_FILTER_OPTIONS = [
   { value: '3', label: '3 estrellas o más' },
 ];
 
+// Necesidades nutricionales (se pueden elegir varias: la receta tiene que cumplir todas).
+// value = cómo se escribe en la URL y apiValue = la clave del backend (NUTRITION_GOALS en
+// searchModel.ts, que define los mismos límites por porción que dice cada hint).
+export const NUTRITION_FILTER_OPTIONS = [
+  { value: 'proteica', apiValue: 'high-protein', label: 'Alta en proteínas', hint: '20 gr o más' },
+  { value: 'baja-calorias', apiValue: 'low-calorie', label: 'Baja en calorías', hint: '400 kcal o menos' },
+  { value: 'baja-carbohidratos', apiValue: 'low-carb', label: 'Baja en carbohidratos', hint: '20 gr o menos' },
+  { value: 'baja-grasas', apiValue: 'low-fat', label: 'Baja en grasas', hint: '10 gr o menos' },
+  { value: 'alta-fibra', apiValue: 'high-fiber', label: 'Alta en fibra', hint: '5 gr o más' },
+  { value: 'baja-sodio', apiValue: 'low-sodium', label: 'Baja en sodio', hint: '140 mg o menos' },
+];
+
 // --- Lectura de la URL ---
 
 // El texto buscado, o '' si no hay (o es demasiado corto para el backend).
@@ -89,6 +101,10 @@ export const parseRecipeFilters = (params, { savedOnly = false, authorId = null 
   time: readOption(params, 'tiempo', TIME_FILTER_OPTIONS),
   rating: readOption(params, 'valoracion', RATING_FILTER_OPTIONS),
   ingredientIds: (params.get('ingredientes') ?? '').split(',').map(Number).filter((id) => id > 0),
+  // Solo las que existen (la URL se puede editar a mano).
+  nutritionGoals: (params.get('nutricion') ?? '')
+    .split(',')
+    .filter((value) => NUTRITION_FILTER_OPTIONS.some((option) => option.value === value)),
   pantry: params.get('despensa') === '1',
   sort: readOption(params, 'orden', getRecipeSortOptions({ savedOnly, authorId })),
   page: readPage(params),
@@ -126,6 +142,7 @@ export const recipeFiltersToParams = (filters) =>
     tiempo: filters.time,
     valoracion: filters.rating,
     ingredientes: filters.ingredientIds.join(','),
+    nutricion: filters.nutritionGoals.join(','),
     despensa: filters.pantry ? '1' : '',
     orden: optionForUrl(filters.sort, getRecipeSortOptions(filters)),
     pagina: pageForUrl(filters.page),
@@ -142,6 +159,7 @@ export const recipeFiltersToApiQuery = (filters) => {
     minTime: time.minTime,
     minRating: filters.rating,
     ingredientIds: filters.ingredientIds.join(','),
+    nutrition: filters.nutritionGoals.map((value) => apiValueOf(value, NUTRITION_FILTER_OPTIONS)).join(','),
     pantry: filters.pantry ? 'true' : '',
     savedOnly: filters.savedOnly ? 'true' : '',
     sort: apiValueOf(filters.sort, getRecipeSortOptions(filters)),
@@ -168,11 +186,14 @@ export const nameOrRecipesFiltersToApiQuery = (filters) =>
   }).toString();
 
 // Valores "sin filtrar" de la barra lateral de recetas (para "Limpiar filtros").
-export const EMPTY_RECIPE_SIDEBAR_FILTERS = { categoryId: null, time: '', rating: '', ingredientIds: [] };
+export const EMPTY_RECIPE_SIDEBAR_FILTERS = { categoryId: null, time: '', rating: '', ingredientIds: [], nutritionGoals: [] };
 
-// Cuántos filtros de la barra lateral están activos (cada ingrediente cuenta como uno).
+// Cuántos filtros de la barra lateral están activos (cada ingrediente y cada necesidad
+// nutricional cuentan como uno).
 export const countActiveRecipeFilters = (filters) =>
-  [filters.categoryId, filters.time, filters.rating].filter(Boolean).length + filters.ingredientIds.length;
+  [filters.categoryId, filters.time, filters.rating].filter(Boolean).length
+  + filters.ingredientIds.length
+  + filters.nutritionGoals.length;
 
 // --- Respuestas del backend ---
 
@@ -196,12 +217,14 @@ const toPantryMatch = (raw) => ({
 });
 
 // Respuesta de GET /api/search/recipes → { items, total, page, pageSize, totalPages, pantry }.
-// Cada item tiene las props de RecipeCard (con rating/reviewsCount) + pantryMatch o null.
+// Cada item tiene las props de RecipeCard (con rating/reviewsCount) + pantryMatch o null +
+// nutritionHighlights ([{ name, unit, perServing }] de los nutrientes filtrados, o null).
 export const createRecipeListing = (raw) => ({
   ...toPageInfo(raw),
   items: (raw?.items ?? []).map((recipe) => ({
     ...toRecipeResult(recipe),
     pantryMatch: recipe.pantryMatch ? toPantryMatch(recipe.pantryMatch) : null,
+    nutritionHighlights: recipe.nutritionHighlights ?? null,
   })),
   pantry: raw?.pantry ?? null,
 });

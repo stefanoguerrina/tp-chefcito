@@ -48,6 +48,16 @@
     font-weight: 700;
   }
 
+  // Las porciones son un número corto: el input no necesita todo el ancho.
+  &-field--servings input {
+    max-width: 120px;
+  }
+
+  &-help {
+    font-size: 11px;
+    color: $color-on-surface-variant;
+  }
+
   &-charCount {
     align-self: flex-end;
     font-size: 11px;

@@ -1,35 +1,15 @@
-// Fila de estrellas (Material Symbols) + valor numérico, reutilizada por cualquier
-// feature que muestre el rating de una receta (recipe cards, comentarios, etc.).
+// Valoración de solo lectura con número: las 5 estrellas (RatingStars, con el degradé verde
+// de la marca, igual que "Reseñas de amigos") seguidas del valor y, opcionalmente, la
+// cantidad de reseñas. La usan las reseñas del detalle de receta (ReviewList, ReviewItem).
+import RatingStars from './RatingStars.jsx';
 import './_star-rating.scss';
 
-// Recibe: rating (número 0-5) y, opcionalmente, reviewsCount. Devuelve: 5 íconos de
-// estrella (llena, media o vacía según corresponda) seguidos del valor y la cantidad
-// de reseñas si se pasó.
+// Recibe: rating (número 0-5) y, opcionalmente, reviewsCount. El tamaño de las estrellas
+// lo define quien la usa con --rating-star-size (ver RatingStars).
 function StarRating({ rating, reviewsCount }) {
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating - fullStars >= 0.5;
-
   return (
     <div className="StarRating">
-      {[1, 2, 3, 4, 5].map((position) => {
-        let icon = 'star';
-        let filled = false;
-        if (position <= fullStars) {
-          filled = true;
-        } else if (position === fullStars + 1 && hasHalfStar) {
-          icon = 'star_half';
-          filled = true;
-        }
-        return (
-          <span
-            key={position}
-            className="material-symbols-outlined StarRating-icon"
-            style={filled ? { fontVariationSettings: "'FILL' 1" } : undefined}
-          >
-            {icon}
-          </span>
-        );
-      })}
+      <RatingStars rating={rating} />
       <span className="StarRating-value">{rating.toFixed(1)}</span>
       {typeof reviewsCount === 'number' && (
         <span className="StarRating-count">({reviewsCount} reseñas)</span>

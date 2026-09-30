@@ -6,6 +6,7 @@
 import { recipeRepository } from '../repository/recipeRepository.js';
 import type { CreateRecipeData, UpdateRecipeData } from '../models/recipeModel.js';
 import { deleteLocalUpload } from '../../../core/fileStorage.js';
+import { computeRecipeNutrition } from './recipeNutritionService.js';
 
 // Le suma a cada receta su valoración: averageRating (0 si no tiene reseñas) y
 // reviewCount. Mismos nombres que usan los listados de search y feed.
@@ -38,9 +39,38 @@ export async function getRecipesByUser(idUser: number) {
   return withReviewStats(recipes);
 }
 
-// Busca una receta por ID. Devuelve null si no existe.
-export async function getRecipeById(id: number) {
-  return recipeRepository.findById(id);
+// Detalle de una receta (GET /api/recipes/:id): la receta completa + sus valores
+// nutricionales + los datos del usuario que la mira, todo en una sola respuesta para que
+// la página de detalle no tenga que hacer un pedido por cada cosa.
+// Recibe: el id de la receta y el id del usuario logueado (undefined si no hay sesión).
+// Devuelve: la receta con `nutrition` (ver computeRecipeNutrition) y `viewer`
+// ({ isSaved, pantryIngredientIds } o null sin sesión), o null si no existe.
+export async function getRecipeDetail(id: number, viewerId?: number) {
+  // Las tres consultas son independientes: van en paralelo.
+  const [recipe, savedRow, pantryRows] = await Promise.all([
+    recipeRepository.findDetailById(id),
+    viewerId ? recipeRepository.findSavedByUser(viewerId, id) : Promise.resolve(null),
+    viewerId ? recipeRepository.findPantryIngredientIds(viewerId, id) : Promise.resolve([]),
+  ]);
+  if (!recipe) return null;
+
+  const nutrition = computeRecipeNutrition(
+    recipe.recipeingredient.map((item) => ({
+      name: item.ingredient.name,
+      unitOfMeasure: item.ingredient.unitOfMeasure,
+      requiredQuantity: item.requiredQuantity,
+      nutritionalValues: item.ingredient.nutritionalvalue,
+    })),
+    recipe.servings
+  );
+
+  return {
+    ...recipe,
+    nutrition,
+    viewer: viewerId
+      ? { isSaved: savedRow !== null, pantryIngredientIds: pantryRows.map((row) => row.idIngredient) }
+      : null,
+  };
 }
 
 // Crea una nueva receta para el usuario autenticado. Verifica que todas las

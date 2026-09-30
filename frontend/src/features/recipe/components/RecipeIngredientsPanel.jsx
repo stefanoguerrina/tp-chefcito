@@ -1,26 +1,18 @@
-// Ingredientes del detalle de receta: lista en dos columnas donde el usuario puede ir
-// tildando lo que ya tiene listo, un contador para multiplicar las cantidades (x1, x2...)
-// y la etiqueta "Despensa" en los ingredientes que ya tiene en su inventario.
-// Nada de esto se guarda: es una ayuda para cocinar, se reinicia al salir de la receta.
+// Ingredientes del detalle de receta: lista donde el usuario puede ir tildando lo que ya
+// tiene listo, con la cantidad de cada uno y la etiqueta "Despensa" en los que ya tiene en
+// su inventario. Lo tildado no se guarda: es una ayuda para cocinar, se reinicia al salir.
 import { useState } from 'react';
 import '../styles/_recipe-ingredients-panel.scss';
 
-const MIN_MULTIPLIER = 1;
-const MAX_MULTIPLIER = 10;
-
-// Recibe: la cantidad cruda (Prisma manda los Decimal como string, ej. "400.00") y el
-// multiplicador. Devuelve: el número listo para mostrar, sin decimales de más ("800",
-// "1.5"), o null si el ingrediente no tiene cantidad cargada.
-const formatQuantity = (requiredQuantity, multiplier) => {
-  if (requiredQuantity == null) return null;
-  const value = parseFloat(requiredQuantity) * multiplier;
-  return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(2)));
-};
+// Recibe: la cantidad cruda (Prisma manda los Decimal como string, ej. "400.00").
+// Devuelve: el número listo para mostrar, sin decimales de más ("400", "1.5"), o null si
+// el ingrediente no tiene cantidad cargada.
+const formatQuantity = (requiredQuantity) =>
+  requiredQuantity == null ? null : String(Number(parseFloat(requiredQuantity).toFixed(2)));
 
 // Recibe: ingredients (recipeingredient[] crudo, con su ingredient anidado) y
 // pantryIngredientIds (Set con los ids de ingredientes que el usuario tiene en su inventario).
 function RecipeIngredientsPanel({ ingredients, pantryIngredientIds }) {
-  const [multiplier, setMultiplier] = useState(MIN_MULTIPLIER);
   // Ids de los ingredientes que el usuario ya tildó como listos.
   const [checkedIds, setCheckedIds] = useState(new Set());
 
@@ -40,29 +32,6 @@ function RecipeIngredientsPanel({ ingredients, pantryIngredientIds }) {
           <h2 className="RecipeDetailCard-title">Ingredientes</h2>
           <p className="RecipeDetailCard-subtitle">Marcá los ingredientes que ya tenés listos</p>
         </div>
-
-        {ingredients.length > 0 && (
-          <div className="RecipeIngredientsPanel-multiplier">
-            <span className="RecipeIngredientsPanel-multiplierLabel">Cantidades:</span>
-            <button
-              type="button"
-              onClick={() => setMultiplier((value) => value - 1)}
-              disabled={multiplier <= MIN_MULTIPLIER}
-              aria-label="Reducir cantidades"
-            >
-              −
-            </button>
-            <span className="RecipeIngredientsPanel-multiplierValue">×{multiplier}</span>
-            <button
-              type="button"
-              onClick={() => setMultiplier((value) => value + 1)}
-              disabled={multiplier >= MAX_MULTIPLIER}
-              aria-label="Aumentar cantidades"
-            >
-              +
-            </button>
-          </div>
-        )}
       </div>
 
       {ingredients.length === 0 ? (
@@ -71,7 +40,7 @@ function RecipeIngredientsPanel({ ingredients, pantryIngredientIds }) {
         <ul className="RecipeIngredientsPanel-list">
           {ingredients.map((item) => {
             const isChecked = checkedIds.has(item.idIngredient);
-            const quantity = formatQuantity(item.requiredQuantity, multiplier);
+            const quantity = formatQuantity(item.requiredQuantity);
             return (
               <li
                 key={item.idIngredient}

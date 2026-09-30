@@ -34,6 +34,24 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
   }
 };
 
+// Para rutas públicas que muestran algo extra si hay sesión (ej. el detalle de receta:
+// si la guardaste). Si viene un token válido, adjunta el payload en req.user igual que
+// verifyToken; si no viene, o es inválido o vencido, sigue sin usuario en vez de responder
+// 401 (la ruta se puede ver igual sin sesión).
+export const readOptionalToken = (req: AuthRequest, _res: Response, next: NextFunction): void => {
+  const authHeader = req.headers.authorization;
+  const secret = process.env.JWT_SECRET;
+
+  if (authHeader?.startsWith('Bearer ') && secret) {
+    try {
+      req.user = jwt.verify(authHeader.split(' ')[1], secret) as { id: number; username: string; isAdmin: boolean };
+    } catch {
+      req.user = undefined;
+    }
+  }
+  next();
+};
+
 // Verifica que el usuario autenticado tenga rol de administrador.
 // Debe usarse después de verifyToken. Devuelve 403 si no es admin.
 export const verifyAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {

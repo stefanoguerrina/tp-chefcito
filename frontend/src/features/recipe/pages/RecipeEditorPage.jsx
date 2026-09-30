@@ -105,7 +105,7 @@ function RecipeEditorPage() {
 
   const handleFieldChange = (field, value) => {
     setDraft((prev) => ({ ...prev, [field]: value }));
-    if (field === 'name') validation.clearError('name');
+    if (field === 'name' || field === 'servings') validation.clearError(field);
   };
 
   const handleIngredientsChange = (nextIngredients) => {
@@ -237,6 +237,7 @@ function RecipeEditorPage() {
           values={draft}
           onFieldChange={handleFieldChange}
           nameError={validation.errors.name}
+          servingsError={validation.errors.servings}
         />
 
         <div className="RecipeEditorPage-column">

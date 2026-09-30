@@ -16,8 +16,9 @@ const FAN_PLACES = [
 
 // Recibe: recipes (ya ordenadas de mejor a peor valoración, hasta 3),
 // reviewStatsByRecipe ({ [idReceta]: { averageRating, totalReviews } }) y
-// onRecipeClick(recipeId).
-function FeaturedRecipes({ recipes, reviewStatsByRecipe, onRecipeClick }) {
+// onRecipeClick(recipeId) y getRecipeHoverActions(recipeId) (opcional: los botones que
+// aparecen sobre la foto al pasar el mouse, en el perfil propio).
+function FeaturedRecipes({ recipes, reviewStatsByRecipe, onRecipeClick, getRecipeHoverActions }) {
   return (
     <div className="FeaturedRecipes">
       <h3 className="FeaturedRecipes-title">Recetas destacadas</h3>
@@ -44,6 +45,7 @@ function FeaturedRecipes({ recipes, reviewStatsByRecipe, onRecipeClick }) {
               <RecipeCard
                 recipe={recipeToCardProps(recipe)}
                 onClick={() => onRecipeClick(recipe.id)}
+                hoverActions={getRecipeHoverActions?.(recipe.id)}
                 showSaveButton={false}
                 // Solo foto, nombre y bajada: la valoración ya va arriba de la foto.
                 showAuthor={false}

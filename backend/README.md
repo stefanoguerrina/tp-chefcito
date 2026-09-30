@@ -158,7 +158,7 @@ El esquema vive en `prisma/schema.prisma`. **Es la fuente de verdad de la BD.**
 | `User` | `user` | Usuarios. Baja lógica con `deletedAt`. |
 | `UserRole` | `userrole` | Tabla intermedia N:M entre `user` y `role`. |
 | `role` | `role` | Roles de acceso (`id=1` = Admin). |
-| `recipe` | `recipe` | Recetas creadas por usuarios. |
+| `recipe` | `recipe` | Recetas creadas por usuarios. `servings` = porciones que rinde (para los valores nutricionales por porción). |
 | `ingredient` | `ingredient` | Ingredientes globales. |
 | `ingredientcategory` | `ingredientcategory` | Categorías de ingredientes. |
 | `ingredientcategoryingredient` | — | Tabla intermedia N:M ingrediente↔categoría. |
@@ -198,6 +198,7 @@ npx prisma migrate dev --name <nombre>  # Crea una migración nombrada
 | Middleware | Cuándo usarlo |
 |-----------|--------------|
 | `verifyToken` | Toda ruta que requiera usuario autenticado. Agrega `req.user`. |
+| `readOptionalToken` | Rutas públicas que suman algo si hay sesión (ej. `GET /recipes/:id`). Si el token es válido agrega `req.user`; si falta o es inválido, sigue sin usuario (no responde 401). |
 | `verifyAdmin` | Rutas solo para administradores. Usar **después** de `verifyToken`. |
 | `verifyOwnerOrAdmin` | Permite acceso si el usuario es el dueño del recurso (`params.id`) **o** es admin. |
 

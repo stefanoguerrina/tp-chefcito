@@ -1,5 +1,5 @@
 // Estilos del panel de filtros del listado de recetas (features/search/components:
-// RecipeFiltersPanel, FilterRadioGroup e IngredientChecklist).
+// RecipeFiltersPanel, FilterRadioGroup, IngredientChecklist y NutritionGoalsChecklist).
 @use '../../../styles/abstracts' as *;
 
 .RecipeFiltersPanel {
@@ -122,6 +122,14 @@
     gap: $spacing-sm;
   }
 
+  // Dato chico al lado de una opción (ej. "20 gr o más").
+  &-hint {
+    display: block;
+    font-size: 11px;
+    line-height: 1.3;
+    color: $color-on-surface-variant;
+  }
+
   &-option {
     display: flex;
     align-items: center;
@@ -174,11 +182,23 @@
     }
   }
 
-  // Lista con alto máximo: el catálogo de ingredientes puede ser largo.
+  // Lista con alto máximo: el catálogo de ingredientes puede ser largo. Se desliza con la
+  // ruedita o el dedo, sin barra visible (igual que DropdownSelect y RecipeSearchModal).
   &-list {
     max-height: 220px;
     overflow-y: auto;
-    scrollbar-width: thin;
+    // Aire abajo para que el difuminado no tape el último ingrediente al llegar al final.
+    padding-bottom: $spacing-lg;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    // Sin barra, el difuminado del final es la pista de que hay más ingredientes para bajar.
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
   }
 
   &-empty {
