@@ -22,8 +22,11 @@ import '../../search/styles/_search-listing.scss';
 
 // Recibe: authorId (dueño del perfil), totalRecipes (cuántas recetas tiene en total, para el
 // botón "Todas (N)"), categories ([{ id, name }] de sus recetas, para el filtro),
-// isOwnProfile, ownerName y onRecipeClick(recipeId).
-function ProfileRecipeGallery({ authorId, totalRecipes, categories, isOwnProfile, ownerName, onRecipeClick }) {
+// isOwnProfile, ownerName, onRecipeClick(recipeId) y getRecipeHoverActions(recipeId)
+// (opcional: los botones que aparecen sobre la foto al pasar el mouse, en el perfil propio).
+function ProfileRecipeGallery({
+  authorId, totalRecipes, categories, isOwnProfile, ownerName, onRecipeClick, getRecipeHoverActions,
+}) {
   const sectionRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = parseRecipeFilters(searchParams, { authorId });
@@ -130,6 +133,7 @@ function ProfileRecipeGallery({ authorId, totalRecipes, categories, isOwnProfile
                       key={recipe.id}
                       recipe={recipe}
                       onClick={() => onRecipeClick(recipe.id)}
+                      hoverActions={getRecipeHoverActions?.(recipe.id)}
                       showSaveButton={false}
                       // En el perfil propio el autor sos vos: no hace falta mostrarlo.
                       showAuthor={!isOwnProfile}

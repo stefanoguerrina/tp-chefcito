@@ -1,8 +1,9 @@
-// Cabecera del detalle de receta: categorías y tiempo de preparación, acciones (guardar y
-// compartir), título, descripción y, abajo, el autor con la acción que corresponda
-// ("Editar receta" si es propia, "Donar" si es de otro usuario).
+// Cabecera del detalle de receta: categorías, tiempo de preparación y porciones, acciones
+// (guardar y compartir), título, descripción y, abajo, el autor con la acción que
+// corresponda ("Editar receta" si es propia, "Donar" si es de otro usuario).
 import { useState } from 'react';
 import { resolveImageUrl } from '../../../shared/utils/imageUrl.js';
+import { formatServings } from '../models/recipeModel.js';
 import '../styles/_recipe-detail-header.scss';
 
 // Iniciales del autor para el avatar de respaldo (sin foto o con la URL rota).
@@ -10,7 +11,7 @@ const getInitials = (user) =>
   `${user?.name?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase() || user?.username?.[0]?.toUpperCase() || '?';
 
 // Recibe:
-//   recipe: cruda del backend (name, description, preparationTime, recipecategory[], user).
+//   recipe: cruda del backend (name, description, preparationTime, servings, recipecategory[], user).
 //   isOwnRecipe: si la creó el usuario logueado (cambia la acción del pie).
 //   canSave / isSaved / onSave: botón "Guardar" (solo en recetas de otros).
 //   onShare, onAuthorClick(authorId), onEdit, onDonate: acciones de cada botón.
@@ -35,6 +36,12 @@ function RecipeDetailHeader({
             <span className="RecipeDetailHeader-chip RecipeDetailHeader-chip--muted">
               <span className="material-symbols-outlined">schedule</span>
               {recipe.preparationTime} min
+            </span>
+          )}
+          {recipe.servings && (
+            <span className="RecipeDetailHeader-chip RecipeDetailHeader-chip--muted">
+              <span className="material-symbols-outlined">restaurant</span>
+              {formatServings(recipe.servings)}
             </span>
           )}
         </div>

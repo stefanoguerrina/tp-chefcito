@@ -1,24 +1,28 @@
 // Hook que sabe qué recetas guardó el usuario autenticado y permite guardar/quitar una.
-// Lo usan el feed de la home (para pintar el listón de cada card) y el detalle de una
-// receta (botón "Guardar"), así los dos muestran siempre el mismo estado.
+// Lo usan el feed de la home y los listados (para pintar el listón de cada card) y el
+// detalle de una receta (botón "Guardar"), así todos muestran siempre el mismo estado.
 import { useState, useEffect } from 'react';
 import { getSavedRecipeIds, createUserRecipe, deleteUserRecipe } from '../services/userRecipeService.js';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 
-// Devuelve: savedRecipeIds (Set de ids), handleToggleSave(idRecipe), saveError (mensaje
-// del último guardado que falló, para mostrarlo en un modal) y clearSaveError.
-export const useSavedRecipes = () => {
+// Recibe (opcional): { loadSavedIds } — false cuando quien lo usa ya sabe si su receta está
+// guardada (el detalle de receta lo recibe en la misma respuesta de la receta): así no se
+// piden todas las guardadas del usuario solo para una. En ese caso, informarlo con setSaved.
+// Devuelve: savedRecipeIds (Set de ids), setSaved(idRecipe, isSaved), handleToggleSave(idRecipe),
+// saveError (mensaje del último guardado que falló, para mostrarlo en un modal) y clearSaveError.
+export const useSavedRecipes = ({ loadSavedIds = true } = {}) => {
   const { userId } = useAuthContext();
   const [savedRecipeIds, setSavedRecipeIds] = useState(new Set());
   const [saveError, setSaveError] = useState('');
 
   // Si falla la carga, las cards simplemente arrancan sin marcar como guardadas.
   useEffect(() => {
+    if (!loadSavedIds) return;
     fetchListOrEmpty(() => getSavedRecipeIds(userId))
       .then((ids) => setSavedRecipeIds(new Set(ids)))
       .catch(() => setSavedRecipeIds(new Set()));
-  }, [userId]);
+  }, [userId, loadSavedIds]);
 
   // Actualiza el conjunto de ids sin mutar el Set anterior (React necesita uno nuevo).
   const setSaved = (idRecipe, isSaved) => {
@@ -50,5 +54,5 @@ export const useSavedRecipes = () => {
     }
   };
 
-  return { savedRecipeIds, handleToggleSave, saveError, clearSaveError: () => setSaveError('') };
+  return { savedRecipeIds, setSaved, handleToggleSave, saveError, clearSaveError: () => setSaveError('') };
 };

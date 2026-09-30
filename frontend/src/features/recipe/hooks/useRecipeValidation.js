@@ -32,7 +32,8 @@ export const useRecipeValidation = () => {
     return true;
   };
 
-  // Borra el error de un campo cuando el usuario lo modifica. Recibe: 'name' | 'ingredients'.
+  // Borra el error de un campo cuando el usuario lo modifica.
+  // Recibe: 'name' | 'servings' | 'ingredients'.
   const clearError = (field) => setErrors((prev) => ({ ...prev, [field]: '' }));
 
   // Al escribir en un paso marcado, su marca se va. Si se borró un paso, los índices se

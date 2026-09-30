@@ -3,7 +3,7 @@
 import { Request, Response } from 'express';
 import * as searchService from '../services/searchService.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
-import type { NameOrRecipesSort, RecipeSort } from '../models/searchModel.js';
+import type { NameOrRecipesSort, NutritionGoal, RecipeSort } from '../models/searchModel.js';
 
 // Los query params llegan como string (o no llegan). Ya vienen validados por el
 // middleware, así que acá solo se convierten al tipo que espera el service.
@@ -28,7 +28,8 @@ export const quickSearch = async (req: Request, res: Response): Promise<void> =>
 };
 
 // Listado de recetas con filtros. Todos los query params son opcionales:
-// q, categoryId, maxTime, minTime, minRating, ingredientIds (ej. "3,8"), pantry
+// q, categoryId, maxTime, minTime, minRating, ingredientIds (ej. "3,8"), nutrition
+// (necesidades nutricionales, ej. "high-protein,low-carb"), pantry
 // ("true" = solo recetas que se pueden hacer con la despensa del usuario del token),
 // savedOnly ("true" = solo las que guardó el usuario del token), authorId (solo las que
 // publicó ese usuario, para la galería del perfil), sort (relevance |
@@ -37,7 +38,7 @@ export const quickSearch = async (req: Request, res: Response): Promise<void> =>
 // GET /api/search/recipes
 export const listRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { q, categoryId, authorId, maxTime, minTime, minRating, ingredientIds, pantry, savedOnly, sort, page } = req.query;
+    const { q, categoryId, authorId, maxTime, minTime, minRating, ingredientIds, nutrition, pantry, savedOnly, sort, page } = req.query;
     const results = await searchService.listRecipes(
       {
         term: optionalText(q),
@@ -49,6 +50,8 @@ export const listRecipes = async (req: AuthRequest, res: Response): Promise<void
         minTime: optionalNumber(minTime),
         minRating: optionalNumber(minRating),
         ingredientIds: typeof ingredientIds === 'string' ? ingredientIds.split(',').map(Number) : [],
+        // Set: si alguien repite una necesidad en la URL, se evalúa una sola vez.
+        nutritionGoals: typeof nutrition === 'string' ? [...new Set(nutrition.split(',') as NutritionGoal[])] : [],
         pantry: pantry === 'true',
         sort: (sort as RecipeSort | undefined) ?? 'relevance',
         page: pageNumber(page),

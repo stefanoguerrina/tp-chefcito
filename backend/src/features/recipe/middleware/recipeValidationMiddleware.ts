@@ -2,7 +2,7 @@
 // Se ejecutan antes del controller para rechazar datos inválidos con mensajes claros.
 import { body, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
-import { RECIPE_DIFFICULTIES } from '../models/recipeModel.js';
+import { RECIPE_DIFFICULTIES, RECIPE_SERVINGS_MAX, RECIPE_SERVINGS_MIN } from '../models/recipeModel.js';
 
 // Reglas de validación para crear una receta (POST /).
 export const validateCreateRecipe = [
@@ -21,6 +21,10 @@ export const validateCreateRecipe = [
     .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('El tiempo de preparación debe ser un número entero positivo (en minutos).'),
+  body('servings')
+    .optional({ nullable: true })
+    .isInt({ min: RECIPE_SERVINGS_MIN, max: RECIPE_SERVINGS_MAX })
+    .withMessage(`Las porciones deben ser un número entero entre ${RECIPE_SERVINGS_MIN} y ${RECIPE_SERVINGS_MAX}.`),
   body('difficulty')
     .optional({ nullable: true })
     .isIn(RECIPE_DIFFICULTIES)
@@ -51,6 +55,10 @@ export const validateUpdateRecipe = [
     .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('El tiempo de preparación debe ser un número entero positivo (en minutos).'),
+  body('servings')
+    .optional({ nullable: true })
+    .isInt({ min: RECIPE_SERVINGS_MIN, max: RECIPE_SERVINGS_MAX })
+    .withMessage(`Las porciones deben ser un número entero entre ${RECIPE_SERVINGS_MIN} y ${RECIPE_SERVINGS_MAX}.`),
   body('difficulty')
     .optional({ nullable: true })
     .isIn(RECIPE_DIFFICULTIES)
@@ -65,7 +73,7 @@ export const validateUpdateRecipe = [
   // Verificamos que al menos un campo editable esté presente en el body.
   body()
     .custom((_, { req }) => {
-      const campos = ['name', 'description', 'preparationTime', 'difficulty', 'categoryIds'];
+      const campos = ['name', 'description', 'preparationTime', 'servings', 'difficulty', 'categoryIds'];
       const hayAlguno = campos.some((c) => req.body[c] !== undefined);
       if (!hayAlguno) {
         throw new Error('Se debe enviar al menos un campo editable.');

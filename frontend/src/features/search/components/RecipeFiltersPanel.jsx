@@ -1,9 +1,10 @@
 // Panel de filtros del listado de recetas (/buscar/recetas): tiempo de preparación,
-// valoración, categoría e ingredientes. En desktop es una columna fija a la izquierda;
+// valoración, necesidades nutricionales, categoría e ingredientes. En desktop es una columna fija a la izquierda;
 // en mobile se despliega con el botón "Filtros" para no tapar los resultados.
 import { useState } from 'react';
 import FilterRadioGroup from './FilterRadioGroup.jsx';
 import IngredientChecklist from './IngredientChecklist.jsx';
+import NutritionGoalsChecklist from './NutritionGoalsChecklist.jsx';
 import { RATING_FILTER_OPTIONS, TIME_FILTER_OPTIONS } from '../models/searchListingModel.js';
 import '../styles/_recipe-filters-panel.scss';
 
@@ -60,6 +61,11 @@ function RecipeFiltersPanel({ filters, categories, ingredients, activeCount, onC
           options={RATING_FILTER_OPTIONS}
           value={filters.rating}
           onChange={(rating) => onChange({ rating })}
+        />
+
+        <NutritionGoalsChecklist
+          selectedValues={filters.nutritionGoals}
+          onChange={(nutritionGoals) => onChange({ nutritionGoals })}
         />
 
         {categories.length > 0 && (

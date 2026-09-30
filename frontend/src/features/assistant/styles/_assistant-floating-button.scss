@@ -1,0 +1,62 @@
+// Estilos del botón flotante de Chefcito Bot (features/assistant/components/AssistantFloatingButton).
+// Círculo fijo abajo a la derecha; al pasar el mouse (o con foco de teclado) se estira como
+// una pastilla y aparece el texto "Chefcito Bot".
+@use '../../../styles/abstracts' as *;
+
+.AssistantFloatingButton {
+  position: fixed;
+  right: $spacing-md;
+  bottom: $spacing-md;
+  // Arriba del contenido, debajo de la sidebar abierta en mobile, los modales y los avisos.
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 14px;
+  border: none;
+  border-radius: $radius-full;
+  background: $gradient-brand;
+  color: $color-on-primary;
+  font-family: $font-body;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: $shadow-level-2;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  @include respond-to(md) {
+    right: $spacing-xl;
+    bottom: $spacing-xl;
+    height: 56px;
+    padding: 0 16px;
+  }
+
+  .material-symbols-outlined {
+    font-size: 24px;
+  }
+
+  // El texto está escondido (ancho 0) y se despliega al pasar el mouse.
+  &-label {
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    transition: max-width 0.25s ease, margin-left 0.25s ease, opacity 0.2s ease;
+  }
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px);
+
+    .AssistantFloatingButton-label {
+      max-width: 140px;
+      margin-left: $spacing-sm;
+      opacity: 1;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 3px;
+  }
+}

@@ -99,6 +99,27 @@
   padding: $spacing-lg;
   overflow-y: auto;
   background: $color-surface-container-low;
+
+  // Se desliza con la ruedita o el dedo, sin barra visible (igual que DropdownSelect y el
+  // filtro de ingredientes).
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  // Sin barra, el difuminado de arriba y de abajo es la pista de que hay más mensajes para
+  // ese lado. Cada uno ocupa solo el padding, así que si no hay nada oculto no tapa nada.
+  $chat-fade: linear-gradient(
+    to bottom,
+    transparent,
+    #000 $spacing-lg,
+    #000 calc(100% - #{$spacing-lg}),
+    transparent
+  );
+  -webkit-mask-image: $chat-fade;
+  mask-image: $chat-fade;
 }
 
 .AssistantChat-welcome {

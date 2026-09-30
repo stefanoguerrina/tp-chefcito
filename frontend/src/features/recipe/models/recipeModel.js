@@ -17,6 +17,10 @@ export const RECIPE_DIFFICULTY_ICON = 'signal_cellular_alt';
 export const RECIPE_NAME_MAX_LENGTH = 150;
 export const RECIPE_DESCRIPTION_MAX_LENGTH = 2000;
 
+// Porciones que acepta el backend (RECIPE_SERVINGS_MIN/MAX en recipeModel.ts).
+export const RECIPE_SERVINGS_MIN = 1;
+export const RECIPE_SERVINGS_MAX = 50;
+
 // Imagen de reemplazo para recetas sin foto de portada todavía.
 export const RECIPE_PLACEHOLDER_IMAGE = 'https://placehold.co/480x360/f9f3eb/8d7169?text=Sin+foto';
 
@@ -24,6 +28,16 @@ export const RECIPE_PLACEHOLDER_IMAGE = 'https://placehold.co/480x360/f9f3eb/8d7
 // ("25 min" o "Sin definir"), mismo formato que muestra RecipeCard.
 export const formatPreparationTime = (timeMinutes) =>
   timeMinutes === null || timeMinutes === undefined || timeMinutes === '' ? 'Sin definir' : `${timeMinutes} min`;
+
+// Recibe: una cantidad de un nutriente (número) y su unidad. Devuelve el texto para mostrar
+// con coma decimal y sin decimales de más: "38,7 gr", "467 kcal".
+export const formatNutrientAmount = (amount, unit) =>
+  `${amount.toLocaleString('es-AR', { maximumFractionDigits: 1 })}${unit ? ` ${unit}` : ''}`;
+
+// Recibe: servings (número o null). Devuelve el texto de las porciones ("4 porciones",
+// "1 porción") o null si la receta no lo indica.
+export const formatServings = (servings) =>
+  servings ? `${servings} ${servings === 1 ? 'porción' : 'porciones'}` : null;
 
 // Devuelve la imagen principal de una receta cruda (la marcada isMain o, si no hay, la
 // primera), o null si todavía no tiene ninguna.
@@ -68,6 +82,8 @@ export const createEmptyRecipeDraft = () => ({
   // Una receta puede tener varias categorías (recipecategory es N a N): array de ids
   // en string, para que el picker los compare igual que <option value>.
   categoryIds: [],
+  // Porciones que rinde, como texto del input ('' = sin indicar).
+  servings: '',
 });
 
 // Convierte una receta cruda del backend al estado que espera el formulario de edición.
@@ -75,6 +91,7 @@ export const recipeToDraft = (recipe) => ({
   name: recipe.name ?? '',
   description: recipe.description ?? '',
   categoryIds: (recipe.recipecategory ?? []).map((link) => String(link.idCategory)),
+  servings: recipe.servings != null ? String(recipe.servings) : '',
 });
 
 // Suma el tiempo estimado de cada paso para que sea el tiempo de preparación de la
@@ -122,10 +139,12 @@ export const recipeImagesToDraft = (images) =>
 // Arma el body para POST/PATCH /api/recipes a partir del estado del formulario.
 // preparationTime no viene del draft: RecipeEditorPage lo suma con
 // computePreparationTimeFromSteps y lo agrega antes de mandar el pedido.
+// servings va en null (no undefined) si se borró: así una edición también lo limpia.
 export const draftToRecipePayload = (draft) => ({
   name: draft.name.trim(),
   description: draft.description.trim() || undefined,
   categoryIds: draft.categoryIds.map(Number),
+  servings: draft.servings ? Number(draft.servings) : null,
 });
 
 // Arma el array de pasos para PUT /api/recipes/:id/steps a partir del estado del formulario.
@@ -144,16 +163,27 @@ export const recipeIngredientsToPayload = (ingredients) =>
   }));
 
 // Errores del editor sin nada marcado (ver validateRecipeDraft).
-export const NO_RECIPE_ERRORS = { name: '', ingredients: '', invalidStepIndexes: [] };
+export const NO_RECIPE_ERRORS = { name: '', servings: '', ingredients: '', invalidStepIndexes: [] };
+
+// Recibe: las porciones como texto del input. Devuelve el mensaje de error, o '' si están
+// bien (vacío también está bien: son opcionales).
+const validateServings = (servings) => {
+  if (!servings) return '';
+  const value = Number(servings);
+  return Number.isInteger(value) && value >= RECIPE_SERVINGS_MIN && value <= RECIPE_SERVINGS_MAX
+    ? ''
+    : `Ingresá un número entero entre ${RECIPE_SERVINGS_MIN} y ${RECIPE_SERVINGS_MAX}.`;
+};
 
 // Revisa lo obligatorio antes de publicar: título, al menos un ingrediente (solo si hay
 // ingredientes en el catálogo para elegir: el backend exige al menos uno al guardar la
-// lista) y la descripción de cada paso.
+// lista) y la descripción de cada paso; y que las porciones, si se cargaron, sean válidas.
 // Recibe: { draft, ingredients, steps, hasIngredientsCatalog }. Devuelve: { name,
-// ingredients, invalidStepIndexes } con el mensaje de cada problema (vacío = está bien) y
-// los índices de los pasos sin descripción.
+// servings, ingredients, invalidStepIndexes } con el mensaje de cada problema (vacío = está
+// bien) y los índices de los pasos sin descripción.
 export const validateRecipeDraft = ({ draft, ingredients, steps, hasIngredientsCatalog }) => ({
   name: draft.name.trim() ? '' : 'Ponele un título a tu receta.',
+  servings: validateServings(draft.servings),
   ingredients: hasIngredientsCatalog && ingredients.length === 0 ? 'Agregá al menos un ingrediente.' : '',
   invalidStepIndexes: steps
     .map((step, index) => (step.instruction.trim() ? null : index))
@@ -162,4 +192,4 @@ export const validateRecipeDraft = ({ draft, ingredients, steps, hasIngredientsC
 
 // Recibe: el resultado de validateRecipeDraft. Devuelve: true si hay algo para corregir.
 export const hasRecipeErrors = (errors) =>
-  Boolean(errors.name || errors.ingredients || errors.invalidStepIndexes.length > 0);
+  Boolean(errors.name || errors.servings || errors.ingredients || errors.invalidStepIndexes.length > 0);

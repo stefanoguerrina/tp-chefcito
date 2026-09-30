@@ -1,5 +1,6 @@
-// Estilos del selector interactivo de rating (StarPicker).
-// Las estrellas responden al hover con color dorado del sistema de diseño de Chefcito.
+// Estilos del selector interactivo de rating (StarPicker). Mismo dibujo que RatingStars
+// (core/components/_rating-stars.scss): contorno gris y relleno con el degradé verde de la
+// marca, recortado a la mitad en las medias estrellas.
 @use '../../../styles/abstracts' as *;
 
 .StarPicker {
@@ -10,18 +11,14 @@
   user-select: none;
 
   &-star {
-    font-size: 32px;
-    color: $color-outline-variant;
-    transition: color 0.1s, transform 0.1s;
-
-    // Estrella sobrevolada o llena: toma el color de estrellas del sistema Chefcito.
-    &[style] {
-      color: $color-tertiary-fixed-dim;
-    }
+    position: relative;
+    display: inline-flex;
+    width: 32px;
+    height: 32px;
+    transition: transform 0.1s;
 
     &:hover {
       transform: scale(1.15);
-      color: $color-tertiary-fixed-dim;
     }
 
     &:focus-visible {
@@ -30,11 +27,40 @@
     }
   }
 
+  // Contorno: la estrella vacía, siempre visible.
+  &-outline {
+    font-size: 32px;
+    color: $color-outline;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  // Relleno: tapado hasta el % que corresponde (50% = media estrella).
+  &-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  // El ícono mide la estrella entera aunque su contenedor esté recortado: así el degradé
+  // cubre la estrella completa y la media estrella muestra solo su mitad.
+  &-fillIcon {
+    display: block;
+    width: 32px;
+    font-size: 32px;
+    background: $gradient-brand;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
   &-value {
     font-family: $font-body;
     font-size: 16px;
     font-weight: 700;
-    color: $color-tertiary;
+    color: $color-primary;
     margin-left: $spacing-sm;
   }
 }

@@ -4,6 +4,7 @@ import { query, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import {
   NAME_OR_RECIPES_SORTS,
+  NUTRITION_GOAL_KEYS,
   RECIPE_SORTS,
   SEARCH_TERM_MAX_LENGTH,
   SEARCH_TERM_MIN_LENGTH,
@@ -62,6 +63,13 @@ export const validateRecipeListing = [
     .optional()
     .matches(/^\d+(,\d+)*$/)
     .withMessage('Los ingredientes deben ser ids separados por coma.'),
+  // Necesidades nutricionales separadas por coma, ej. "high-protein,low-carb".
+  query('nutrition')
+    .optional()
+    .custom((value) =>
+      typeof value === 'string'
+      && value.split(',').every((goal) => (NUTRITION_GOAL_KEYS as readonly string[]).includes(goal)))
+    .withMessage(`Las necesidades nutricionales deben ser algunas de: ${NUTRITION_GOAL_KEYS.join(', ')}.`),
   query('pantry')
     .optional()
     .isIn(['true', 'false'])

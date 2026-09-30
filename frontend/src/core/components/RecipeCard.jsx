@@ -25,11 +25,14 @@ const formatRating = (rating, reviewsCount) =>
 //             rating?, reviewsCount? } (ver recipeToCardProps). Sin rating/reviewsCount,
 //             o con reviewsCount en 0, muestra "Sin reseñas".
 //   onClick: abre la receta (opcional; si no viene, la card no es clickeable).
+//   hoverActions: botones que aparecen sobre la foto al pasar el mouse, en vez de "Ver
+//   receta" (ej. "Ver receta" / "Editar receta" en las recetas del perfil propio). Ver
+//   RecipeHoverOverlay: [{ label, icon, onClick, variant? }].
 //   showSaveButton: oculta el botón de guardar donde no tiene sentido (ej. tus propias recetas).
 //   showAuthor / showTime: ocultan el autor y el tiempo de preparación donde son obvios o
 //   no aportan (ej. "Mis recetas": ya sabés que la creaste vos y cuánto tarda).
-//   showRating: oculta la valoración (ej. las recetas del perfil propio, que se abren para
-//   editarlas: ahí la card queda limpia, sin reseñas).
+//   showRating: oculta la valoración donde no aporta (ej. "Mis recetas" o las destacadas
+//   del perfil, que ya la muestran arriba de la foto).
 //   showCategories: oculta los chips de categoría sobre la foto (ej. el top 5 de la landing,
 //   donde la foto se ve más limpia y el puesto ya es lo que importa).
 //   isSaved / onToggleSave: estado y handler del botón de guardar de arriba a la derecha.
@@ -45,7 +48,7 @@ const formatRating = (rating, reviewsCount) =>
 function RecipeCard({
   recipe, onClick, showSaveButton = true, showAuthor = true, showTime = true, showRating = true,
   showCategories = true, horizontal = false, saveButtonInCorner = false, authorNote,
-  isSaved, onToggleSave, onEdit, onDelete, children,
+  hoverActions, isSaved, onToggleSave, onEdit, onDelete, children,
 }) {
   const {
     title, description, image, author, authorAvatar,
@@ -80,7 +83,7 @@ function RecipeCard({
         <img className="RecipeCard-image" src={image} alt={title} />
         <div className="RecipeCard-imageShade" />
 
-        {onClick && <RecipeHoverOverlay />}
+        {(onClick || hoverActions) && <RecipeHoverOverlay actions={hoverActions} />}
 
         {visibleCategories.length > 0 && (
           <div className="RecipeCard-categories">

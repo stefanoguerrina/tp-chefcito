@@ -1,7 +1,8 @@
 // Estilos de la página de detalle de receta (RecipeDetailPage): el layout de dos columnas,
 // el botón "Volver", el aviso flotante y la base compartida de todas sus tarjetas
-// (.RecipeDetailCard: galería, cabecera, ingredientes y pasos; cada una suma lo suyo en su
-// propio partial). Mobile-first: una columna; desde lg, dos columnas iguales.
+// (.RecipeDetailCard: galería, cabecera, ingredientes, valores nutricionales y pasos; cada
+// una suma lo suyo en su propio partial). Mobile-first: una columna; desde lg, dos
+// columnas iguales.
 @use '../../../styles/abstracts' as *;
 
 .RecipeDetailPage {
@@ -62,6 +63,16 @@
     flex-direction: column;
     gap: $spacing-lg;
     min-width: 0;
+  }
+
+  // Ingredientes y valores nutricionales, lado a lado cuando entran (cada uno necesita
+  // ~260px); si no, uno debajo del otro. auto-fit decide solo según el ancho disponible,
+  // sin media queries: la columna izquierda cambia mucho de ancho según la pantalla.
+  &-pair {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: $spacing-lg;
+    align-items: start;
   }
 
   // Aviso flotante (ej. "¡Enlace copiado!"): abajo a la derecha, arriba de todo.
@@ -138,6 +149,7 @@
   &-subtitle {
     margin: 2px 0 0;
     font-size: 12px;
+    line-height: 1.4;
     color: $color-on-surface-variant;
   }
 
