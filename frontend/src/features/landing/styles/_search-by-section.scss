@@ -1,0 +1,270 @@
+// Estilos de la 3ª pantalla de la landing: "Buscá por" (menú + mosaico animado).
+@use '../../../styles/abstracts' as *;
+
+// Tamaño de los títulos del menú. De acá sale casi todo lo demás de la pantalla, así que
+// van arriba de todo: los tres títulos son de dos renglones con line-height 1.
+$search-by-item-min: 30px;
+$search-by-item-preferred: 5.1svh;
+$search-by-item-max: 43px;
+// Separación entre un título y el siguiente.
+$search-by-menu-gap: $spacing-lg;
+
+// Alto del listado completo: 3 títulos × 2 renglones + los 2 espacios entre ellos. Es
+// también el alto del mosaico, que así empieza y termina a la misma altura que los títulos.
+$search-by-list-height-md: calc(6 * 34px + 2 * #{$search-by-menu-gap});
+$search-by-list-height-lg: calc(
+  6 * clamp(#{$search-by-item-min}, #{$search-by-item-preferred}, #{$search-by-item-max}) +
+    2 * #{$search-by-menu-gap}
+);
+
+// Cuánto más grande va "Buscá por" para terminar tan ancho como el título más largo del
+// menú ("INGREDIENTES"). Sale de medir las dos palabras al mismo tamaño: 729 / 575.
+$search-by-heading-scale: 1.268;
+
+// Proporción de la caja del mosaico: la del mosaico más ancho (el de capas, ver MOSAICS en
+// SearchByMosaic). La usan los tres, así el ancho no salta al cambiar de opción; los que
+// son cuadrados se dibujan centrados y del alto completo.
+$search-by-mosaic-ratio: 1.39;
+
+// Ciclo de una tesela del mosaico: aparece, "respira" y se va. Al terminar queda en
+// scale(0) un instante (la pausa entre vueltas) y vuelve a empezar.
+@keyframes searchByTile {
+  0% {
+    transform: scale(0);
+  }
+  14% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.04);
+  }
+  66% {
+    transform: scale(1);
+  }
+  86%,
+  100% {
+    transform: scale(0);
+  }
+}
+
+.SearchBySection {
+  // Ocupa el alto que le deja la pantalla que la contiene (ver .LandingPage-screen).
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: $spacing-xl $spacing-gutter-mobile;
+  box-sizing: border-box;
+
+  @include respond-to(lg) {
+    padding: $spacing-xl $spacing-gutter-desktop;
+    // El bloque de texto (encabezado y menú) arranca un poco más adentro en vez de pegado
+    // al borde izquierdo.
+    padding-inline-start: 6%;
+  }
+
+  &-header {
+    text-align: center;
+    margin-bottom: $spacing-lg;
+
+    @include respond-to(md) {
+      text-align: left;
+      margin-bottom: $spacing-xl;
+    }
+  }
+
+  &-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $color-on-background;
+    margin: 0 0 $spacing-sm;
+  }
+
+  // En mayúscula y compacto, como los títulos del menú de abajo.
+  // Misma tipografía que los títulos del menú (ver -itemLabel), escalada para terminar tan
+  // ancha como el más largo de ellos.
+  &-heading {
+    font-family: $font-body;
+    font-size: $search-by-item-min * $search-by-heading-scale;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: $color-primary;
+    margin: 0;
+
+    @include respond-to(md) {
+      font-size: 34px * $search-by-heading-scale;
+    }
+
+    @include respond-to(lg) {
+      font-size: clamp(
+        #{$search-by-item-min * $search-by-heading-scale},
+        #{$search-by-item-preferred * $search-by-heading-scale},
+        #{$search-by-item-max * $search-by-heading-scale}
+      );
+    }
+  }
+
+  &-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-xl;
+
+    @include respond-to(md) {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: $spacing-lg;
+    }
+  }
+
+  &-menu {
+    width: 100%;
+
+    @include respond-to(md) {
+      // El mosaico tiene ancho propio; el menú se queda con lo que sobra.
+      flex: 1;
+      min-width: 0;
+      width: auto;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: $search-by-menu-gap;
+    }
+  }
+
+  // Cada opción del menú: el título grande en dos renglones, al ras del borde izquierdo.
+  &-item {
+    display: block;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  // Inactiva: el mismo título en un tono apagado. Se probó dibujarlo solo con el contorno
+  // de las letras (-webkit-text-stroke), pero a este tamaño quedaba finito y difícil de
+  // leer, sobre todo en modo oscuro.
+  &-itemLabel {
+    font-family: $font-body;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: with-opacity($color-on-background, 0.32);
+    transition: color 0.4s ease, transform 0.5s ease;
+
+    @include respond-to(md) {
+      font-size: 34px;
+    }
+
+    // Desde lg el título va grande, pero atado al alto de la ventana: son tres títulos de
+    // dos renglones y a un tamaño fijo grande no entraban en una notebook, así que la
+    // pantalla terminaba más alta que la ventana y el scroll no encajaba.
+    @include respond-to(lg) {
+      font-size: clamp(
+        #{$search-by-item-min},
+        #{$search-by-item-preferred},
+        #{$search-by-item-max}
+      );
+    }
+  }
+
+  // Activa (mouse encima o foco del teclado): el título se rellena y se corre un poco.
+  &-item--active {
+    .SearchBySection-itemLabel {
+      color: $color-on-background;
+      transform: translateX($spacing-sm);
+    }
+  }
+
+  // Foco visible para quien navega con teclado (el hover ya se ve por el estado activo).
+  &-item:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: $spacing-sm;
+    border-radius: $radius-md;
+  }
+}
+
+.SearchByMosaic {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+
+  // Desde md mide exactamente lo mismo de alto que el listado de al lado, así la foto
+  // empieza y termina a la misma altura que los títulos. El ancho sale de ese alto y de la
+  // proporción del mosaico más ancho.
+  @include respond-to(md) {
+    flex: 0 0 auto;
+    height: $search-by-list-height-md;
+    width: calc(#{$search-by-list-height-md} * #{$search-by-mosaic-ratio});
+    // Pisa el tope de la regla mobile, que si no dejaría la caja alta pero angosta.
+    max-width: none;
+    // Se corre del borde derecho para no quedar pegado a él (ni encima del botón flotante
+    // del asistente), como en la referencia del diseño.
+    margin-inline-end: $spacing-xl;
+  }
+
+  @include respond-to(lg) {
+    height: $search-by-list-height-lg;
+    width: calc(#{$search-by-list-height-lg} * #{$search-by-mosaic-ratio});
+    margin-inline-end: 7%;
+  }
+
+  // Resplandor difuso detrás del mosaico, para que la foto no quede flotando sobre el fondo.
+  &-glow {
+    position: absolute;
+    inset: -10%;
+    background: with-opacity($color-primary, 0.18);
+    border-radius: $radius-full;
+    filter: blur(90px);
+  }
+
+  &-svg {
+    position: relative;
+    width: 100%;
+    height: auto;
+
+    // Desde md el SVG llena el ANCHO de la caja y su alto sale de la proporción de cada
+    // mosaico: el de capas (el más ancho) queda justo del alto del listado, y los otros dos
+    // (cuadrados) se pasan un poco. Como la caja los centra, lo que sobresale arriba y
+    // abajo es lo mismo.
+    @include respond-to(md) {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  // Tesela del mosaico: la que hace el efecto de aparecer y desaparecer.
+  // transform-box: fill-box hace que scale() crezca desde el centro de la propia figura
+  // (por defecto, en SVG el origen es el 0,0 del lienzo y las teselas saldrían volando).
+  &-tile {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: searchByTile 5.5s ease-in-out infinite;
+  }
+}
+
+// Si el sistema pide reducir animaciones, el mosaico se muestra completo y quieto.
+@media (prefers-reduced-motion: reduce) {
+  .SearchByMosaic-tile {
+    animation: none;
+  }
+}

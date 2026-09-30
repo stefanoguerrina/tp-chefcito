@@ -1,0 +1,153 @@
+// Estilos de la 2ª pantalla de la landing: el top 5 de recetas del momento.
+@use '../../../styles/abstracts' as *;
+
+// Hasta dónde pueden crecer las cards del ranking en una pantalla alta: más que esto
+// quedan desproporcionadas al lado del resto de la app.
+$top-recipes-card-max-height: 470px;
+// Alto mínimo de la foto cuando la ventana es baja: por debajo de esto no se distingue
+// el plato.
+$top-recipes-image-min-height: 120px;
+// Lo que ocupa el resto de la pantalla arriba de la fila de cards (la barra de arriba, el
+// respiro de la sección y el encabezado). Se le resta al alto de la ventana para saber
+// cuánto le queda a la fila.
+$top-recipes-grid-reserved: 280px;
+
+.TopRecipesSection {
+  // Ocupa el alto que le deja la pantalla que la contiene (ver .LandingPage-screen) y
+  // centra su contenido en ese espacio.
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  // Más ancha que el resto de las pantallas (que van hasta 1600px): son 5 cards en una
+  // fila y con el ancho de las demás quedaban angostas y demasiado altas.
+  max-width: 1800px;
+  margin-inline: auto;
+  padding: $spacing-xl $spacing-gutter-mobile;
+  box-sizing: border-box;
+
+  @include respond-to(lg) {
+    padding: $spacing-xl $spacing-gutter-desktop;
+  }
+
+  &-header {
+    text-align: center;
+    margin-bottom: $spacing-xl;
+  }
+
+  &-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: $color-primary;
+    margin: 0 0 $spacing-sm;
+  }
+
+  // En mayúscula y pintado con el degradé de los verdes de la marca (el mismo de los
+  // títulos de sección de la home y el perfil, ver abstracts/_gradients.scss) para que sea
+  // lo primero que se mira al entrar a la pantalla.
+  &-heading {
+    font-family: $font-body;
+    font-size: 28px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    margin: 0;
+    @include gradient-text;
+
+    @include respond-to(md) {
+      font-size: 40px;
+    }
+
+    @include respond-to(lg) {
+      font-size: 48px;
+    }
+  }
+
+  // Mobile-first: una card por fila y se van agregando columnas al haber lugar. Desde lg
+  // las 5 van sí o sí en una sola fila: es un ranking y se lee de un vistazo. Antes las
+  // columnas las decidía el ancho disponible (auto-fit), y en una notebook entraban 4: la
+  // 5ª bajaba a una segunda fila y la pantalla terminaba midiendo casi el doble que la
+  // ventana, que es lo que rompía el encaje del scroll.
+  &-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: $spacing-lg;
+
+    @include respond-to(sm) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include respond-to(md) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @include respond-to(lg) {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: $spacing-md;
+      // Las cards se reparten todo el alto que deja la pantalla en vez de quedar chiquitas
+      // en el medio: crecen hasta $top-recipes-card-max-height y, si la ventana es más
+      // baja, se achican hasta donde el texto de la card lo permite (ver .RecipeCard-body
+      // más abajo). min-height: 0 es lo que las deja achicarse dentro de la pantalla.
+      flex: 1;
+      min-height: 0;
+      // El tope es lo que quede libre de la ventana, nunca más de
+      // $top-recipes-card-max-height. Sin el tope por ventana la fila crece con el
+      // contenido de las cards y la pantalla termina midiendo más que la ventana, que es
+      // lo que hacía que el scroll no encajara.
+      max-height: min(#{$top-recipes-card-max-height}, calc(100svh - #{$top-recipes-grid-reserved}));
+      // La fila ocupa exactamente el alto de la grilla: sin esto la fila se mide por el
+      // contenido de las cards y se desborda de la pantalla hacia la de abajo.
+      grid-template-rows: minmax(0, 1fr);
+
+      // Deja que las cards se achiquen dentro de la fila (por defecto un ítem de grilla no
+      // baja de su contenido).
+      .TopRecipesSection-card {
+        min-height: 0;
+      }
+
+      // El texto de la card conserva su alto natural y la foto se queda con todo lo que
+      // sobra (por defecto la foto tiene una proporción fija de 16/9, que es lo que hacía
+      // que la card nunca creciera). Si la ventana es baja, la foto es la que se achica.
+      .RecipeCard-body {
+        flex: 0 0 auto;
+        // Un poco más compacto que en el resto de la app: son 5 cards en una fila y lo
+        // que se gana acá se lo lleva la foto.
+        padding: $spacing-md;
+      }
+
+      .RecipeCard-imageWrapper {
+        aspect-ratio: auto;
+        flex: 1 1 auto;
+        min-height: $top-recipes-image-min-height;
+      }
+    }
+  }
+
+  // Envoltorio de cada card: le da a -rank una referencia para posicionarse encima.
+  &-card {
+    position: relative;
+  }
+
+  // Número de puesto, arriba a la derecha de la foto (el lugar que dejó libre el botón de
+  // guardar, apagado en la landing).
+  &-rank {
+    position: absolute;
+    top: $spacing-md;
+    right: $spacing-md;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-full;
+    background: $color-primary;
+    color: $color-on-primary;
+    font-size: 16px;
+    font-weight: 800;
+    box-shadow: $shadow-level-1;
+    pointer-events: none;
+  }
+}

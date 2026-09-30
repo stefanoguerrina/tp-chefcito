@@ -1,5 +1,13 @@
-// Estilos de contenedor general de la landing (features/auth/components/landing/LandingPage).
+// Estilos de contenedor general de la landing (features/landing/pages/LandingPage):
+// las 4 "pantallas" que ocupan el alto de la ventana y encajan al scrollear.
+// Mismo esquema que la home y el perfil (_home-feed.scss, _profile-page.scss): en mobile las
+// secciones se apilan con aire entre ellas (forzar 100svh dejaría el contenido apretado o
+// cortado) y desde md cada una mide una pantalla y encaja al scrollear.
 @use '../../../styles/abstracts' as *;
+
+// Alto de la barra superior (ver _navbar.scss). La barra es sticky, así que cada pantalla a
+// partir de la 2ª le deja libre ese alto para que no le tape el título.
+$landing-navbar-height: 88px;
 
 // #root en index.css trae un ancho fijo de 1126px + borde + texto centrado, pensado
 // para el layout angosto del resto de la app. La landing necesita ancho completo:
@@ -21,7 +29,77 @@
   main {
     flex-grow: 1;
     width: 100%;
-    max-width: 1600px;
-    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    // Mobile: las pantallas se apilan con un espacio entre sí (no encajan). El ancho de
+    // lectura lo limita cada sección, así el fondo de una puede llegar de borde a borde.
+    gap: $spacing-xl;
+  }
+
+  // Una pantalla: contenedor fijo (el que encaja al scrollear) con su animación de
+  // entrada adentro, estirada a todo el alto disponible.
+  &-screen {
+    display: flex;
+    flex-direction: column;
+    // Al bajar con el CTA del hero en mobile, deja lugar a la barra superior.
+    scroll-margin-top: $landing-navbar-height;
+  }
+
+  // El contenido animado (ScrollReveal) ocupa toda la pantalla: la sección de adentro se
+  // encarga de centrar su contenido.
+  &-reveal {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Desde md, cada pantalla mide exactamente la ventana y encaja al scrollear: se ve una
+  // sola por vez.
+  @include respond-to(md) {
+    main {
+      gap: 0;
+    }
+
+    &-screen {
+      box-sizing: border-box;
+      min-height: 100svh;
+      // Deja libre el alto de la barra sticky, que queda encima al llegar acá.
+      padding-top: $landing-navbar-height;
+      scroll-snap-align: start;
+      scroll-margin-top: 0;
+    }
+
+    // La 1ª arranca debajo de la barra, que en esta pantalla todavía ocupa su lugar en la
+    // página: sin el padding, su punto de encaje es el tope y termina justo en el borde.
+    &-screen--first {
+      min-height: calc(100svh - #{$landing-navbar-height});
+      padding-top: 0;
+      scroll-margin-top: $landing-navbar-height;
+    }
+
+    // El footer es el último punto de encaje (es más bajo que la ventana, así que el
+    // navegador termina de scrollear hasta el final y lo deja a la vista).
+    &-footerScreen {
+      scroll-snap-align: end;
+    }
+  }
+}
+
+// Encaje por pantallas: solo con la landing abierta (:has) y desde md, igual que la home y
+// el perfil. Va en <html> porque es el que scrollea la página. Si una pantalla es más alta
+// que la ventana (ej. en una notebook baja), adentro se puede scrollear libre: el encaje
+// obligatorio no atrapa a las áreas más altas que la ventana.
+// scroll-behavior es lo que le da la animación al viaje del CTA "Explorar recetas" del hero
+// (ver LandingPage), sin tener que animar el scroll a mano.
+html:has(.LandingPage) {
+  @include respond-to(md) {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+
+  // Si el sistema pide reducir animaciones, se scrollea normal y sin encaje.
+  @media (prefers-reduced-motion: reduce) {
+    scroll-snap-type: none;
+    scroll-behavior: auto;
   }
 }

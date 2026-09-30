@@ -16,18 +16,13 @@ model User {
   email                             String       @unique(map: "uq_user_email") @db.VarChar(150)
   phone                             String?      @db.VarChar(20)
   avatarUrl                         String?      @db.VarChar(255)
-  coverUrl                          String?      @db.VarChar(255)
+  deletedAt                         DateTime?    @db.DateTime(0)
+  birthDate                         DateTime?    @db.Date
   bio                               String?      @db.VarChar(255)
   specialty                         String?      @db.VarChar(60)
   location                          String?      @db.VarChar(100)
-  birthDate                         DateTime?    @db.Date
-  createdAt                         DateTime?    @default(now()) @db.DateTime(0)
-  deletedAt                         DateTime?    @db.DateTime(0)
   donation_donation_idDonorTouser   donation[]   @relation("donation_idDonorTouser")
   donation_donation_idGranteeTouser donation[]   @relation("donation_idGranteeTouser")
-  // A quiénes sigue este usuario (sus "amigos" en la home) y quiénes lo siguen a él.
-  following                         follow[]     @relation("follow_idFollowerTouser")
-  followers                         follow[]     @relation("follow_idFollowedTouser")
   inventory                         inventory[]
   recipe                            recipe[]
   userrecipe                        userrecipe[]
@@ -69,27 +64,10 @@ model donation {
   @@index([idGrantee], map: "fk_donation_grantee")
 }
 
-// "Seguir" entre usuarios: idFollower sigue a idFollowed. La PK compuesta impide seguir
-// dos veces a la misma persona. Si se borra cualquiera de los dos usuarios, la fila se va
-// con él (Cascade); con la baja lógica (deletedAt) la fila queda, pero las consultas
-// filtran a los usuarios dados de baja.
-model follow {
-  idFollower Int
-  idFollowed Int
-  createdAt  DateTime? @default(now()) @db.DateTime(0)
-  follower   User      @relation("follow_idFollowerTouser", fields: [idFollower], references: [id], onDelete: Cascade, map: "fk_follow_follower")
-  followed   User      @relation("follow_idFollowedTouser", fields: [idFollowed], references: [id], onDelete: Cascade, map: "fk_follow_followed")
-
-  @@id([idFollower, idFollowed])
-  @@index([idFollowed], map: "fk_follow_followed")
-}
-
 model image {
   idRecipe Int
   id       Int
-  // Solo la ruta del archivo subido (ej. "/uploads/recipes/x.webp") o un link externo
-  // http(s). El archivo en sí vive en backend/uploads/, nunca en la base de datos.
-  imageUrl String   @db.VarChar(500)
+  imageUrl String   @db.LongText
   isMain   Boolean? @default(false)
   recipe   recipe   @relation(fields: [idRecipe], references: [id], onDelete: Cascade, map: "fk_image_recipe")
 
@@ -97,26 +75,24 @@ model image {
 }
 
 model ingredient {
-  id                            Int                             @id @default(autoincrement())
-  name                          String                          @db.VarChar(100)
-  description                   String?                         @db.VarChar(255)
-  unitOfMeasure                 String?                         @db.VarChar(20)
-  imagePath                     String?                         @db.VarChar(255)
-  ingredientcategoryingredient  ingredientcategoryingredient[]
-  inventory                     inventory[]
-  nutritionalvalue              nutritionalvalue[]
-  recipeingredient              recipeingredient[]
+  id                           Int                            @id @default(autoincrement())
+  name                         String                         @db.VarChar(100)
+  description                  String?                        @db.VarChar(255)
+  unitOfMeasure                String?                        @db.VarChar(20)
+  imagePath                    String?                        @db.VarChar(255)
+  ingredientcategoryingredient ingredientcategoryingredient[]
+  inventory                    inventory[]
+  nutritionalvalue             nutritionalvalue[]
+  recipeingredient             recipeingredient[]
 }
 
 model ingredientcategory {
-  id                            Int                             @id @default(autoincrement())
-  name                          String                          @db.VarChar(100)
-  description                   String?                         @db.VarChar(255)
-  ingredientcategoryingredient  ingredientcategoryingredient[]
+  id                           Int                            @id @default(autoincrement())
+  name                         String                         @db.VarChar(100)
+  description                  String?                        @db.VarChar(255)
+  ingredientcategoryingredient ingredientcategoryingredient[]
 }
 
-// Tabla intermedia N:M — un ingrediente puede tener varias categorías,
-// y una categoría puede agrupar varios ingredientes.
 model ingredientcategoryingredient {
   idIngredientCategory Int
   idIngredient         Int
@@ -132,9 +108,7 @@ model inventory {
   idIngredient      Int
   unitOfMeasure     String?    @db.VarChar(20)
   availableQuantity Decimal?   @db.Decimal(10, 2)
-  // Restrict (no Cascade): si un usuario tiene este ingrediente en su inventario, borrar
-  // el ingrediente de la tabla maestra no puede arrastrarse en silencio esa fila.
-  ingredient        ingredient @relation(fields: [idIngredient], references: [id], onDelete: Restrict, map: "fk_inventory_ingredient")
+  ingredient        ingredient @relation(fields: [idIngredient], references: [id], onDelete: Cascade, map: "fk_inventory_ingredient")
   user              User       @relation(fields: [idUser], references: [id], onDelete: Cascade, map: "fk_inventory_user")
 
   @@id([idUser, idIngredient])
@@ -159,9 +133,9 @@ model recipe {
   name             String             @db.VarChar(150)
   description      String?            @db.Text
   preparationTime  Int?
-  difficulty       String?            @db.VarChar(20)
   createdAt        DateTime?          @default(now()) @db.DateTime(0)
   saveCount        Int?               @default(0)
+  difficulty       String?            @db.VarChar(20)
   image            image[]
   user             User               @relation(fields: [idUser], references: [id], onDelete: Cascade, map: "fk_recipe_user")
   recipecategory   recipecategory[]
@@ -186,11 +160,7 @@ model recipeingredient {
   idRecipe         Int
   idIngredient     Int
   requiredQuantity Decimal?   @db.Decimal(10, 2)
-  // Restrict (no Cascade): si una receta usa este ingrediente, borrar el ingrediente de la
-  // tabla maestra no puede arrastrarse en silencio ese vínculo (dejaría la receta rota sin
-  // avisar a nadie). ingredientService.deleteIngredient ya espera este rechazo (P2003) para
-  // devolver "in_use"; antes, al ser Cascade, nunca se disparaba y el borrado pasaba igual.
-  ingredient       ingredient @relation(fields: [idIngredient], references: [id], onDelete: Restrict, map: "fk_recipeingredient_ingredient")
+  ingredient       ingredient @relation(fields: [idIngredient], references: [id], onDelete: Cascade, map: "fk_recipeingredient_ingredient")
   recipe           recipe     @relation(fields: [idRecipe], references: [id], onDelete: Cascade, map: "fk_recipeingredient_recipe")
 
   @@id([idRecipe, idIngredient])
@@ -201,10 +171,9 @@ model review {
   idUser     Int
   idRecipe   Int
   idReview   Int
-  // Decimal(3,1) soporta medias estrellas: 1.0, 1.5, 2.0 ... 5.0
-  rating     Decimal    @db.Decimal(3, 1)
   comment    String?    @db.Text
   createdAt  DateTime?  @default(now()) @db.DateTime(0)
+  rating     Decimal    @db.Decimal(3, 1)
   userrecipe userrecipe @relation(fields: [idUser, idRecipe], references: [idUser, idRecipe], onDelete: Cascade, map: "fk_review_userrecipe")
 
   @@id([idUser, idRecipe, idReview])

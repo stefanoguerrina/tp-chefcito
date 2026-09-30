@@ -1,29 +1,38 @@
 // Estilos de la sección Hero: título, CTA y collage flotante de imágenes.
 @use '../../../styles/abstracts' as *;
 
+// Sube y baja suave de las fotos del collage. Arrastra también la inclinación de cada foto
+// (--hero-image-tilt): una animación pisa el transform de la regla, así que si acá no se
+// repitiera el rotate, las fotos se verían derechas mientras flotan.
 @keyframes float {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(var(--hero-image-tilt, 0deg));
   }
   50% {
-    transform: translateY(-20px);
+    transform: translateY(-20px) rotate(var(--hero-image-tilt, 0deg));
   }
 }
 
 .Hero {
+  // Ocupa el alto que le deja la pantalla que la contiene (ver .LandingPage-screen).
+  flex: 1;
+  width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 64px $spacing-gutter-mobile;
+  padding: 48px $spacing-gutter-mobile;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: $spacing-xl;
   text-align: center;
 
   @include respond-to(md) {
     flex-direction: row;
-    padding: 96px $spacing-gutter-desktop;
+    justify-content: space-between;
+    padding: $spacing-xl $spacing-gutter-desktop;
     gap: 64px;
     text-align: left;
   }
@@ -35,16 +44,32 @@
       width: 50%;
     }
 
+    // Desde lg, más angosto que la mitad: lo que sobra se va al hueco con el collage, así
+    // el título no le queda pegado a las fotos. Antes de lg no sobra nada y la mitad es lo
+    // mínimo que necesita el título.
+    @include respond-to(lg) {
+      width: 44%;
+    }
+
     h1 {
       font-family: $font-body;
       font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
       line-height: 1.15;
       color: $color-on-background;
       margin: 0 0 $spacing-lg;
 
-      @include respond-to(md) {
+      // A 56px desde md el título no entra en la mitad de una tablet: se va a seis
+      // renglones y empuja el CTA fuera de la pantalla.
+      @include respond-to(lg) {
         font-size: 56px;
       }
+    }
+
+    // La palabra destacada del título.
+    .Hero-highlight {
+      color: $color-primary;
     }
 
     p {
@@ -79,9 +104,11 @@
     width: 100%;
     height: 360px;
 
+    // Desde md el alto lo manda la ventana con un tope: a un alto fijo, en una notebook el
+    // collage dejaba la pantalla del hero más alta que la ventana.
     @include respond-to(md) {
       width: 50%;
-      height: 500px;
+      height: min(640px, 74svh);
     }
   }
 
@@ -90,6 +117,7 @@
     border-radius: 24px;
     overflow: hidden;
     box-shadow: $shadow-level-2;
+    transform: rotate(var(--hero-image-tilt, 0deg));
     animation: float 6s ease-in-out infinite;
 
     img {
@@ -98,31 +126,37 @@
       object-fit: cover;
     }
 
+    // Las tres son un poco más altas que anchas (la proporción sale de cruzar su % de
+    // ancho del collage con su % de alto, que no son iguales porque el collage tampoco es
+    // cuadrado).
     &--main {
       top: 0;
-      right: 10%;
-      width: 60%;
-      height: 65%;
-      transform: rotate(-2deg);
+      right: 8%;
+      width: 56%;
+      height: 78%;
+      // La más grande va derecha; las dos chicas son las que se inclinan.
+      --hero-image-tilt: 0deg;
       z-index: 2;
     }
 
     &--secondary {
       bottom: 0;
       left: 2%;
-      width: 48%;
-      height: 48%;
-      transform: rotate(3deg);
+      width: 44%;
+      height: 56%;
+      --hero-image-tilt: 4deg;
       z-index: 3;
       animation-delay: 2s;
     }
 
+    // Va arriba de todo a la izquierda: si arrancara más abajo, la de abajo (que está por
+    // encima) la taparía casi entera.
     &--tertiary {
-      top: 22%;
+      top: 4%;
       left: 0;
-      width: 38%;
-      height: 32%;
-      transform: rotate(-5deg);
+      width: 34%;
+      height: 44%;
+      --hero-image-tilt: -5deg;
       animation-delay: 1s;
       display: none;
 

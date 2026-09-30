@@ -30,6 +30,8 @@ const formatRating = (rating, reviewsCount) =>
 //   no aportan (ej. "Mis recetas": ya sabés que la creaste vos y cuánto tarda).
 //   showRating: oculta la valoración (ej. las recetas del perfil propio, que se abren para
 //   editarlas: ahí la card queda limpia, sin reseñas).
+//   showCategories: oculta los chips de categoría sobre la foto (ej. el top 5 de la landing,
+//   donde la foto se ve más limpia y el puesto ya es lo que importa).
 //   isSaved / onToggleSave: estado y handler del botón de guardar de arriba a la derecha.
 //   onEdit / onDelete: si se pasan (ej. "Mis recetas"), la card suma su barra de acciones.
 //   horizontal: foto cuadrada a la izquierda y el texto a la derecha (desde sm; en mobile se
@@ -42,14 +44,15 @@ const formatRating = (rating, reviewsCount) =>
 //   despensa", cuántos ingredientes de la receta tiene el usuario).
 function RecipeCard({
   recipe, onClick, showSaveButton = true, showAuthor = true, showTime = true, showRating = true,
-  horizontal = false, saveButtonInCorner = false, authorNote, isSaved, onToggleSave, onEdit, onDelete, children,
+  showCategories = true, horizontal = false, saveButtonInCorner = false, authorNote,
+  isSaved, onToggleSave, onEdit, onDelete, children,
 }) {
   const {
     title, description, image, author, authorAvatar,
     categories = [], timeMinutes, rating, reviewsCount,
   } = recipe;
   const canManage = Boolean(onEdit || onDelete);
-  const visibleCategories = categories.slice(0, MAX_VISIBLE_CATEGORIES);
+  const visibleCategories = showCategories ? categories.slice(0, MAX_VISIBLE_CATEGORIES) : [];
   const hiddenCategoriesCount = categories.length - visibleCategories.length;
   // Si la foto del autor no carga (o no tiene), se muestra la inicial de su nombre.
   const [avatarBroken, setAvatarBroken] = useState(false);

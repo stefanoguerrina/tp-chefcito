@@ -5,24 +5,25 @@
   background: $color-footer-background;
   border-top: 1px solid $color-footer-border;
   color: $color-footer-text;
-  padding: 64px $spacing-gutter-mobile;
+  padding: $spacing-xl * 1.5 $spacing-gutter-mobile;
 
   @include respond-to(lg) {
-    padding: 96px $spacing-gutter-desktop;
+    padding: 64px $spacing-gutter-desktop $spacing-xl;
   }
 
+  // Mobile: una columna abajo de la otra. Desde md, la marca se queda con el doble de
+  // ancho que cada columna de enlaces, que es lo que necesita su bajada.
   &-content {
     max-width: 1600px;
     margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: $spacing-xl;
     text-align: center;
 
     @include respond-to(md) {
-      flex-direction: row;
-      justify-content: space-between;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: $spacing-xl * 1.5;
       text-align: left;
     }
   }
@@ -37,10 +38,10 @@
     }
 
     p {
-      font-size: 12px;
+      font-size: 13px;
       color: $color-footer-muted;
-      max-width: 320px;
-      line-height: 1.5;
+      max-width: 360px;
+      line-height: 1.6;
       margin: 0;
     }
   }
@@ -56,25 +57,72 @@
     margin-bottom: $spacing-md;
   }
 
-  &-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: $spacing-lg;
+  &-column {
+    h3 {
+      font-family: $font-body;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: $color-footer-text;
+      margin: 0 0 $spacing-md;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-sm;
+      font-size: 14px;
+      line-height: 1.5;
+      color: $color-footer-muted;
+    }
 
     a {
       color: $color-footer-muted;
       text-decoration: none;
-      font-weight: 500;
-      font-size: 15px;
 
       &:hover {
         color: $color-footer-hover;
       }
+    }
+  }
 
-      &:first-child {
-        color: $color-footer-accent;
-      }
+  // Los accesos a login/registro son botones (abren el formulario, no navegan), así que
+  // hay que sacarles el aspecto de botón para que se lean como el resto de la columna.
+  &-action {
+    padding: 0;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: $color-footer-accent;
+    font-weight: 600;
+    cursor: pointer;
+
+    // En mobile las columnas van centradas y el botón, por defecto, ocupa todo el ancho.
+    @include respond-to(md) {
+      text-align: left;
+    }
+
+    &:hover {
+      color: $color-footer-hover;
+    }
+  }
+
+  &-bottom {
+    max-width: 1600px;
+    margin: $spacing-xl auto 0;
+    padding-top: $spacing-lg;
+    border-top: 1px solid $color-footer-border;
+    text-align: center;
+
+    p {
+      font-size: 12px;
+      color: $color-footer-muted;
+      margin: 0;
     }
   }
 }
