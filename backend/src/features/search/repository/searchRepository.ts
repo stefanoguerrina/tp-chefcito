@@ -194,6 +194,30 @@ export const searchRepository = {
       select: { idIngredient: true, availableQuantity: true },
     }),
 
+  // Porciones e ingredientes (con cantidad y tabla nutricional) de las recetas indicadas,
+  // para calcular sus valores por porción. Solo se pide si se filtra por necesidades
+  // nutricionales.
+  findNutritionData: (recipeIds: number[]) =>
+    prisma.recipe.findMany({
+      where: { id: { in: recipeIds } },
+      select: {
+        id: true,
+        servings: true,
+        recipeingredient: {
+          select: {
+            requiredQuantity: true,
+            ingredient: {
+              select: {
+                name: true,
+                unitOfMeasure: true,
+                nutritionalvalue: { select: { name: true, servingAmount: true, servingUnit: true, value: true } },
+              },
+            },
+          },
+        },
+      },
+    }),
+
   // Datos de card de las recetas indicadas (las de la página actual del listado).
   findRecipeCardsByIds: (recipeIds: number[]) =>
     prisma.recipe.findMany({

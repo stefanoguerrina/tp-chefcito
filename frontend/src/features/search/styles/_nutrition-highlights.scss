@@ -1,0 +1,42 @@
+// Estilos del bloque de valores por porción que suma cada card del listado de recetas al
+// filtrar por necesidades nutricionales (features/search/components/NutritionHighlights).
+@use '../../../styles/abstracts' as *;
+
+.NutritionHighlights {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  padding: $spacing-sm;
+  border-radius: $radius-md;
+  background: $color-surface-container-low;
+
+  &-title {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: $color-on-surface;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+      color: $color-primary;
+    }
+  }
+
+  &-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-xs $spacing-md;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+
+    strong {
+      color: $color-primary;
+    }
+  }
+}

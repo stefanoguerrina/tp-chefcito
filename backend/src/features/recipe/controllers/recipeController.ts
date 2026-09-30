@@ -34,7 +34,9 @@ export const searchRecipes = async (req: AuthRequest, res: Response): Promise<vo
   }
 };
 
-// Devuelve una receta por ID.
+// Devuelve el detalle de una receta: la receta completa, sus valores nutricionales
+// (`nutrition`) y, si hay sesión, `viewer` = { isSaved, pantryIngredientIds } del usuario
+// logueado (sin sesión, viewer es null: la ruta es pública).
 // GET /api/recipes/:id
 export const getRecipeById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -45,7 +47,7 @@ export const getRecipeById = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
-    const recipe = await recipeService.getRecipeById(id);
+    const recipe = await recipeService.getRecipeDetail(id, req.user?.id);
     if (!recipe) {
       res.status(404).json({ message: 'Receta no encontrada.' });
       return;
@@ -73,11 +75,12 @@ export const createRecipe = async (req: AuthRequest, res: Response): Promise<voi
   }
 
   try {
-    const { name, description, preparationTime, difficulty, categoryIds } = req.body;
+    const { name, description, preparationTime, servings, difficulty, categoryIds } = req.body;
     const result = await recipeService.createRecipe(req.user!.id, {
       name,
       description,
       preparationTime,
+      servings,
       difficulty,
       categoryIds: categoryIds !== undefined ? (categoryIds as number[]).map(Number) : undefined,
     });
@@ -109,12 +112,13 @@ export const updateRecipeById = async (req: AuthRequest, res: Response): Promise
 
   try {
     const id = Number(req.params.id);
-    const { name, description, preparationTime, difficulty, categoryIds } = req.body;
+    const { name, description, preparationTime, servings, difficulty, categoryIds } = req.body;
 
     const result = await recipeService.updateRecipe(id, req.user!.id, req.user!.isAdmin, {
       name,
       description,
       preparationTime,
+      servings,
       difficulty,
       categoryIds: categoryIds !== undefined ? (categoryIds as number[]).map(Number) : undefined,
     });

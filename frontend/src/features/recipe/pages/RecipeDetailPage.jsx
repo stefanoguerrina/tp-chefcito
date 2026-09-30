@@ -1,18 +1,21 @@
 // Página de detalle de una receta (ruta /recetas/:recipeId). Grilla de dos columnas en
 // desktop (una en mobile):
-//   izquierda: galería de fotos, cabecera (título, autor, acciones) e ingredientes;
+//   izquierda: galería de fotos, cabecera (título, autor, acciones) y, lado a lado,
+//              ingredientes y valores nutricionales por porción;
 //   derecha:   pasos de la preparación (de a uno) y reseñas de la comunidad.
 // Toma el id de la URL, así el detalle se puede recargar o compartir como link.
+// Pide todo en un solo pedido (GET /api/recipes/:id): la receta, sus valores nutricionales
+// ya calculados y, del usuario logueado, si la guardó y qué ingredientes tiene en su
+// inventario. Las reseñas las pide su propia sección (ReviewList).
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getRecipeById } from '../services/recipeService.js';
-import { getInventory } from '../../inventory/services/inventoryService.js';
-import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import { useSavedRecipes } from '../../userRecipe/hooks/useSavedRecipes.js';
 import RecipeGallery from '../components/RecipeGallery.jsx';
 import RecipeDetailHeader from '../components/RecipeDetailHeader.jsx';
 import RecipeIngredientsPanel from '../components/RecipeIngredientsPanel.jsx';
+import RecipeNutritionPanel from '../components/RecipeNutritionPanel.jsx';
 import RecipeStepsPanel from '../components/RecipeStepsPanel.jsx';
 import ReviewList from '../../review/components/ReviewList.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
@@ -27,16 +30,16 @@ function RecipeDetailPage() {
   const location = useLocation();
   const recipeId = Number(useParams().recipeId);
   const { userId: currentUserId, isLoggedIn } = useAuthContext();
-  // Mismo estado de guardado que el feed de la home (ver useSavedRecipes).
-  const { savedRecipeIds, handleToggleSave, saveError, clearSaveError } = useSavedRecipes();
+  // Mismo guardado que el feed de la home (ver useSavedRecipes), pero sin pedir todas las
+  // guardadas del usuario: si esta receta lo está viene en la respuesta (recipe.viewer).
+  const { savedRecipeIds, setSaved, handleToggleSave, saveError, clearSaveError } = useSavedRecipes({
+    loadSavedIds: false,
+  });
   const isSaved = savedRecipeIds.has(recipeId);
 
   const [recipe, setRecipe] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
-  // Ids de los ingredientes que el usuario tiene en su inventario: los ingredientes de la
-  // receta que estén acá llevan la etiqueta "Despensa".
-  const [pantryIngredientIds, setPantryIngredientIds] = useState(new Set());
   const [toastMessage, setToastMessage] = useState('');
   // Muestra el aviso "Próximamente" al tocar "Donar" (la CRUD de donaciones todavía no existe).
   const [showDonationSoon, setShowDonationSoon] = useState(false);
@@ -47,6 +50,8 @@ function RecipeDetailPage() {
     getRecipeById(recipeId)
       .then((data) => {
         setRecipe(data);
+        // viewer es null sin sesión (la ruta del backend es pública).
+        setSaved(recipeId, Boolean(data.viewer?.isSaved));
         setFetchError('');
       })
       .catch((err) => setFetchError(err.message))
@@ -62,14 +67,6 @@ function RecipeDetailPage() {
     loadRecipe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipeId]);
-
-  // La despensa es un dato extra: si falla, la receta se ve igual, solo que sin etiquetas.
-  useEffect(() => {
-    if (!currentUserId) return;
-    fetchListOrEmpty(() => getInventory(currentUserId))
-      .then((items) => setPantryIngredientIds(new Set(items.map((item) => item.idIngredient))))
-      .catch(() => {});
-  }, [currentUserId]);
 
   // Muestra un aviso flotante abajo a la derecha, que se va solo.
   const showToast = (message) => {
@@ -122,6 +119,8 @@ function RecipeDetailPage() {
   if (!recipe) return null;
 
   const isOwnRecipe = recipe.idUser === currentUserId;
+  // Ingredientes de la receta que el usuario tiene en su inventario: llevan la etiqueta "Despensa".
+  const pantryIngredientIds = new Set(recipe.viewer?.pantryIngredientIds ?? []);
 
   return (
     <article className="RecipeDetailPage">
@@ -142,10 +141,13 @@ function RecipeDetailPage() {
             onEdit={handleEditRecipe}
             onDonate={() => setShowDonationSoon(true)}
           />
-          <RecipeIngredientsPanel
-            ingredients={recipe.recipeingredient ?? []}
-            pantryIngredientIds={pantryIngredientIds}
-          />
+          <div className="RecipeDetailPage-pair">
+            <RecipeIngredientsPanel
+              ingredients={recipe.recipeingredient ?? []}
+              pantryIngredientIds={pantryIngredientIds}
+            />
+            <RecipeNutritionPanel nutrition={recipe.nutrition} />
+          </div>
         </div>
 
         <div className="RecipeDetailPage-column">

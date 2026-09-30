@@ -1,0 +1,74 @@
+// Estilos de los valores nutricionales del detalle de receta (components/RecipeNutritionPanel).
+// La tarjeta base y su encabezado vienen de .RecipeDetailCard.
+@use '../../../styles/abstracts' as *;
+
+.RecipeNutritionPanel {
+  // Tabla de dos columnas: nutriente a la izquierda, cantidad a la derecha. Cada fila es
+  // una "pastilla" como los ingredientes de al lado, así las dos tarjetas se ven parejas.
+  &-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 $spacing-xs;
+    margin: (-$spacing-xs) 0;
+    font-size: 12px;
+
+    thead th {
+      padding: 0 $spacing-sm;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: $color-on-surface-variant;
+      text-align: left;
+
+      &:last-child {
+        text-align: right;
+      }
+    }
+
+    tbody th,
+    tbody td {
+      padding: $spacing-sm;
+      background: $color-surface-container-low;
+      border-top: 1px solid with-opacity($color-outline-variant, 0.6);
+      border-bottom: 1px solid with-opacity($color-outline-variant, 0.6);
+    }
+
+    tbody th {
+      border-left: 1px solid with-opacity($color-outline-variant, 0.6);
+      border-radius: $radius-md 0 0 $radius-md;
+      font-weight: 500;
+      color: $color-on-surface;
+      text-align: left;
+    }
+
+    tbody td {
+      border-right: 1px solid with-opacity($color-outline-variant, 0.6);
+      border-radius: 0 $radius-md $radius-md 0;
+      font-weight: 700;
+      color: $color-primary;
+      text-align: right;
+      white-space: nowrap;
+    }
+  }
+
+  // Marca de "puede ser mayor" al lado del valor.
+  &-mark {
+    margin-left: 2px;
+    color: $color-on-surface-variant;
+    cursor: help;
+  }
+
+  &-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    p {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.4;
+      color: $color-on-surface-variant;
+    }
+  }
+}

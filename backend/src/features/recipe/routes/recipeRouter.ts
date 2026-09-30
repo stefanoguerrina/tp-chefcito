@@ -10,7 +10,7 @@ import {
   updateRecipeById,
   deleteRecipeById,
 } from '../controllers/recipeController.js';
-import { verifyToken } from '../../../core/middleware/authMiddleware.js';
+import { verifyToken, readOptionalToken } from '../../../core/middleware/authMiddleware.js';
 import {
   validateCreateRecipe,
   validateUpdateRecipe,
@@ -27,8 +27,9 @@ const recipeRouter = Router();
 // GET /api/recipes — devuelve todas las recetas (opcionalmente ?userId=N)
 recipeRouter.get('/', searchRecipes);
 
-// GET /api/recipes/:id — devuelve una receta por ID
-recipeRouter.get('/:id', getRecipeById);
+// GET /api/recipes/:id — detalle de una receta. Es pública, pero si viene un token se
+// suma lo del usuario logueado (si la guardó y qué ingredientes tiene en su inventario).
+recipeRouter.get('/:id', readOptionalToken, getRecipeById);
 
 // POST /api/recipes — crea una receta para el usuario autenticado
 recipeRouter.post(

@@ -138,25 +138,8 @@ INSERT INTO ingredientcategoryingredient (idIngredientCategory, idIngredient) VA
   (@cat_condimentos, @ing_pimienta),
   (@cat_condimentos, @ing_aceite);
 
--- Valores nutricionales (cada fila: num=1 Calorías, num=2 Proteínas) para
--- los ingredientes más usados en las recetas de abajo.
-INSERT INTO nutritionalvalue (idIngredient, num, name, servingAmount, servingUnit, value) VALUES
-  (@ing_tomate,  1, 'Calorías',   100, 'gr', 18),
-  (@ing_tomate,  2, 'Proteínas',  100, 'gr', 0.9),
-  (@ing_papa,    1, 'Calorías',   100, 'gr', 77),
-  (@ing_papa,    2, 'Proteínas',  100, 'gr', 2.0),
-  (@ing_carne,   1, 'Calorías',   100, 'gr', 250),
-  (@ing_carne,   2, 'Proteínas',  100, 'gr', 26),
-  (@ing_pollo,   1, 'Calorías',   100, 'gr', 165),
-  (@ing_pollo,   2, 'Proteínas',  100, 'gr', 31),
-  (@ing_huevo,   1, 'Calorías',   1,   'ud.', 78),
-  (@ing_huevo,   2, 'Proteínas',  1,   'ud.', 6.3),
-  (@ing_arroz,   1, 'Calorías',   100, 'gr', 130),
-  (@ing_arroz,   2, 'Proteínas',  100, 'gr', 2.7),
-  (@ing_lentejas,1, 'Calorías',   100, 'gr', 116),
-  (@ing_lentejas,2, 'Proteínas',  100, 'gr', 9.0),
-  (@ing_queso,   1, 'Calorías',   100, 'gr', 300),
-  (@ing_queso,   2, 'Proteínas',  100, 'gr', 14);
+-- Los valores nutricionales de estos ingredientes se cargan en la sección 9
+-- (al final), para poder volver a cargarlos solos en una base ya usada.
 
 -- ---------------------------------------------------------------------
 -- 3. Categorías de recetas
@@ -491,19 +474,118 @@ INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALU
   (@user_lucia, @recipe_panqueques, 1, 4.5, 'Los hice de merienda con los chicos, un éxito.', DATE_SUB(NOW(), INTERVAL 5 DAY)),
   (@user_juan, @recipe_sopa, 1, 3.5, 'Rica, aunque le faltaba un poco de sal para mi gusto.', DATE_SUB(NOW(), INTERVAL 6 DAY));
 
+
+-- ---------------------------------------------------------------------
+-- 9. Valores nutricionales y porciones de las recetas (para la tabla
+--    "Valores por porción" del detalle de receta y el filtro por
+--    necesidades nutricionales del buscador).
+--
+--    Se puede correr SOLA sobre una base ya cargada (desde "-- 9." hasta
+--    el COMMIT; final): vuelve a buscar los ids por nombre, reemplaza los
+--    valores nutricionales de los 18 ingredientes de demo (si los editaste
+--    desde el panel admin, se pisan) y les pone las porciones a las 10
+--    recetas de demo. Antes hay que correr "npx prisma db push" (columna
+--    nueva recipe.servings).
+--
+--    Valores aproximados de tablas nutricionales estándar. La porción de
+--    referencia está en la unidad de cada ingrediente: cada 100 gr / 100 ml,
+--    y el huevo por unidad. Arroz, fideos, harina y lentejas: en crudo/seco
+--    (así se pesan en las recetas).
+-- ---------------------------------------------------------------------
+-- Repetido acá por si esta sección se corre sola (ver el comienzo del archivo).
+SET NAMES utf8mb4;
+
+SET @ing_tomate    := (SELECT id FROM ingredient WHERE name = 'Tomate' LIMIT 1);
+SET @ing_cebolla   := (SELECT id FROM ingredient WHERE name = 'Cebolla' LIMIT 1);
+SET @ing_papa      := (SELECT id FROM ingredient WHERE name = 'Papa' LIMIT 1);
+SET @ing_zanahoria := (SELECT id FROM ingredient WHERE name = 'Zanahoria' LIMIT 1);
+SET @ing_lechuga   := (SELECT id FROM ingredient WHERE name = 'Lechuga' LIMIT 1);
+SET @ing_carne     := (SELECT id FROM ingredient WHERE name = 'Carne picada' LIMIT 1);
+SET @ing_pollo     := (SELECT id FROM ingredient WHERE name = 'Pechuga de pollo' LIMIT 1);
+SET @ing_huevo     := (SELECT id FROM ingredient WHERE name = 'Huevo' LIMIT 1);
+SET @ing_leche     := (SELECT id FROM ingredient WHERE name = 'Leche' LIMIT 1);
+SET @ing_queso     := (SELECT id FROM ingredient WHERE name = 'Queso cremoso' LIMIT 1);
+SET @ing_manteca   := (SELECT id FROM ingredient WHERE name = 'Manteca' LIMIT 1);
+SET @ing_arroz     := (SELECT id FROM ingredient WHERE name = 'Arroz' LIMIT 1);
+SET @ing_fideos    := (SELECT id FROM ingredient WHERE name = 'Fideos' LIMIT 1);
+SET @ing_harina    := (SELECT id FROM ingredient WHERE name = 'Harina' LIMIT 1);
+SET @ing_lentejas  := (SELECT id FROM ingredient WHERE name = 'Lentejas' LIMIT 1);
+SET @ing_sal       := (SELECT id FROM ingredient WHERE name = 'Sal' LIMIT 1);
+SET @ing_pimienta  := (SELECT id FROM ingredient WHERE name = 'Pimienta negra' LIMIT 1);
+SET @ing_aceite    := (SELECT id FROM ingredient WHERE name = 'Aceite de oliva' LIMIT 1);
+
+DELETE FROM nutritionalvalue WHERE idIngredient IN (
+  @ing_tomate, @ing_cebolla, @ing_papa, @ing_zanahoria, @ing_lechuga, @ing_carne,
+  @ing_pollo, @ing_huevo, @ing_leche, @ing_queso, @ing_manteca, @ing_arroz,
+  @ing_fideos, @ing_harina, @ing_lentejas, @ing_sal, @ing_pimienta, @ing_aceite
+);
+
+-- Una fila por nutriente: num 1 Calorías (kcal), 2 Proteínas (gr),
+-- 3 Carbohidratos (gr), 4 Grasas totales (gr), 5 Fibra (gr), 6 Sodio (mg).
+INSERT INTO nutritionalvalue (idIngredient, num, name, servingAmount, servingUnit, value) VALUES
+  (@ing_tomate, 1, 'Calorías', 100, 'gr', 18), (@ing_tomate, 2, 'Proteínas', 100, 'gr', 0.9), (@ing_tomate, 3, 'Carbohidratos', 100, 'gr', 3.9),
+  (@ing_tomate, 4, 'Grasas totales', 100, 'gr', 0.2), (@ing_tomate, 5, 'Fibra', 100, 'gr', 1.2), (@ing_tomate, 6, 'Sodio', 100, 'gr', 5),
+  (@ing_cebolla, 1, 'Calorías', 100, 'gr', 40), (@ing_cebolla, 2, 'Proteínas', 100, 'gr', 1.1), (@ing_cebolla, 3, 'Carbohidratos', 100, 'gr', 9.3),
+  (@ing_cebolla, 4, 'Grasas totales', 100, 'gr', 0.1), (@ing_cebolla, 5, 'Fibra', 100, 'gr', 1.7), (@ing_cebolla, 6, 'Sodio', 100, 'gr', 4),
+  (@ing_papa, 1, 'Calorías', 100, 'gr', 77), (@ing_papa, 2, 'Proteínas', 100, 'gr', 2), (@ing_papa, 3, 'Carbohidratos', 100, 'gr', 17),
+  (@ing_papa, 4, 'Grasas totales', 100, 'gr', 0.1), (@ing_papa, 5, 'Fibra', 100, 'gr', 2.2), (@ing_papa, 6, 'Sodio', 100, 'gr', 6),
+  (@ing_zanahoria, 1, 'Calorías', 100, 'gr', 41), (@ing_zanahoria, 2, 'Proteínas', 100, 'gr', 0.9), (@ing_zanahoria, 3, 'Carbohidratos', 100, 'gr', 9.6),
+  (@ing_zanahoria, 4, 'Grasas totales', 100, 'gr', 0.2), (@ing_zanahoria, 5, 'Fibra', 100, 'gr', 2.8), (@ing_zanahoria, 6, 'Sodio', 100, 'gr', 69),
+  (@ing_lechuga, 1, 'Calorías', 100, 'gr', 15), (@ing_lechuga, 2, 'Proteínas', 100, 'gr', 1.4), (@ing_lechuga, 3, 'Carbohidratos', 100, 'gr', 2.9),
+  (@ing_lechuga, 4, 'Grasas totales', 100, 'gr', 0.2), (@ing_lechuga, 5, 'Fibra', 100, 'gr', 1.3), (@ing_lechuga, 6, 'Sodio', 100, 'gr', 28),
+  (@ing_carne, 1, 'Calorías', 100, 'gr', 250), (@ing_carne, 2, 'Proteínas', 100, 'gr', 26), (@ing_carne, 3, 'Carbohidratos', 100, 'gr', 0),
+  (@ing_carne, 4, 'Grasas totales', 100, 'gr', 15), (@ing_carne, 5, 'Fibra', 100, 'gr', 0), (@ing_carne, 6, 'Sodio', 100, 'gr', 72),
+  (@ing_pollo, 1, 'Calorías', 100, 'gr', 165), (@ing_pollo, 2, 'Proteínas', 100, 'gr', 31), (@ing_pollo, 3, 'Carbohidratos', 100, 'gr', 0),
+  (@ing_pollo, 4, 'Grasas totales', 100, 'gr', 3.6), (@ing_pollo, 5, 'Fibra', 100, 'gr', 0), (@ing_pollo, 6, 'Sodio', 100, 'gr', 74),
+  (@ing_huevo, 1, 'Calorías', 1, 'ud.', 78), (@ing_huevo, 2, 'Proteínas', 1, 'ud.', 6.3), (@ing_huevo, 3, 'Carbohidratos', 1, 'ud.', 0.6),
+  (@ing_huevo, 4, 'Grasas totales', 1, 'ud.', 5.3), (@ing_huevo, 5, 'Fibra', 1, 'ud.', 0), (@ing_huevo, 6, 'Sodio', 1, 'ud.', 62),
+  (@ing_leche, 1, 'Calorías', 100, 'ml', 61), (@ing_leche, 2, 'Proteínas', 100, 'ml', 3.2), (@ing_leche, 3, 'Carbohidratos', 100, 'ml', 4.8),
+  (@ing_leche, 4, 'Grasas totales', 100, 'ml', 3.3), (@ing_leche, 5, 'Fibra', 100, 'ml', 0), (@ing_leche, 6, 'Sodio', 100, 'ml', 43),
+  (@ing_queso, 1, 'Calorías', 100, 'gr', 300), (@ing_queso, 2, 'Proteínas', 100, 'gr', 14), (@ing_queso, 3, 'Carbohidratos', 100, 'gr', 2),
+  (@ing_queso, 4, 'Grasas totales', 100, 'gr', 26), (@ing_queso, 5, 'Fibra', 100, 'gr', 0), (@ing_queso, 6, 'Sodio', 100, 'gr', 600),
+  (@ing_manteca, 1, 'Calorías', 100, 'gr', 717), (@ing_manteca, 2, 'Proteínas', 100, 'gr', 0.9), (@ing_manteca, 3, 'Carbohidratos', 100, 'gr', 0.1),
+  (@ing_manteca, 4, 'Grasas totales', 100, 'gr', 81), (@ing_manteca, 5, 'Fibra', 100, 'gr', 0), (@ing_manteca, 6, 'Sodio', 100, 'gr', 11),
+  (@ing_arroz, 1, 'Calorías', 100, 'gr', 360), (@ing_arroz, 2, 'Proteínas', 100, 'gr', 6.7), (@ing_arroz, 3, 'Carbohidratos', 100, 'gr', 79),
+  (@ing_arroz, 4, 'Grasas totales', 100, 'gr', 0.6), (@ing_arroz, 5, 'Fibra', 100, 'gr', 1.3), (@ing_arroz, 6, 'Sodio', 100, 'gr', 5),
+  (@ing_fideos, 1, 'Calorías', 100, 'gr', 371), (@ing_fideos, 2, 'Proteínas', 100, 'gr', 13), (@ing_fideos, 3, 'Carbohidratos', 100, 'gr', 75),
+  (@ing_fideos, 4, 'Grasas totales', 100, 'gr', 1.5), (@ing_fideos, 5, 'Fibra', 100, 'gr', 3.2), (@ing_fideos, 6, 'Sodio', 100, 'gr', 6),
+  (@ing_harina, 1, 'Calorías', 100, 'gr', 364), (@ing_harina, 2, 'Proteínas', 100, 'gr', 10), (@ing_harina, 3, 'Carbohidratos', 100, 'gr', 76),
+  (@ing_harina, 4, 'Grasas totales', 100, 'gr', 1), (@ing_harina, 5, 'Fibra', 100, 'gr', 2.7), (@ing_harina, 6, 'Sodio', 100, 'gr', 2),
+  (@ing_lentejas, 1, 'Calorías', 100, 'gr', 352), (@ing_lentejas, 2, 'Proteínas', 100, 'gr', 25), (@ing_lentejas, 3, 'Carbohidratos', 100, 'gr', 60),
+  (@ing_lentejas, 4, 'Grasas totales', 100, 'gr', 1.1), (@ing_lentejas, 5, 'Fibra', 100, 'gr', 11), (@ing_lentejas, 6, 'Sodio', 100, 'gr', 6),
+  (@ing_sal, 1, 'Calorías', 100, 'gr', 0), (@ing_sal, 2, 'Proteínas', 100, 'gr', 0), (@ing_sal, 3, 'Carbohidratos', 100, 'gr', 0),
+  (@ing_sal, 4, 'Grasas totales', 100, 'gr', 0), (@ing_sal, 5, 'Fibra', 100, 'gr', 0), (@ing_sal, 6, 'Sodio', 100, 'gr', 38758),
+  (@ing_pimienta, 1, 'Calorías', 100, 'gr', 251), (@ing_pimienta, 2, 'Proteínas', 100, 'gr', 10), (@ing_pimienta, 3, 'Carbohidratos', 100, 'gr', 64),
+  (@ing_pimienta, 4, 'Grasas totales', 100, 'gr', 3.3), (@ing_pimienta, 5, 'Fibra', 100, 'gr', 25), (@ing_pimienta, 6, 'Sodio', 100, 'gr', 20),
+  (@ing_aceite, 1, 'Calorías', 100, 'ml', 810), (@ing_aceite, 2, 'Proteínas', 100, 'ml', 0), (@ing_aceite, 3, 'Carbohidratos', 100, 'ml', 0),
+  (@ing_aceite, 4, 'Grasas totales', 100, 'ml', 91), (@ing_aceite, 5, 'Fibra', 100, 'ml', 0), (@ing_aceite, 6, 'Sodio', 100, 'ml', 2);
+
+-- Porciones que rinde cada receta de demo.
+UPDATE recipe SET servings = 4 WHERE name = 'Milanesas con puré';
+UPDATE recipe SET servings = 2 WHERE name = 'Ensalada César';
+UPDATE recipe SET servings = 4 WHERE name = 'Fideos con tuco';
+UPDATE recipe SET servings = 6 WHERE name = 'Tarta de verduras';
+UPDATE recipe SET servings = 4 WHERE name = 'Guiso de lentejas';
+UPDATE recipe SET servings = 4 WHERE name = 'Arroz con pollo';
+UPDATE recipe SET servings = 6 WHERE name = 'Flan casero';
+UPDATE recipe SET servings = 2 WHERE name = 'Ensalada de tomate y lechuga';
+UPDATE recipe SET servings = 3 WHERE name = 'Sopa de verduras';
+UPDATE recipe SET servings = 4 WHERE name = 'Panqueques dulces';
+
 COMMIT;
 
 -- =====================================================================
 -- Listo. Quedaron cargados:
 --   - 5 categorías de ingredientes + 18 ingredientes (con vínculo y
---     valores nutricionales para los más usados)
+--     valores nutricionales: calorías, proteínas, carbohidratos, grasas,
+--     fibra y sodio)
 --   - 5 categorías de recetas
 --   - 5 usuarios comunes de prueba (contraseña 123456 para todos):
 --       juanperez, mariagomez, carlosdiaz, luciafernandez, martinlopez
 --   - 1 usuario administrador de prueba (contraseña 123456 también):
 --       admindemo
---   - 10 recetas completas (imagen, categoría, ingredientes y pasos),
---     repartidas entre los 5 usuarios comunes
+--   - 10 recetas completas (imagen, categoría, ingredientes, pasos y
+--     porciones), repartidas entre los 5 usuarios comunes
 --   - Guardados + reseñas cruzadas entre usuarios, para ver valoraciones,
 --     "recetas destacadas" y métricas del perfil con datos reales
 --   - Inventario de ejemplo para juanperez

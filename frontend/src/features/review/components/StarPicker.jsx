@@ -1,6 +1,8 @@
 // Selector interactivo de rating de 1 a 5 estrellas (medias estrellas incluidas).
 // Es distinto de StarRating (solo lectura en core/components) — este responde a
-// hover y click del usuario para elegir el valor.
+// hover y click del usuario para elegir el valor. Las estrellas se dibujan igual que
+// RatingStars: el contorno siempre visible y, encima, el relleno con el degradé verde de
+// la marca recortado hasta donde llega el valor (una media estrella muestra su mitad).
 import { useState } from 'react';
 import './_star-picker.scss';
 
@@ -12,15 +14,13 @@ function StarPicker({ value, onChange }) {
 
   const displayValue = hovered ?? value;
 
-  // Calcula si una posición (1-5) debe mostrarse llena, media o vacía
-  // basándose en el valor a mostrar (hovered o seleccionado).
-  const getStarIcon = (position) => {
-    if (displayValue >= position) return 'star';          // llena
-    if (displayValue >= position - 0.5) return 'star_half'; // media
-    return 'star';                                          // vacía (sin fill)
+  // Recibe: la posición de la estrella (1-5). Devuelve cuánto se pinta (0, 50 o 100%)
+  // según el valor a mostrar (el sobrevolado o el elegido).
+  const getFillPercent = (position) => {
+    if (displayValue >= position) return 100;
+    if (displayValue >= position - 0.5) return 50;
+    return 0;
   };
-
-  const isFilled = (position) => displayValue >= position - 0.4;
 
   // Al mover el mouse sobre la mitad izquierda de una estrella → media estrella;
   // sobre la mitad derecha → estrella completa.
@@ -48,8 +48,7 @@ function StarPicker({ value, onChange }) {
       {[1, 2, 3, 4, 5].map((position) => (
         <span
           key={position}
-          className="StarPicker-star material-symbols-outlined"
-          style={isFilled(position) ? { fontVariationSettings: "'FILL' 1" } : undefined}
+          className="StarPicker-star"
           onMouseMove={(e) => handleMouseMove(e, position)}
           onClick={(e) => handleClick(e, position)}
           role="radio"
@@ -60,7 +59,13 @@ function StarPicker({ value, onChange }) {
             if (e.key === 'Enter' || e.key === ' ') onChange(position);
           }}
         >
-          {getStarIcon(position)}
+          <span className="StarPicker-outline material-symbols-outlined" aria-hidden="true">star</span>
+          {getFillPercent(position) > 0 && (
+            // El ancho depende del valor: es el único estilo que va en línea.
+            <span className="StarPicker-fill" style={{ width: `${getFillPercent(position)}%` }} aria-hidden="true">
+              <span className="StarPicker-fillIcon material-symbols-outlined">star</span>
+            </span>
+          )}
         </span>
       ))}
       {displayValue > 0 && (

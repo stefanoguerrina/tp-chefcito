@@ -71,6 +71,10 @@
     .RecipeHoverOverlay {
       opacity: 1;
     }
+
+    .RecipeHoverOverlay-button {
+      pointer-events: auto;
+    }
   }
 
   &-imageWrapper {

@@ -1,5 +1,6 @@
 // Una reseña dentro de ReviewList: avatar, nombre, hace cuánto se escribió, estrellas y
-// comentario. Si es del usuario logueado, suma los botones para editarla y eliminarla.
+// comentario. Si es del usuario logueado, suma la etiqueta "Tu reseña" junto al nombre y,
+// al costado del comentario, los botones (solo ícono) para editarla y eliminarla.
 import { useState } from 'react';
 import StarRating from '../../../core/components/StarRating.jsx';
 
@@ -43,7 +44,10 @@ function ReviewItem({ review, isOwn, onEdit, onDelete }) {
           )}
         </span>
         <div className="ReviewItem-authorInfo">
-          <span className="ReviewItem-name">{fullName}</span>
+          <span className="ReviewItem-nameRow">
+            <span className="ReviewItem-name">{fullName}</span>
+            {isOwn && <span className="ReviewItem-ownTag">Tu reseña</span>}
+          </span>
           <span className="ReviewItem-date">
             @{author.username} • {formatRelativeDate(review.createdAt)}
           </span>
@@ -51,21 +55,33 @@ function ReviewItem({ review, isOwn, onEdit, onDelete }) {
         <StarRating rating={review.rating} />
       </div>
 
-      {review.comment && <p className="ReviewItem-comment">“{review.comment}”</p>}
+      {/* Comentario a la izquierda y, en la reseña propia, los botones a la derecha. */}
+      {(review.comment || isOwn) && (
+        <div className="ReviewItem-body">
+          {review.comment && <p className="ReviewItem-comment">“{review.comment}”</p>}
 
-      {isOwn && (
-        <div className="ReviewItem-footer">
-          <span className="ReviewItem-ownTag">Tu reseña</span>
-          <div className="ReviewItem-actions">
-            <button type="button" className="ReviewItem-editBtn" onClick={onEdit}>
-              <span className="material-symbols-outlined">edit</span>
-              Editar
-            </button>
-            <button type="button" className="ReviewItem-deleteBtn" onClick={onDelete}>
-              <span className="material-symbols-outlined">delete</span>
-              Eliminar
-            </button>
-          </div>
+          {isOwn && (
+            <div className="ReviewItem-actions">
+              <button
+                type="button"
+                className="ReviewItem-iconBtn"
+                onClick={onEdit}
+                title="Editar reseña"
+                aria-label="Editar reseña"
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+              </button>
+              <button
+                type="button"
+                className="ReviewItem-iconBtn ReviewItem-iconBtn--danger"
+                onClick={onDelete}
+                title="Eliminar reseña"
+                aria-label="Eliminar reseña"
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">delete</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </li>

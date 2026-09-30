@@ -26,6 +26,16 @@ const withRelations = {
   },
 } as const;
 
+// Include del detalle de una receta: lo mismo que withRelations, pero cada ingrediente
+// trae además su tabla nutricional, para calcular los "Valores por porción". Solo lo usa
+// el detalle: los listados no lo necesitan y viajarían muchos datos de más.
+const withDetailRelations = {
+  ...withRelations,
+  recipeingredient: {
+    include: { ingredient: { include: { nutritionalvalue: true } } },
+  },
+} as const;
+
 // Las recetas de un usuario dado de baja (baja lógica, deletedAt con fecha) no se muestran
 // en ningún lado. No se borran ni se marcan: al reactivar al usuario vuelven a aparecer
 // solas. Mismo criterio que ya usan search y feed.
@@ -57,6 +67,28 @@ export const recipeRepository = {
       include: withRelations,
     }),
 
+  // Igual que findById, pero con la tabla nutricional de cada ingrediente (detalle).
+  findDetailById: (id: number) =>
+    prisma.recipe.findFirst({
+      where: { id, ...fromActiveUser },
+      include: withDetailRelations,
+    }),
+
+  // ¿El usuario tiene guardada esta receta? Devuelve su fila de userrecipe o null.
+  findSavedByUser: (idUser: number, idRecipe: number) =>
+    prisma.userrecipe.findFirst({
+      where: { idUser, idRecipe, isSaved: true },
+      select: { idRecipe: true },
+    }),
+
+  // Ingredientes de esta receta que el usuario tiene en su inventario (solo esos, no
+  // todo su inventario): el detalle les pone la etiqueta "Despensa".
+  findPantryIngredientIds: (idUser: number, idRecipe: number) =>
+    prisma.inventory.findMany({
+      where: { idUser, ingredient: { recipeingredient: { some: { idRecipe } } } },
+      select: { idIngredient: true },
+    }),
+
   // Crea una nueva receta junto con sus vínculos a categorías, en una sola operación
   // (nested create de Prisma: crea las filas de recipecategory al mismo tiempo).
   create: (idUser: number, data: CreateRecipeData) =>
@@ -66,6 +98,7 @@ export const recipeRepository = {
         name: data.name,
         description: data.description ?? null,
         preparationTime: data.preparationTime ?? null,
+        servings: data.servings ?? null,
         difficulty: data.difficulty ?? null,
         recipecategory: data.categoryIds
           ? { create: data.categoryIds.map((idCategory) => ({ idCategory })) }

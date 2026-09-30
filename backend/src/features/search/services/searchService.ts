@@ -1,16 +1,20 @@
 // Lógica de negocio de la búsqueda: la búsqueda rápida (categorías, recetas y usuarios en
 // una sola respuesta) y los listados completos con filtros, orden y paginación.
 import { searchRepository } from '../repository/searchRepository.js';
-import { LISTING_PAGE_SIZE, QUICK_SEARCH_LIMITS } from '../models/searchModel.js';
+import { LISTING_PAGE_SIZE, NUTRITION_GOALS, QUICK_SEARCH_LIMITS } from '../models/searchModel.js';
 import type {
   CategoryListingFilters,
   CategorySearchResult,
+  NutritionGoal,
+  NutritionHighlight,
   PantryMatch,
   RecipeListingFilters,
   SearchSection,
   UserListingFilters,
 } from '../models/searchModel.js';
 import { buildPantryMap, comparePantryMatches, computePantryMatch } from './pantryMatchService.js';
+import { computeRecipeNutrition, getCompletePerServing } from '../../recipe/services/recipeNutritionService.js';
+import type { RecipeNutrition } from '../../recipe/models/recipeNutritionModel.js';
 
 // Recibe: el texto a buscar (ya validado y sin espacios en los bordes).
 // Devuelve: { term, categories, recipes, users }, cada sección con { items, total }.
@@ -86,7 +90,30 @@ interface RecipeRankingRow {
   // Cuándo la guardó el usuario (solo en "Recetas guardadas"; si no, null).
   savedAt: Date | null;
   pantryMatch: PantryMatch | null;
+  // Valores nutricionales (solo si se filtra por necesidades nutricionales; si no, null).
+  nutrition: RecipeNutrition | null;
 }
+
+// Recibe: los valores nutricionales de una receta y las necesidades elegidas.
+// Devuelve: true si cumple TODAS. Se exige que la receta indique sus porciones y que el
+// nutriente esté cargado en todos sus ingredientes: con datos incompletos no se puede
+// asegurar que sea, por ejemplo, "baja en calorías", así que queda afuera.
+const meetsNutritionGoals = (nutrition: RecipeNutrition, goals: NutritionGoal[]) =>
+  nutrition.servings !== null
+  && goals.every((goal) => {
+    const rule = NUTRITION_GOALS[goal];
+    const perServing = getCompletePerServing(nutrition, rule.nutrient);
+    if (perServing === null) return false;
+    return (rule.min === undefined || perServing >= rule.min) && (rule.max === undefined || perServing <= rule.max);
+  });
+
+// Recibe: los valores nutricionales de una receta y las necesidades elegidas.
+// Devuelve: el valor por porción de cada nutriente filtrado, para mostrarlo en la card.
+const toNutritionHighlights = (nutrition: RecipeNutrition, goals: NutritionGoal[]): NutritionHighlight[] =>
+  [...new Set(goals.map((goal) => NUTRITION_GOALS[goal].nutrient))]
+    .map((name) => nutrition.nutrients.find((nutrient) => nutrient.name === name))
+    .filter((nutrient) => nutrient !== undefined)
+    .map(({ name, unit, perServing }) => ({ name, unit, perServing }));
 
 // Arma la función de comparación para Array.sort según el orden elegido.
 // "Más relevantes" pone primero las recetas cuyo NOMBRE contiene lo buscado (las que
@@ -129,7 +156,8 @@ const buildRecipeComparator = (filters: RecipeListingFilters) => {
 // Recibe: los filtros ya validados y el id del usuario autenticado (para su despensa y,
 // en "Recetas guardadas", para saber cuándo guardó cada receta).
 // Devuelve: una página { items, total, page, pageSize, totalPages } de recetas (con su
-// valoración y, en modo despensa, su coincidencia) + pantry: { inventoryCount,
+// valoración, en modo despensa su coincidencia y, si se filtra por necesidades
+// nutricionales, el valor por porción de esos nutrientes) + pantry: { inventoryCount,
 // completeCount } en modo despensa, o null.
 // Se hace en dos pasos: primero se filtra y ordena TODO con datos mínimos (la valoración
 // promedio y la despensa no se pueden calcular en el WHERE de Prisma) y después se piden
@@ -138,17 +166,33 @@ export async function listRecipes(filters: RecipeListingFilters, idUser: number)
   const candidates = await searchRepository.findRecipeCandidates(filters);
   const recipeIds = candidates.map((recipe) => recipe.id);
 
-  const [reviewStats, saveCounts, inventory, savedDates] = await Promise.all([
+  const hasNutritionGoals = filters.nutritionGoals.length > 0;
+
+  const [reviewStats, saveCounts, inventory, savedDates, nutritionData] = await Promise.all([
     searchRepository.findReviewStats(recipeIds),
     searchRepository.findSaveCounts(recipeIds),
     filters.pantry ? searchRepository.findInventory(idUser) : Promise.resolve([]),
     filters.savedByUserId ? searchRepository.findSavedDates(idUser, recipeIds) : Promise.resolve([]),
+    // Las tablas nutricionales solo se piden si se filtra por necesidades nutricionales.
+    hasNutritionGoals ? searchRepository.findNutritionData(recipeIds) : Promise.resolve([]),
   ]);
 
   const statsById = new Map(reviewStats.map((stat) => [stat.idRecipe, stat]));
   const savesById = new Map(saveCounts.map((save) => [save.idRecipe, save._count._all]));
   const savedAtById = new Map(savedDates.map((saved) => [saved.idRecipe, saved.savedAt]));
   const pantry = buildPantryMap(inventory);
+  const nutritionById = new Map(nutritionData.map((recipe) => [
+    recipe.id,
+    computeRecipeNutrition(
+      recipe.recipeingredient.map((item) => ({
+        name: item.ingredient.name,
+        unitOfMeasure: item.ingredient.unitOfMeasure,
+        requiredQuantity: item.requiredQuantity,
+        nutritionalValues: item.ingredient.nutritionalvalue,
+      })),
+      recipe.servings
+    ),
+  ]));
 
   let rows: RecipeRankingRow[] = candidates.map((recipe) => {
     const stats = statsById.get(recipe.id);
@@ -162,12 +206,16 @@ export async function listRecipes(filters: RecipeListingFilters, idUser: number)
       saveCount: savesById.get(recipe.id) ?? 0,
       savedAt: savedAtById.get(recipe.id) ?? null,
       pantryMatch: filters.pantry ? computePantryMatch(recipe.recipeingredient, pantry) : null,
+      nutrition: nutritionById.get(recipe.id) ?? null,
     };
   });
 
   if (filters.minRating) {
     const minRating = filters.minRating;
     rows = rows.filter((row) => row.reviewCount > 0 && row.averageRating >= minRating);
+  }
+  if (hasNutritionGoals) {
+    rows = rows.filter((row) => row.nutrition !== null && meetsNutritionGoals(row.nutrition, filters.nutritionGoals));
   }
   // En modo despensa solo tiene sentido mostrar recetas con al menos un ingrediente que
   // el usuario tenga: primero las que puede hacer completas, después las más cercanas.
@@ -191,6 +239,7 @@ export async function listRecipes(filters: RecipeListingFilters, idUser: number)
       averageRating: row.averageRating,
       reviewCount: row.reviewCount,
       pantryMatch: row.pantryMatch,
+      nutritionHighlights: row.nutrition ? toNutritionHighlights(row.nutrition, filters.nutritionGoals) : null,
     }));
 
   return {

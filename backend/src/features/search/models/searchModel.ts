@@ -44,10 +44,32 @@ export type RecipeSort = (typeof RECIPE_SORTS)[number];
 export const NAME_OR_RECIPES_SORTS = ['name', 'recipes'] as const;
 export type NameOrRecipesSort = (typeof NAME_OR_RECIPES_SORTS)[number];
 
+// Necesidades nutricionales que se pueden filtrar en el listado de recetas. Cada una mira
+// un nutriente POR PORCIÓN contra un límite: min = al menos ese valor, max = como mucho.
+// Los nombres de los nutrientes son los de KNOWN_NUTRIENTS (recipe/models/recipeNutritionModel).
+export const NUTRITION_GOAL_KEYS = ['high-protein', 'low-calorie', 'low-carb', 'low-fat', 'high-fiber', 'low-sodium'] as const;
+export type NutritionGoal = (typeof NUTRITION_GOAL_KEYS)[number];
+
+export interface NutritionGoalRule {
+  nutrient: string;
+  min?: number;
+  max?: number;
+}
+
+export const NUTRITION_GOALS: Record<NutritionGoal, NutritionGoalRule> = {
+  'high-protein': { nutrient: 'Proteínas', min: 20 },
+  'low-calorie': { nutrient: 'Calorías', max: 400 },
+  'low-carb': { nutrient: 'Carbohidratos', max: 20 },
+  'low-fat': { nutrient: 'Grasas totales', max: 10 },
+  'high-fiber': { nutrient: 'Fibra', min: 5 },
+  'low-sodium': { nutrient: 'Sodio', max: 140 },
+};
+
 // Filtros del listado de recetas (todos opcionales salvo los que tienen valor por defecto).
 // maxTime/minTime en minutos; minRating entre 1 y 5; pantry = "Con mi despensa";
 // savedByUserId = solo las recetas que guardó ese usuario ("Recetas guardadas");
-// authorId = solo las recetas que publicó ese usuario (galería del perfil).
+// authorId = solo las recetas que publicó ese usuario (galería del perfil);
+// nutritionGoals = necesidades nutricionales que tiene que cumplir (todas a la vez).
 export interface RecipeListingFilters {
   term?: string;
   savedByUserId?: number;
@@ -57,6 +79,7 @@ export interface RecipeListingFilters {
   minTime?: number;
   minRating?: number;
   ingredientIds: number[];
+  nutritionGoals: NutritionGoal[];
   pantry: boolean;
   sort: RecipeSort;
   page: number;
@@ -85,6 +108,14 @@ export interface PantryMatch {
   totalCount: number;
   missing: PantryMissingIngredient[];
   isComplete: boolean;
+}
+
+// Un nutriente que se muestra en la card cuando se filtra por necesidades nutricionales
+// (ej. { name: 'Proteínas', unit: 'gr', perServing: 38.7 }).
+export interface NutritionHighlight {
+  name: string;
+  unit: string;
+  perServing: number;
 }
 
 // Una página de un listado.

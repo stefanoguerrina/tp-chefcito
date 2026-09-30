@@ -27,10 +27,8 @@
     .StarRating {
       margin-top: 2px;
       font-size: 12px;
-    }
-
-    .StarRating-icon {
-      font-size: 15px;
+      // Tamaño de las 5 estrellas (ver RatingStars).
+      --rating-star-size: 16px;
     }
   }
 
@@ -145,10 +143,7 @@
     .StarRating {
       margin-left: auto;
       font-size: 11px;
-    }
-
-    .StarRating-icon {
-      font-size: 14px;
+      --rating-star-size: 14px;
     }
   }
 
@@ -201,12 +196,12 @@
     overflow-wrap: anywhere;
   }
 
-  &-footer {
+  // Nombre y, en la reseña propia, la etiqueta "Tu reseña" en la misma línea.
+  &-nameRow {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    padding-top: 6px;
-    border-top: 1px solid with-opacity($color-outline-variant, 0.6);
+    gap: 2px $spacing-sm;
   }
 
   &-ownTag {
@@ -216,42 +211,61 @@
     color: $color-on-secondary-container;
     font-size: 10px;
     font-weight: 600;
+    line-height: 1.5;
   }
 
-  // Botones de la reseña propia (Editar / Eliminar), uno al lado del otro.
+  // Comentario + botones de la reseña propia al costado (sin fila aparte abajo).
+  &-body {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-sm;
+
+    .ReviewItem-comment {
+      flex: 1;
+    }
+  }
+
+  // Editar / Eliminar: botones cuadrados solo con ícono, pegados a la derecha.
   &-actions {
     display: flex;
     gap: $spacing-xs;
+    margin-left: auto;
   }
 
-  // Misma base para los dos botones; solo cambia el color al pasar el mouse.
-  &-editBtn,
-  &-deleteBtn {
+  &-iconBtn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
     border: 1px solid $color-outline-variant;
     border-radius: $radius-md;
     background: $color-surface-container-lowest;
     color: $color-on-surface-variant;
-    font-family: $font-body;
-    font-size: 11px;
     cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 
     .material-symbols-outlined {
-      font-size: 14px;
+      font-size: 16px;
     }
-  }
 
-  &-editBtn:hover {
-    color: $color-primary;
-    border-color: $color-primary;
-  }
+    &:hover {
+      color: $color-primary;
+      border-color: $color-primary;
+    }
 
-  &-deleteBtn:hover {
-    color: $color-error;
-    border-color: $color-error;
+    // Eliminar va siempre en rojo (acción destructiva); al pasar el mouse se rellena.
+    &--danger {
+      color: $color-error;
+      border-color: with-opacity($color-error, 0.5);
+      background: with-opacity($color-error, 0.08);
+
+      &:hover {
+        color: $color-error;
+        border-color: $color-error;
+        background: with-opacity($color-error, 0.18);
+      }
+    }
   }
 }

@@ -1,4 +1,5 @@
-// Listado completo de recetas con filtros, "Con mi despensa", orden, vista y paginación.
+// Listado completo de recetas con filtros (incluidas las necesidades nutricionales), "Con
+// mi despensa", orden, vista y paginación.
 // Lo usan dos páginas: /buscar/recetas (todas las recetas) y /guardadas (solo las que
 // guardó el usuario, con filters.savedOnly). No guarda los filtros: los recibe (vienen de
 // la URL) y avisa cuando cambian.
@@ -13,6 +14,7 @@ import ListingSearchInput from './ListingSearchInput.jsx';
 import RecipeFiltersPanel from './RecipeFiltersPanel.jsx';
 import PantryNotice from './PantryNotice.jsx';
 import PantryMatchInfo from './PantryMatchInfo.jsx';
+import NutritionHighlights from './NutritionHighlights.jsx';
 import ListingEmptyState from './ListingEmptyState.jsx';
 import SearchPagination from './SearchPagination.jsx';
 import AssistantBanner from './AssistantBanner.jsx';
@@ -138,6 +140,9 @@ function RecipeListing({ filters, onFiltersChange }) {
                         isSaved={savedOnly || savedRecipeIds.has(recipe.id)}
                         onToggleSave={() => (savedOnly ? handleRemoveSaved(recipe.id) : handleToggleSave(recipe.id))}
                       >
+                        {recipe.nutritionHighlights?.length > 0 && (
+                          <NutritionHighlights highlights={recipe.nutritionHighlights} />
+                        )}
                         {recipe.pantryMatch && <PantryMatchInfo match={recipe.pantryMatch} />}
                       </RecipeCard>
                     ))}
