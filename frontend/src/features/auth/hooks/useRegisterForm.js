@@ -1,10 +1,15 @@
-// Hook que gestiona el estado y la lógica del formulario de registro: valores, errores
-// por campo (propios o devueltos por el backend) y el estado de "cuenta creada".
+// Hook que gestiona el estado y la lógica del formulario de alta de una cuenta: valores,
+// errores por campo (propios o devueltos por el backend) y el estado de "cuenta creada".
+// Lo usan el registro (RegisterForm) y el alta desde el panel admin (AdminCreateUserModal):
+// cambia solo a qué endpoint se manda el formulario.
 import { useState } from "react";
 import { formInitialState, validateRegisterForm, mapRegisterApiErrors } from "../models/registerModel";
 import { registerService } from "../services/registerService";
 
-export const useRegisterForm = () => {
+// Recibe (opcional): { submitForm, onSuccess }.
+//   submitForm(form): async, manda el formulario al backend (por defecto, el registro).
+//   onSuccess(respuesta): se llama con lo que devolvió submitForm (ej. el usuario creado).
+export const useRegisterForm = ({ submitForm = registerService, onSuccess } = {}) => {
 
     const [form, setForm] = useState(formInitialState);
     // Errores de cada campo ({ userName: "...", email: "..." }): se muestran debajo del input.
@@ -45,8 +50,9 @@ export const useRegisterForm = () => {
 
         setIsLoading(true);
         try {
-            await registerService(form);
+            const response = await submitForm(form);
             setRegisteredUsername(form.userName.trim());
+            onSuccess?.(response);
         } catch (error) {
             // Si el backend dijo qué campo falló (validación 422 o usuario/email ya en uso
             // 409), el error va debajo de ese campo; si no, como mensaje general.
@@ -54,7 +60,7 @@ export const useRegisterForm = () => {
             if (Object.keys(apiErrors).length > 0) {
                 setFieldErrors(apiErrors);
             } else {
-                setGeneralError(error.message || "No pudimos crear tu cuenta. Intentá de nuevo.");
+                setGeneralError(error.message || "No pudimos crear la cuenta. Intentá de nuevo.");
             }
         } finally {
             setIsLoading(false);

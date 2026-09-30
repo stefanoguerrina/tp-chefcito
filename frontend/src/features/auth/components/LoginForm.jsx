@@ -2,7 +2,7 @@
 // dos son obligatorios) y muestra su propio error debajo si se envía vacío.
 import { useState } from "react";
 import { useLoginForm } from "../hooks/useLoginForm";
-import { getFieldAriaProps } from "../../../shared/utils/fieldAria.js";
+import { getFieldAriaProps, hasFieldErrors } from "../../../shared/utils/fieldAria.js";
 import RequiredFieldsNote from "../../../core/components/RequiredFieldsNote.jsx";
 import AuthModalLayout from "./AuthModalLayout.jsx";
 import AuthField from "./AuthField.jsx";
@@ -43,7 +43,7 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister, initialIdentif
 
             {/* noValidate: los errores los muestra la app debajo de cada campo. */}
             <form className="AuthModal-form" onSubmit={handleSubmit} noValidate>
-                <RequiredFieldsNote />
+                <RequiredFieldsNote isVisible={hasFieldErrors(fieldErrors)} />
 
                 <AuthField id="login-identifier" label="Email o nombre de usuario" isRequired error={fieldErrors.email}>
                     <input

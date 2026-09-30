@@ -14,6 +14,7 @@ import { searchRouter } from '../features/search/routes/searchRouter.js';
 import { followRouter } from '../features/follow/routes/followRouter.js';
 import { feedRouter } from '../features/feed/routes/feedRouter.js';
 import { assistantRouter } from '../features/assistant/routes/assistantRouter.js';
+import { adminRouter } from '../features/admin/routes/adminRouter.js';
 
 const apiRouter = Router();
 
@@ -50,5 +51,7 @@ apiRouter.use('/search', searchRouter);
 apiRouter.use('/feed', feedRouter);
 // Chefcito Bot: chat con IA que sugiere recetas a partir del inventario del usuario
 apiRouter.use('/assistant', assistantRouter);
+// Panel de administración: resumen ya contado en la base y usuarios paginados (solo admin)
+apiRouter.use('/admin', adminRouter);
 
 export { apiRouter };

@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import { userRepository } from '../repository/userRepository.js';
 import { toPublic, type UpdateUserData, type UserImageField, ADMIN_ROLE_ID } from '../models/userModel.js';
 import { deleteLocalUpload } from '../../../core/fileStorage.js';
+import { ensureDefaultUserRole } from '../../rol/services/roleService.js';
 
 const SALT_ROUNDS = 10;
 
@@ -106,8 +107,8 @@ export async function changePassword(
 }
 
 // Alta de usuario por un administrador.
-// Verifica duplicados de username y email, hashea la contraseña y, si makeAdmin=true,
-// asigna el rol admin al usuario recién creado.
+// Verifica duplicados de username y email, hashea la contraseña, le asigna el rol
+// "Usuario" y, si makeAdmin=true, también el rol admin.
 // Devuelve el usuario público creado o un motivo de fallo.
 export async function createUserByAdmin(data: {
   username: string;
@@ -142,7 +143,10 @@ export async function createUserByAdmin(data: {
     birthDate: data.birthDate ?? null,
   });
 
-  // Si se solicitó rol admin, se asigna en la tabla userrole.
+  // Igual que en el registro, todo usuario nuevo recibe el rol "Usuario" por defecto.
+  // Si además se pidió rol admin, se suma ese también (un usuario puede tener varios).
+  const defaultRole = await ensureDefaultUserRole();
+  await userRepository.assignRole(newUser.id, defaultRole.id);
   if (data.makeAdmin) {
     await userRepository.assignRole(newUser.id, ADMIN_ROLE_ID);
   }

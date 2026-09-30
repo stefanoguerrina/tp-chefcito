@@ -1,9 +1,7 @@
 // Sub-panel de roles de un usuario (features/role/components/UserRolesPanel).
-// Se usa en dos lugares: expandido dentro de un <li> de SearchUsersForm (panel viejo de
-// "Usuarios") y dentro de AdminUserRolesModal (panel nuevo del dashboard) — por eso el
-// borde/margen superior de acá, para separarlo visualmente de lo que venga antes, sin
-// asumir en qué contenedor vive. flex-basis:100% fuerza el ancho completo cuando el
-// padre es flex (el <li> de SearchUsersForm); en el modal, que no es flex, no hace nada.
+// Se usa dentro de AdminUserRolesModal. Trae su propio borde/margen superior para
+// separarlo de lo que venga antes sin asumir en qué contenedor vive (el modal los anula).
+// flex-basis:100% fuerza el ancho completo si alguna vez el padre es flex.
 @use '../../../styles/abstracts' as *;
 
 .UserRolesPanel {

@@ -1,6 +1,7 @@
 // Página raíz del panel de administración: layout separado de la home de usuario común
 // (sidebar + topbar propios), con el dashboard de métricas como landing y acceso a los
-// paneles de gestión que ya existían (Usuarios, Roles, Ingredientes, Cat. de ingrediente).
+// paneles de gestión (Roles, Ingredientes, Cat. de ingrediente, Cat. de receta). Los
+// usuarios se gestionan desde la tabla del dashboard.
 // La sección activa sale de la URL (/admin/:section), así se puede recargar o volver
 // atrás sin perderla. Solo se llega acá con rol admin (ProtectedRoute en App.jsx).
 // Solo se monta la sección activa: cada una pide sus propios datos al abrirse, así al
@@ -12,7 +13,6 @@ import AdminDashboardSection from '../components/AdminDashboardSection.jsx';
 import AdminIngredientsSection from '../components/AdminIngredientsSection.jsx';
 import AdminIngredientCategoriesSection from '../components/AdminIngredientCategoriesSection.jsx';
 import AdminRecipeCategoriesSection from '../components/AdminRecipeCategoriesSection.jsx';
-import SearchUsersForm from '../../user/components/SearchUsersForm.jsx';
 import RolePage from '../../role/pages/RolePage.jsx';
 import { useAdminProfile } from '../hooks/useAdminProfile.js';
 import { ADMIN_SECTIONS, ADMIN_SECTION_HEADERS } from '../models/adminSectionsModel.js';
@@ -30,7 +30,7 @@ function AdminPage() {
   const setActiveSection = (nextSection) =>
     navigate(nextSection === ADMIN_SECTIONS.dashboard ? '/admin' : `/admin/${nextSection}`);
 
-  const { fullName: adminName, initials: adminInitials } = useAdminProfile();
+  const { fullName: adminName, initials: adminInitials, avatarUrl: adminAvatarUrl } = useAdminProfile();
 
   const sectionHeader = ADMIN_SECTION_HEADERS[activeSection];
 
@@ -41,18 +41,13 @@ function AdminPage() {
         onSelectSection={setActiveSection}
         adminName={adminName}
         adminInitials={adminInitials}
+        adminAvatarUrl={adminAvatarUrl}
         onLogout={logout}
       />
 
       <div className="AdminPage-content">
         {activeSection === ADMIN_SECTIONS.dashboard && (
           <AdminDashboardSection header={sectionHeader} onSelectSection={setActiveSection} />
-        )}
-
-        {activeSection === ADMIN_SECTIONS.users && (
-          <AdminSectionLayout header={sectionHeader}>
-            <SearchUsersForm />
-          </AdminSectionLayout>
         )}
 
         {activeSection === ADMIN_SECTIONS.roles && (

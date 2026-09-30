@@ -2,6 +2,7 @@
 // Orquesta el repositorio, aplica reglas y transforma datos para el controller.
 import { ingredientRepository } from '../repository/ingredientRepository.js';
 import type { CreateIngredientData, UpdateIngredientData } from '../models/ingredientModel.js';
+import { deleteLocalUpload } from '../../../core/fileStorage.js';
 
 // Devuelve todos los ingredientes con sus categorías.
 export async function getAllIngredients() {
@@ -70,6 +71,9 @@ export async function deleteIngredient(
 
   try {
     await ingredientRepository.delete(id);
+    // Recién con el ingrediente borrado se borra su foto: si el borrado fallaba (en uso),
+    // la foto tenía que seguir estando.
+    await deleteLocalUpload(existing.imagePath);
     return { ok: true };
   } catch (error: any) {
     // Prisma lanza P2003/P2014 cuando hay filas relacionadas.
@@ -78,4 +82,39 @@ export async function deleteIngredient(
     }
     throw error;
   }
+}
+
+// Guarda la nueva foto de un ingrediente (una sola por ingrediente).
+// Recibe: id del ingrediente y la ruta pública del archivo ya subido. La foto anterior, si
+// era un archivo propio, se borra del disco porque ya no la usa nadie (mismo criterio que
+// el avatar de un usuario). Devuelve el ingrediente actualizado o not_found.
+export async function setIngredientImage(
+  id: number,
+  imagePath: string
+): Promise<
+  | { ok: true; ingredient: Awaited<ReturnType<typeof ingredientRepository.update>> }
+  | { ok: false; reason: 'not_found' }
+> {
+  const existing = await ingredientRepository.findById(id);
+  if (!existing) return { ok: false, reason: 'not_found' };
+
+  const ingredient = await ingredientRepository.update(id, { imagePath });
+  await deleteLocalUpload(existing.imagePath);
+  return { ok: true, ingredient };
+}
+
+// Quita la foto de un ingrediente: deja imagePath en null y borra el archivo.
+// Recibe: id del ingrediente. Devuelve el ingrediente actualizado o not_found.
+export async function removeIngredientImage(
+  id: number
+): Promise<
+  | { ok: true; ingredient: Awaited<ReturnType<typeof ingredientRepository.update>> }
+  | { ok: false; reason: 'not_found' }
+> {
+  const existing = await ingredientRepository.findById(id);
+  if (!existing) return { ok: false, reason: 'not_found' };
+
+  const ingredient = await ingredientRepository.update(id, { imagePath: null });
+  await deleteLocalUpload(existing.imagePath);
+  return { ok: true, ingredient };
 }

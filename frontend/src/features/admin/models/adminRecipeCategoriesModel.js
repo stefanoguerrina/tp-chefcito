@@ -2,21 +2,12 @@
 // administración: cuántas recetas tiene cada categoría, el ranking de las más usadas y el
 // filtro de la tabla por búsqueda. Sin fetch ni estado (lo maneja useAdminRecipeCategories).
 
-// Cuenta cuántas recetas están vinculadas a cada categoría, recorriendo el
-// recipecategory[] que ya viene embebido en cada receta de getAllRecipes() (no hace falta
-// un endpoint nuevo: por ser una relación N:M, una categoría puede repetirse en varias recetas).
-// Recibe: array de recetas crudas. Devuelve: Map de idCategory -> cantidad de recetas.
-export const countRecipesByCategory = (recipes) => {
-  const countByCategory = new Map();
-  recipes.forEach((recipe) => {
-    (recipe.recipecategory ?? []).forEach((link) => {
-      const id = link.category?.id ?? link.idCategory;
-      if (id === undefined) return;
-      countByCategory.set(id, (countByCategory.get(id) ?? 0) + 1);
-    });
-  });
-  return countByCategory;
-};
+// Cuántas recetas tiene cada categoría. El backend ya lo cuenta y lo manda en cada
+// categoría (_count.recipecategory, sin las recetas de usuarios dados de baja): así no
+// hace falta pedir todas las recetas solo para contar.
+// Recibe: categorías crudas. Devuelve: Map de idCategory -> cantidad de recetas.
+export const countRecipesByCategory = (categories) =>
+  new Map(categories.map((category) => [category.id, category._count?.recipecategory ?? 0]));
 
 // Ranking de categorías con más recetas, para la tarjeta del dashboard (reutiliza el
 // mismo componente AdminTopIngredientsGrid que ya usan Ingredientes y Cat. de Ingredientes).

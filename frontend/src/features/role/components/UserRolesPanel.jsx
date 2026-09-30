@@ -1,5 +1,5 @@
-// Sub-panel de roles de un usuario — se muestra expandido dentro de SearchUsersForm
-// al clickear "Roles", o dentro de AdminUserRolesModal desde el dashboard. Permite ver
+// Sub-panel de roles de un usuario — se muestra dentro de AdminUserRolesModal, desde la
+// tabla de usuarios del dashboard. Permite ver
 // qué roles tiene asignados y asignarle/quitarle roles mediante la tabla intermedia
 // userrole. Cada cambio pide confirmación en un modal antes de ejecutarse. Solo lo ve un admin.
 import { useState, useEffect } from 'react';

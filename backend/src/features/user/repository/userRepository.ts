@@ -3,15 +3,20 @@
 import prisma from '../../../core/prismaClient.js';
 import type { CreateUserData, UpdateUserData } from '../models/userModel.js';
 
+// Include reutilizable para los listados: suma _count.recipe (cantidad de recetas del
+// usuario) en la misma consulta, sin traer las recetas en sí.
+const withRecipeCount = { _count: { select: { recipe: true } } } as const;
+
 export const userRepository = {
 
-  // Devuelve todos los usuarios activos (sin baja lógica).
+  // Devuelve todos los usuarios activos (sin baja lógica), con cuántas recetas publicó cada uno.
   findAll: () =>
-    prisma.user.findMany({ where: { deletedAt: null } }),
+    prisma.user.findMany({ where: { deletedAt: null }, include: withRecipeCount }),
 
-  // Devuelve todos los usuarios con baja lógica (inactivos).
+  // Devuelve todos los usuarios con baja lógica (inactivos). También trae la cantidad de
+  // recetas: el panel admin la muestra aunque estén ocultas, para dejar claro que no se perdieron.
   findAllDeleted: () =>
-    prisma.user.findMany({ where: { deletedAt: { not: null } } }),
+    prisma.user.findMany({ where: { deletedAt: { not: null } }, include: withRecipeCount }),
 
   // Busca un usuario activo por ID.
   findById: (id: number) =>

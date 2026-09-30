@@ -2,6 +2,37 @@
 // Se ejecutan antes del controller para rechazar datos inválidos con mensajes claros.
 import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
+import { commaDecimalToDot } from '../../../core/middleware/decimalSanitizer.js';
+
+// Reglas de los valores nutricionales que pueden venir junto con el ingrediente (alta y
+// edición). Son opcionales: si no se mandan, no se tocan los que ya tenga.
+const nutritionalValuesRules = [
+  body('nutritionalValues')
+    .optional()
+    .isArray({ max: 30 })
+    .withMessage('nutritionalValues debe ser una lista (máximo 30 valores).'),
+  body('nutritionalValues.*.name')
+    .trim()
+    .notEmpty()
+    .withMessage('Cada valor nutricional necesita un nombre.')
+    .isLength({ max: 100 })
+    .withMessage('El nombre del valor nutricional no puede superar los 100 caracteres.'),
+  body('nutritionalValues.*.value')
+    .optional({ values: 'null' })
+    .customSanitizer(commaDecimalToDot)
+    .isFloat({ min: 0, max: 99999999 })
+    .withMessage('El valor nutricional debe ser un número mayor o igual a 0.'),
+  body('nutritionalValues.*.servingAmount')
+    .optional({ values: 'null' })
+    .customSanitizer(commaDecimalToDot)
+    .isFloat({ gt: 0, max: 99999999 })
+    .withMessage('La porción de referencia debe ser un número mayor a 0.'),
+  body('nutritionalValues.*.servingUnit')
+    .optional({ values: 'null' })
+    .trim()
+    .isLength({ max: 20 })
+    .withMessage('La unidad de la porción no puede superar los 20 caracteres.'),
+];
 
 // Reglas de validación para crear un ingrediente (POST /).
 export const validateCreateIngredient = [
@@ -22,9 +53,12 @@ export const validateCreateIngredient = [
     .trim()
     .isLength({ max: 255 })
     .withMessage('La descripción no puede superar los 255 caracteres.'),
+  // Obligatoria al crear: el panel la elige de una lista fija, así todos los ingredientes
+  // usan la misma abreviatura para la misma unidad (no "g" en uno y "gr" en otro).
   body('unitOfMeasure')
-    .optional({ nullable: true })
     .trim()
+    .notEmpty()
+    .withMessage('La unidad de medida es requerida.')
     .isLength({ max: 20 })
     .withMessage('La unidad de medida no puede superar los 20 caracteres.'),
   body('imagePath')
@@ -32,6 +66,7 @@ export const validateCreateIngredient = [
     .trim()
     .isLength({ max: 255 })
     .withMessage('La ruta de la imagen no puede superar los 255 caracteres.'),
+  ...nutritionalValuesRules,
 ];
 
 // Reglas de validación para actualizar un ingrediente (PATCH /:id).
@@ -69,10 +104,11 @@ export const validateUpdateIngredient = [
     .trim()
     .isLength({ max: 255 })
     .withMessage('La ruta de la imagen no puede superar los 255 caracteres.'),
+  ...nutritionalValuesRules,
   // Verificamos que al menos un campo editable esté presente en el body.
   body()
     .custom((_, { req }) => {
-      const campos = ['categoryIds', 'name', 'description', 'unitOfMeasure', 'imagePath'];
+      const campos = ['categoryIds', 'name', 'description', 'unitOfMeasure', 'imagePath', 'nutritionalValues'];
       const hayAlguno = campos.some((c) => req.body[c] !== undefined);
       if (!hayAlguno) {
         throw new Error('Se debe enviar al menos un campo editable.');

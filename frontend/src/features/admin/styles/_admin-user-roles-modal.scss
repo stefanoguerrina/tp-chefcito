@@ -77,9 +77,8 @@
   padding: $spacing-lg;
   overflow-y: auto;
 
-  // UserRolesPanel (features/role) está pensado para vivir también dentro de un <li>
-  // flex (SearchUsersForm) y trae su propio margen/borde superior para eso — acá, como
-  // primer y único contenido de la tarjeta, no hacen falta.
+  // UserRolesPanel (features/role) trae su propio margen/borde superior para separarse
+  // de lo que tenga arriba — acá, como primer y único contenido de la tarjeta, no hacen falta.
   .UserRolesPanel {
     margin-top: 0;
     padding-top: 0;

@@ -45,3 +45,9 @@ body button[aria-invalid='true'] {
     box-shadow: 0 0 0 2px with-opacity($color-error, 0.2);
   }
 }
+
+// Nombre de lo que se está editando en el título de un modal (ej. Editar rol "Admin"):
+// en el color de la marca, para que se distinga del resto del título.
+.EditingName {
+  color: $color-primary;
+}

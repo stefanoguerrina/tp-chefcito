@@ -140,6 +140,12 @@
     // La tabla puede ser más ancha que el viewport en mobile: scroll horizontal propio,
     // nunca la página entera (regla general del proyecto para tablas/anchos fijos).
     overflow-x: auto;
+    transition: opacity 0.15s ease;
+
+    // Mientras llega otra página (o filtro), la actual se atenúa en vez de desaparecer.
+    &--loading {
+      opacity: 0.55;
+    }
   }
 
   &-table {
@@ -182,8 +188,7 @@
     }
   }
 
-  // Fila de un usuario dado de baja: se atenúa para diferenciarla de un vistazo,
-  // igual que hace .admin-panel__item--inactive en el panel completo de Usuarios.
+  // Fila de un usuario dado de baja: se atenúa para diferenciarla de un vistazo.
   &-row--inactive {
     opacity: 0.6;
   }
@@ -192,20 +197,6 @@
     display: flex;
     align-items: center;
     gap: $spacing-sm;
-  }
-
-  &-avatar {
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    border-radius: $radius-md;
-    background: $color-surface-container-high;
-    color: $color-on-background;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 13px;
   }
 
   &-userText {

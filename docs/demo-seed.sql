@@ -79,23 +79,23 @@ SET @cat_condimentos:= (SELECT id FROM ingredientcategory WHERE name = 'Condimen
 -- 2. Ingredientes
 -- ---------------------------------------------------------------------
 INSERT INTO ingredient (name, description, unitOfMeasure) VALUES
-  ('Tomate', 'Tomate fresco', 'g'),
-  ('Cebolla', 'Cebolla blanca', 'g'),
-  ('Papa', 'Papa para puré o guiso', 'g'),
-  ('Zanahoria', 'Zanahoria fresca', 'g'),
-  ('Lechuga', 'Lechuga criolla', 'g'),
-  ('Carne picada', 'Carne vacuna picada', 'g'),
-  ('Pechuga de pollo', 'Pechuga de pollo sin piel', 'g'),
-  ('Huevo', 'Huevo de gallina', 'unidad'),
+  ('Tomate', 'Tomate fresco', 'gr'),
+  ('Cebolla', 'Cebolla blanca', 'gr'),
+  ('Papa', 'Papa para puré o guiso', 'gr'),
+  ('Zanahoria', 'Zanahoria fresca', 'gr'),
+  ('Lechuga', 'Lechuga criolla', 'gr'),
+  ('Carne picada', 'Carne vacuna picada', 'gr'),
+  ('Pechuga de pollo', 'Pechuga de pollo sin piel', 'gr'),
+  ('Huevo', 'Huevo de gallina', 'ud.'),
   ('Leche', 'Leche entera', 'ml'),
-  ('Queso cremoso', 'Queso cremoso para gratinar', 'g'),
-  ('Manteca', 'Manteca sin sal', 'g'),
-  ('Arroz', 'Arroz blanco', 'g'),
-  ('Fideos', 'Fideos secos tipo spaghetti', 'g'),
-  ('Harina', 'Harina de trigo 0000', 'g'),
-  ('Lentejas', 'Lentejas secas', 'g'),
-  ('Sal', 'Sal fina', 'g'),
-  ('Pimienta negra', 'Pimienta negra molida', 'g'),
+  ('Queso cremoso', 'Queso cremoso para gratinar', 'gr'),
+  ('Manteca', 'Manteca sin sal', 'gr'),
+  ('Arroz', 'Arroz blanco', 'gr'),
+  ('Fideos', 'Fideos secos tipo spaghetti', 'gr'),
+  ('Harina', 'Harina de trigo 0000', 'gr'),
+  ('Lentejas', 'Lentejas secas', 'gr'),
+  ('Sal', 'Sal fina', 'gr'),
+  ('Pimienta negra', 'Pimienta negra molida', 'gr'),
   ('Aceite de oliva', 'Aceite de oliva extra virgen', 'ml');
 
 SET @ing_tomate    := (SELECT id FROM ingredient WHERE name = 'Tomate' LIMIT 1);
@@ -141,22 +141,22 @@ INSERT INTO ingredientcategoryingredient (idIngredientCategory, idIngredient) VA
 -- Valores nutricionales (cada fila: num=1 Calorías, num=2 Proteínas) para
 -- los ingredientes más usados en las recetas de abajo.
 INSERT INTO nutritionalvalue (idIngredient, num, name, servingAmount, servingUnit, value) VALUES
-  (@ing_tomate,  1, 'Calorías',   100, 'g', 18),
-  (@ing_tomate,  2, 'Proteínas',  100, 'g', 0.9),
-  (@ing_papa,    1, 'Calorías',   100, 'g', 77),
-  (@ing_papa,    2, 'Proteínas',  100, 'g', 2.0),
-  (@ing_carne,   1, 'Calorías',   100, 'g', 250),
-  (@ing_carne,   2, 'Proteínas',  100, 'g', 26),
-  (@ing_pollo,   1, 'Calorías',   100, 'g', 165),
-  (@ing_pollo,   2, 'Proteínas',  100, 'g', 31),
-  (@ing_huevo,   1, 'Calorías',   50,  'g', 78),
-  (@ing_huevo,   2, 'Proteínas',  50,  'g', 6.3),
-  (@ing_arroz,   1, 'Calorías',   100, 'g', 130),
-  (@ing_arroz,   2, 'Proteínas',  100, 'g', 2.7),
-  (@ing_lentejas,1, 'Calorías',   100, 'g', 116),
-  (@ing_lentejas,2, 'Proteínas',  100, 'g', 9.0),
-  (@ing_queso,   1, 'Calorías',   100, 'g', 300),
-  (@ing_queso,   2, 'Proteínas',  100, 'g', 14);
+  (@ing_tomate,  1, 'Calorías',   100, 'gr', 18),
+  (@ing_tomate,  2, 'Proteínas',  100, 'gr', 0.9),
+  (@ing_papa,    1, 'Calorías',   100, 'gr', 77),
+  (@ing_papa,    2, 'Proteínas',  100, 'gr', 2.0),
+  (@ing_carne,   1, 'Calorías',   100, 'gr', 250),
+  (@ing_carne,   2, 'Proteínas',  100, 'gr', 26),
+  (@ing_pollo,   1, 'Calorías',   100, 'gr', 165),
+  (@ing_pollo,   2, 'Proteínas',  100, 'gr', 31),
+  (@ing_huevo,   1, 'Calorías',   1,   'ud.', 78),
+  (@ing_huevo,   2, 'Proteínas',  1,   'ud.', 6.3),
+  (@ing_arroz,   1, 'Calorías',   100, 'gr', 130),
+  (@ing_arroz,   2, 'Proteínas',  100, 'gr', 2.7),
+  (@ing_lentejas,1, 'Calorías',   100, 'gr', 116),
+  (@ing_lentejas,2, 'Proteínas',  100, 'gr', 9.0),
+  (@ing_queso,   1, 'Calorías',   100, 'gr', 300),
+  (@ing_queso,   2, 'Proteínas',  100, 'gr', 14);
 
 -- ---------------------------------------------------------------------
 -- 3. Categorías de recetas
@@ -402,12 +402,12 @@ UPDATE recipe SET saveCount = 1 WHERE id = @recipe_cesar;
 --    y tiene parte de los ingredientes de varias más.
 -- ---------------------------------------------------------------------
 INSERT INTO inventory (idUser, idIngredient, unitOfMeasure, availableQuantity) VALUES
-  (@user_juan, @ing_tomate, 'g', 500),
-  (@user_juan, @ing_cebolla, 'g', 300),
-  (@user_juan, @ing_arroz, 'g', 1000),
-  (@user_juan, @ing_huevo, 'unidad', 12),
+  (@user_juan, @ing_tomate, 'gr', 500),
+  (@user_juan, @ing_cebolla, 'gr', 300),
+  (@user_juan, @ing_arroz, 'gr', 1000),
+  (@user_juan, @ing_huevo, 'ud.', 12),
   (@user_juan, @ing_aceite, 'ml', 750),
-  (@user_juan, @ing_lechuga, 'g', 300),
+  (@user_juan, @ing_lechuga, 'gr', 300),
   (@user_juan, @ing_leche, 'ml', 1000);
 
 -- ---------------------------------------------------------------------

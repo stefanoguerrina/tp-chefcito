@@ -37,12 +37,6 @@ export const deleteRole = async (id) => {
   });
 };
 
-// Trae las asignaciones de roles de TODOS los usuarios en un solo pedido.
-// Devuelve: [{ userId, role: { id, name } }] (lista vacía si nadie tiene roles).
-export const getAllUserRoles = async () => {
-  return await apiFetch('/roles/users');
-};
-
 // Trae los roles asignados a un usuario puntual (tabla intermedia userrole).
 export const getRolesByUser = async (userId) => {
   return await apiFetch(`/roles/users/${userId}`);

@@ -2,19 +2,12 @@
 // el ranking de más usados y filtran la tabla por búsqueda. Sin fetch ni estado (lo maneja
 // useAdminIngredients).
 
-// Cuenta en cuántas recetas aparece cada ingrediente, recorriendo el recipeingredient[]
-// que ya viene embebido en cada receta de getAllRecipes() (no hace falta un endpoint nuevo).
-// Recibe: array de recetas crudas. Devuelve: Map de idIngredient -> cantidad de recetas.
-export const countIngredientUsage = (recipes) => {
-  const countByIngredient = new Map();
-  recipes.forEach((recipe) => {
-    (recipe.recipeingredient ?? []).forEach((item) => {
-      const current = countByIngredient.get(item.idIngredient) ?? 0;
-      countByIngredient.set(item.idIngredient, current + 1);
-    });
-  });
-  return countByIngredient;
-};
+// En cuántas recetas aparece cada ingrediente. El backend ya lo cuenta y lo manda en cada
+// ingrediente (_count.recipeingredient, sin las recetas de usuarios dados de baja): así no
+// hace falta pedir todas las recetas solo para contar.
+// Recibe: ingredientes crudos. Devuelve: Map de idIngredient -> cantidad de recetas.
+export const countIngredientUsage = (ingredients) =>
+  new Map(ingredients.map((ingredient) => [ingredient.id, ingredient._count?.recipeingredient ?? 0]));
 
 // Ranking de ingredientes más usados en recetas, para la tarjeta del dashboard.
 // Recibe: ingredientes crudos, el Map de countIngredientUsage y el máximo de puestos.
@@ -110,7 +103,7 @@ export const getIngredientColorIndex = (colorIndexByCategoryId, ingredient) => {
 
 // Filtra la lista de ingredientes por nombre (búsqueda case-insensitive, sin acentos no
 // contemplado a propósito: se mantiene simple, igual que el resto de los buscadores del
-// proyecto como SearchUsersForm).
+// proyecto como el de la tabla de usuarios).
 // Recibe: ingredientes crudos y el término de búsqueda. Devuelve: array filtrado.
 export const filterIngredientsByQuery = (ingredients, query) => {
   const normalized = query.trim().toLowerCase();

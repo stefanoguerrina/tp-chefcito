@@ -4,13 +4,8 @@
 @use '../../../styles/abstracts' as *;
 
 .AdminSidebar {
-  // La sección activa del panel se marca con el contraste máximo (fondo del color del
-  // texto), a diferencia del verde de la sidebar de usuario.
-  .CollapsibleSidebar-item--active,
-  .CollapsibleSidebar-item--active:hover:not(:disabled) {
-    background: $color-on-background;
-    color: $color-surface-container-lowest;
-  }
+  // La sección activa usa el mismo verde de la marca que la sidebar de usuario (lo define
+  // CollapsibleSidebar): acá no se pisa, así las dos se ven iguales.
 
   // Al expandirse empuja el contenido (ver AdminPage-content) en vez de flotar encima,
   // así que la sombra de "panel flotante" sobra.

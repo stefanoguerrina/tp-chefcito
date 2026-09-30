@@ -115,7 +115,10 @@ export const deleteRoleById = async (req: Request, res: Response): Promise<void>
         res.status(409).json({ message: 'No se puede eliminar el rol de administrador.' });
         return;
       }
-      res.status(409).json({ message: 'No se puede eliminar: el rol tiene usuarios asociados.' });
+      const usersLabel = result.userCount === 1 ? '1 usuario asignado' : `${result.userCount} usuarios asignados`;
+      res.status(409).json({
+        message: `No se puede eliminar: el rol tiene ${usersLabel}. Quitáselo primero a cada uno.`,
+      });
       return;
     }
 

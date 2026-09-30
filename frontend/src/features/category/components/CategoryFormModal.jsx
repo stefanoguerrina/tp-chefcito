@@ -50,11 +50,11 @@ function CategoryFormModal({ initialData, onSubmit, onCancel }) {
         onClick={(event) => event.stopPropagation()}
       >
         <h3 className="CategoryFormModal-title" id="recipe-category-form-modal-title">
-          {isEditing ? `Editar categoría "${initialData.name}"` : 'Nueva categoría'}
+          {isEditing ? <>Editar categoría <span className="EditingName">"{initialData.name}"</span></> : 'Nueva categoría'}
         </h3>
 
         <form onSubmit={handleSubmit} className="CategoryFormModal-form" noValidate>
-          <RequiredFieldsNote />
+          <RequiredFieldsNote isVisible={Boolean(nameError)} />
 
           <div className="CategoryFormModal-field">
             <label htmlFor="recipe-category-form-name">

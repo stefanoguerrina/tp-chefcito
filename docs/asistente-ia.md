@@ -23,8 +23,9 @@ esos ingredientes. Usa la API de **Google Gemini**.
 2. Agregar a `backend/.env` (el archivo está en `.gitignore`, **cada uno pone la suya**):
    ```
    GEMINI_API_KEY=tu_clave
-   # Opcional, por defecto gemini-3.8-flash:
+   # Opcionales (estos son los valores por defecto):
    GEMINI_MODEL=gemini-3.5-flash
+   GEMINI_FALLBACK_MODEL=gemini-3.5-flash-lite
    ```
 3. **Reiniciar el backend** (`Ctrl+C` y `npm run dev`): el `.env` solo se lee al arrancar.
 4. Loguearse, cargar algunos ingredientes en `/inventario`, ir a `/buscar/recetas` y tocar
@@ -33,10 +34,16 @@ esos ingredientes. Usa la API de **Google Gemini**.
 > Sin `GEMINI_API_KEY` el resto de la app funciona igual; el chat avisa que el asistente no
 > está disponible.
 >
+> **Velocidad y respaldo (30/09):** el pedido a Gemini pide el razonamiento ("thinking") al
+> mínimo: para sugerir recetas no hace falta y con él la respuesta llegaba a pasar los 30 s (el
+> límite del backend), así que el chat fallaba siempre. Sin él responde en unos 3 s. Si el
+> modelo principal está saturado (`503 high demand`), se queda sin cuota (`429`) o no responde
+> en 10 s, se reintenta una vez con `GEMINI_FALLBACK_MODEL` (15 s más como mucho).
+>
 > Si aparece "Chefcito Bot no está disponible en este momento", mirar la terminal del backend
-> (`[assistantService.chat] Falló el pedido a Gemini: ...`). El caso más común es que Google
-> tenga saturado el modelo (`503 high demand`): se soluciona esperando o cambiando
-> `GEMINI_MODEL` (por ejemplo a `gemini-3.5-flash`). El otro es `429 You exceeded your current
+> (`[assistantService.chat] Falló el pedido a Gemini: ...`): quiere decir que fallaron los dos
+> modelos, casi siempre porque Google los tiene saturados (`503 high demand`). Se soluciona
+> esperando o cambiando `GEMINI_MODEL` / `GEMINI_FALLBACK_MODEL`. El otro es `429 You exceeded your current
 > quota`: se agotaron los 20 pedidos diarios gratis de ese modelo (ver 7.3); en ese caso el chat
 > ya avisa "Se agotaron las consultas disponibles de Chefcito Bot".
 

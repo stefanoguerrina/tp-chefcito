@@ -35,33 +35,4 @@
     font-size: 13px;
     color: $color-on-surface-variant;
   }
-
-  &-refresh {
-    display: flex;
-    align-items: center;
-    gap: $spacing-xs;
-    padding: $spacing-xs $spacing-md;
-    border-radius: $radius-full;
-    border: 1px solid $color-outline-variant;
-    background: transparent;
-    color: $color-on-background;
-    font-family: $font-body;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-
-    .material-symbols-outlined {
-      font-size: 18px;
-    }
-
-    &:hover:not(:disabled) {
-      background: $color-surface-container-high;
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
 }

@@ -6,8 +6,14 @@ import type { CreateCategoryData, UpdateCategoryData } from '../models/categoryM
 export const categoryRepository = {
 
   // Devuelve todas las categorías. La tabla `category` no tiene baja lógica, así que no se filtra por deletedAt.
+  // Cada una trae cuántas recetas visibles tiene (_count.recipecategory, sin contar las de
+  // usuarios dados de baja): el panel admin lo muestra sin tener que pedir todas las recetas.
   findAll: () =>
-    prisma.category.findMany(),
+    prisma.category.findMany({
+      include: {
+        _count: { select: { recipecategory: { where: { recipe: { user: { deletedAt: null } } } } } },
+      },
+    }),
 
   // Busca una categoría por su ID (clave primaria).
   findById: (id: number) =>

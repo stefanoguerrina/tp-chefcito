@@ -1,7 +1,7 @@
 // Hook que carga los datos de la sección "Categorías de Recetas" del panel de
-// administración (categorías y cuántas recetas tiene cada una) y expone las acciones de
-// alta, edición y borrado. Reutiliza los servicios que ya existen en las features
-// category/recipe.
+// administración (categorías con cuántas recetas tiene cada una, ya contado en el
+// backend, y el total de recetas del resumen) y expone las acciones de alta, edición y
+// borrado.
 import { useState, useEffect, useMemo } from 'react';
 import {
   getAllCategories,
@@ -9,7 +9,7 @@ import {
   updateCategory,
   deleteCategory,
 } from '../../category/services/categoryService.js';
-import { getAllRecipes } from '../../recipe/services/recipeService.js';
+import { getAdminSummary } from '../services/adminService.js';
 import {
   countRecipesByCategory,
   buildTopCategoriesByRecipeCount,
@@ -27,26 +27,27 @@ export const useAdminRecipeCategories = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Pide en paralelo categorías y recetas (para calcular cuántas recetas tiene cada
-  // categoría a partir del recipecategory[] ya embebido).
+  // Pide en paralelo las categorías (cada una trae cuántas recetas tiene) y el resumen
+  // del panel (solo para el total de recetas, ya contado en la base).
   // El estado se actualiza solo dentro de los callbacks de la promesa (nunca de forma
   // sincrónica), así se puede llamar desde el useEffect sin renders en cascada.
   const fetchCategories = () =>
     Promise.all([
       fetchListOrEmpty(() => getAllCategories()),
-      fetchListOrEmpty(() => getAllRecipes()),
+      getAdminSummary(),
     ])
-      .then(([categoriesData, recipesData]) => {
+      .then(([categoriesData, summary]) => {
         setCategories(categoriesData);
-        setRecipesCount(recipesData.length);
-        setRecipeCountByCategory(countRecipesByCategory(recipesData));
+        setRecipesCount(summary.recipesCount);
+        setRecipeCountByCategory(countRecipesByCategory(categoriesData));
         setError('');
       })
       .catch((err) => setError(err.message || 'No pudimos cargar las categorías de receta.'))
       .finally(() => setIsLoading(false));
 
-  // Recarga manual (botón "Actualizar"): muestra el loading y vuelve a pedir todo.
-  const handleRefresh = async () => {
+  // Reintento después de un error de carga (botón "Reintentar" de ErrorState): muestra
+  // el loading y vuelve a pedir todo.
+  const handleRetry = async () => {
     setIsLoading(true);
     await fetchCategories();
   };
@@ -96,7 +97,7 @@ export const useAdminRecipeCategories = () => {
     categoriesDistribution,
     isLoading,
     error,
-    handleRefresh,
+    handleRetry,
     handleCreateCategory,
     handleUpdateCategory,
     handleDeleteCategory,

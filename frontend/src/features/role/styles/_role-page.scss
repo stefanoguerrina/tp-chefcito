@@ -52,33 +52,6 @@
 
   // Botón de refrescar: mismo tamaño que el de alta, pero en estilo "outline" (acción
   // secundaria) en vez de sólido.
-  &-refreshButton {
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid $color-outline-variant;
-    border-radius: $radius-full;
-    background: transparent;
-    color: $color-on-background;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-
-    .material-symbols-outlined {
-      font-size: 20px;
-    }
-
-    &:hover:not(:disabled) {
-      background: $color-surface-container-high;
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  }
 
   // Botón circular de solo ícono para dar de alta un rol nuevo (mismo patrón que
   // AdminUsersTable-newButton: acción primaria = verde oliva, sin texto).
@@ -168,6 +141,11 @@
   }
 
   &-roleDescription {
+    color: $color-on-surface-variant;
+  }
+
+  &-usersCount {
+    white-space: nowrap;
     color: $color-on-surface-variant;
   }
 

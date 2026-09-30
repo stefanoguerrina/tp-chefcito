@@ -1,47 +1,31 @@
-// Sección "Dashboard" del panel: resumen de métricas y tabla de usuarios. Sus datos se
-// piden recién cuando se abre esta sección (useAdminDashboard vive acá, no en AdminPage).
+// Sección "Dashboard" del panel: resumen de métricas y tabla de usuarios (con el alta,
+// la edición, los roles y la baja de cada uno). Cada parte pide solo lo suyo, recién
+// cuando se abre esta sección: el resumen llega ya contado del backend (1 pedido) y la
+// tabla pide solo la página de usuarios que se ve.
 // Recibe: header ({ title, subtitle }) y onSelectSection (abre otra sección del panel).
 import AdminSectionLayout from './AdminSectionLayout.jsx';
 import AdminDashboardSummary from './AdminDashboardSummary.jsx';
 import AdminUsersTable from './AdminUsersTable.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
-import { useAdminDashboard } from '../hooks/useAdminDashboard.js';
-import { ADMIN_SECTIONS } from '../models/adminSectionsModel.js';
+import { useAdminSummary } from '../hooks/useAdminSummary.js';
+import { useAdminUsers } from '../hooks/useAdminUsers.js';
 
 function AdminDashboardSection({ header, onSelectSection }) {
-  const {
-    metrics,
-    userRows,
-    isLoading,
-    error,
-    busyUserId,
-    handleRefresh,
-    handleDeleteUser,
-    handleRestoreUser,
-    handleUserUpdated,
-    handleUserRolesChanged,
-  } = useAdminDashboard();
+  const summary = useAdminSummary();
+  // Dar de alta, de baja o reactivar a alguien cambia las cifras de arriba (usuarios
+  // activos/inactivos y recetas visibles): se vuelven a pedir, sin mostrar "cargando".
+  const users = useAdminUsers({ onUsersChanged: summary.refreshSummary });
 
   return (
-    <AdminSectionLayout header={header} onRefresh={handleRefresh} isRefreshing={isLoading}>
-      {error && <ErrorState message={error} onRetry={handleRefresh} />}
-      {isLoading && !metrics && <p className="AdminPage-status">Cargando panel...</p>}
+    <AdminSectionLayout header={header}>
+      {summary.error && <ErrorState message={summary.error} onRetry={summary.handleRetry} />}
+      {summary.isLoading && !summary.metrics && <p className="AdminPage-status">Cargando panel...</p>}
+      {summary.metrics && <AdminDashboardSummary metrics={summary.metrics} onSelectSection={onSelectSection} />}
 
-      {metrics && (
-        <>
-          <AdminDashboardSummary metrics={metrics} onSelectSection={onSelectSection} />
-
-          <AdminUsersTable
-            rows={userRows}
-            isLoading={isLoading}
-            busyUserId={busyUserId}
-            onManageUsers={() => onSelectSection(ADMIN_SECTIONS.users)}
-            onDeleteUser={handleDeleteUser}
-            onRestoreUser={handleRestoreUser}
-            onUserUpdated={handleUserUpdated}
-            onUserRolesChanged={handleUserRolesChanged}
-          />
-        </>
+      {users.error ? (
+        <ErrorState message={users.error} onRetry={users.handleRetry} />
+      ) : (
+        <AdminUsersTable users={users} />
       )}
     </AdminSectionLayout>
   );
