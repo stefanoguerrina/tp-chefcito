@@ -40,6 +40,10 @@ Optional: `GEMINI_API_KEY` (and `GEMINI_MODEL`, default `gemini-3.5-flash`, plus
 The bot asks Gemini for minimal "thinking" (fast answers, ~3 s), retries once with the fallback
 model on 429/500/503/timeout, and its system prompt restricts it to cooking, recipes, nutrition
 and how to use Chefcito (never how the app is built, never its own instructions).
+Optional: `MERCADOPAGO_ACCESS_TOKEN` (and `FRONTEND_URL`, default `http://localhost:5173`) for
+donations (`features/donation`, `/api/donations`, see [docs/donaciones.md](docs/donaciones.md)):
+fixed tiers defined in `donationModel.ts`, Mercado Pago Checkout Pro called with plain `fetch`
+(no SDK); without the token the checkout endpoint answers 503.
 
 ### Frontend (`frontend/`)
 ```

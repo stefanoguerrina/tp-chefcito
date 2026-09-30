@@ -19,6 +19,7 @@ import SavedRecipesPage from '../features/userRecipe/pages/SavedRecipesPage.jsx'
 import SearchResultsPage from '../features/search/pages/SearchResultsPage.jsx';
 import SearchListingPage from '../features/search/pages/SearchListingPage.jsx';
 import AdminPage from '../features/admin/pages/AdminPage.jsx';
+import DonationResultPage from '../features/donation/pages/DonationResultPage.jsx';
 
 function App() {
   return (
@@ -46,6 +47,8 @@ function App() {
                   <Route path="guardadas" element={<SavedRecipesPage />} />
                   <Route path="buscar" element={<SearchResultsPage />} />
                   <Route path="buscar/:searchType" element={<SearchListingPage />} />
+                  {/* Vuelta desde el checkout de Mercado Pago después de donar. */}
+                  <Route path="donaciones/resultado" element={<DonationResultPage />} />
                 </Route>
               </Route>
 

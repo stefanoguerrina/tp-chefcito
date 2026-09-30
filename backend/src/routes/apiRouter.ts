@@ -15,6 +15,7 @@ import { followRouter } from '../features/follow/routes/followRouter.js';
 import { feedRouter } from '../features/feed/routes/feedRouter.js';
 import { assistantRouter } from '../features/assistant/routes/assistantRouter.js';
 import { adminRouter } from '../features/admin/routes/adminRouter.js';
+import { donationRouter } from '../features/donation/routes/donationRouter.js';
 
 const apiRouter = Router();
 
@@ -53,5 +54,7 @@ apiRouter.use('/feed', feedRouter);
 apiRouter.use('/assistant', assistantRouter);
 // Panel de administración: resumen ya contado en la base y usuarios paginados (solo admin)
 apiRouter.use('/admin', adminRouter);
+// Donaciones a creadores de recetas, pagadas con Mercado Pago (montos fijos)
+apiRouter.use('/donations', donationRouter);
 
 export { apiRouter };

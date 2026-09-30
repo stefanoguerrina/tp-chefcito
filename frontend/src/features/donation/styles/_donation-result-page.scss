@@ -1,0 +1,87 @@
+// Estilos de la página de resultado de una donación (DonationResultPage).
+@use '../../../styles/abstracts' as *;
+
+.DonationResultPage {
+  max-width: 480px;
+  margin: $spacing-xl auto;
+  padding: $spacing-lg;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  background: $color-surface-container-lowest;
+  box-shadow: $shadow-level-1;
+  font-family: $font-body;
+  text-align: center;
+
+  &-status {
+    font-family: $font-body;
+    font-size: 15px;
+    color: $color-on-surface-variant;
+    text-align: center;
+    margin: $spacing-xl 0;
+  }
+
+  &-icon {
+    font-size: 48px;
+    color: $color-primary;
+  }
+
+  &--rejected &-icon {
+    color: $color-error;
+  }
+
+  &--cancelled &-icon {
+    color: $color-on-surface-variant;
+  }
+
+  &-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: $color-on-surface;
+    margin: $spacing-sm 0;
+  }
+
+  &-message {
+    font-size: 14px;
+    color: $color-on-surface-variant;
+    margin: 0 0 $spacing-lg;
+  }
+
+  // Mobile: botones apilados; desde sm, uno al lado del otro.
+  &-actions {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+
+    @include respond-to(sm) {
+      flex-direction: row;
+      justify-content: center;
+    }
+  }
+
+  &-btn {
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background: $color-surface-container-low;
+    }
+
+    &--primary {
+      border-color: $color-primary;
+      background: $color-primary;
+      color: $color-on-primary;
+
+      &:hover {
+        background: shade($color-primary, 8%);
+      }
+    }
+  }
+}
