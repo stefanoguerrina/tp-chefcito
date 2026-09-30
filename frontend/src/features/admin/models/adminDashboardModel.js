@@ -1,75 +1,36 @@
-// Transformaciones puras del dashboard de administración: toman las listas crudas que
-// devuelve el backend (usuarios, recetas, roles, reviews) y arman las cifras, series y
-// filas que dibujan las tarjetas y la tabla. Sin fetch ni estado, solo funciones (las
-// llama useAdminDashboard).
+// Transformaciones puras del dashboard de administración: pasan lo que devuelve el backend
+// (/api/admin/summary y /api/admin/users, ya contado en la base) a lo que dibujan las
+// tarjetas y la tabla. Sin fetch ni estado, solo funciones (las llaman useAdminSummary y
+// useAdminUsers).
+import { resolveImageUrl } from '../../../shared/utils/imageUrl.js';
 
 // Etiquetas de día indexadas igual que Date.getDay() (0 = domingo).
 const WEEKDAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-// Cantidad de días que muestra el gráfico semanal de recetas.
-const WEEK_LENGTH = 7;
-
-// Compara dos fechas ignorando la hora. Recibe: dos Date. Devuelve: true si son el mismo día.
-const isSameDay = (dateA, dateB) =>
-  dateA.getFullYear() === dateB.getFullYear() &&
-  dateA.getMonth() === dateB.getMonth() &&
-  dateA.getDate() === dateB.getDate();
-
-// Cuenta cuántas recetas publicó cada usuario.
-// Recibe: array de recetas crudas. Devuelve: Map de idUser -> cantidad de recetas.
-export const countRecipesByUser = (recipes) => {
-  const countByUser = new Map();
-  recipes.forEach((recipe) => {
-    const current = countByUser.get(recipe.idUser) ?? 0;
-    countByUser.set(recipe.idUser, current + 1);
-  });
-  return countByUser;
-};
-
-// Arma la serie de los últimos 7 días (de hace 6 días hasta hoy) con las recetas creadas
-// cada día. Se construye el array de días primero y después se reparten las recetas para
-// que los días sin actividad aparezcan igual con valor 0 y el gráfico no quede con huecos.
-// Recibe: array de recetas crudas. Devuelve: [{ label, value, isHighlighted }].
-export const buildRecipesLastWeek = (recipes) => {
-  const today = new Date();
-  const days = [];
-
-  for (let daysAgo = WEEK_LENGTH - 1; daysAgo >= 0; daysAgo--) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - daysAgo);
-    days.push({ date, label: WEEKDAY_LABELS[date.getDay()], value: 0, isHighlighted: daysAgo === 0 });
-  }
-
-  recipes.forEach((recipe) => {
-    if (!recipe.createdAt) return;
-    const createdAt = new Date(recipe.createdAt);
-    const day = days.find((item) => isSameDay(item.date, createdAt));
-    if (day) day.value += 1;
-  });
-
-  return days.map(({ label, value, isHighlighted }) => ({ label, value, isHighlighted }));
-};
-
-// Suma total de una serie como la que devuelve buildRecipesLastWeek.
-// Recibe: [{ value }]. Devuelve: el total del período.
+// Suma total de una serie como la de toDashboardMetrics. Recibe: [{ value }].
+// Devuelve: el total del período.
 export const sumSeries = (series) => series.reduce((total, item) => total + item.value, 0);
 
-// Ranking de usuarios con más recetas publicadas, para la tarjeta de usuarios.
-// Recibe: array de recetas crudas y el máximo de puestos a devolver.
-// Devuelve: [{ label, value }] ordenado de mayor a menor (label = username, ver AdminRankingList).
-export const buildTopCreators = (recipes, limit = 4) => {
-  const countByUsername = new Map();
+// Arma las cifras que usan las tarjetas del dashboard a partir del resumen del backend.
+// El gráfico semanal llega como [{ date: 'YYYY-MM-DD', count }] (de hace 6 días a hoy):
+// acá se le pone a cada día su etiqueta y se resalta el último (hoy).
+// Recibe: el resumen crudo. Devuelve: el mismo resumen con recipesLastWeek
+// ([{ label, value, isHighlighted }]), recipesThisWeekCount y topCreators ([{ label, value }]).
+export const toDashboardMetrics = (summary) => {
+  const recipesLastWeek = summary.recipesLastWeek.map(({ date, count }, index, days) => ({
+    // "T00:00" la toma como fecha local: sin eso, "2026-09-30" se leería en UTC y en
+    // Argentina caería en el día anterior.
+    label: WEEKDAY_LABELS[new Date(`${date}T00:00`).getDay()],
+    value: count,
+    isHighlighted: index === days.length - 1,
+  }));
 
-  recipes.forEach((recipe) => {
-    // Si la receta no trae el usuario embebido se usa el id como etiqueta de respaldo.
-    const username = recipe.user?.username ?? `usuario #${recipe.idUser}`;
-    countByUsername.set(username, (countByUsername.get(username) ?? 0) + 1);
-  });
-
-  return [...countByUsername.entries()]
-    .map(([label, value]) => ({ label, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, limit);
+  return {
+    ...summary,
+    recipesLastWeek,
+    recipesThisWeekCount: sumSeries(recipesLastWeek),
+    topCreators: summary.topCreators.map(({ username, recipesCount }) => ({ label: username, value: recipesCount })),
+  };
 };
 
 // Iniciales de una persona a partir de nombre y apellido (para avatares sin foto).
@@ -82,54 +43,10 @@ export const getPersonInitials = ({ name, lastName, username } = {}) => {
 
 // Arma la etiqueta de rol que se muestra en la tabla a partir de los roles asignados a
 // un usuario (tabla intermedia userrole). Un usuario puede tener más de un rol.
-// Recibe: array de roles crudos ([{ name }]) o undefined/null si falló la consulta.
-// Devuelve: string listo para mostrar.
+// Recibe: array de roles ([{ name }]). Devuelve: string listo para mostrar.
 export const buildRoleLabel = (roles) => {
   if (!roles || roles.length === 0) return 'Sin rol asignado';
   return roles.map((role) => role.name).join(', ');
-};
-
-// Arma la etiqueta de rol de cada usuario a partir de todas las asignaciones juntas
-// (GET /api/roles/users), así no hace falta pedir los roles usuario por usuario.
-// Recibe: [{ userId, role: { name } }]. Devuelve: Map de idUser -> etiqueta (los usuarios
-// sin ningún rol no aparecen: buildUserRows les pone "Sin rol asignado").
-export const buildRoleLabelsByUser = (userRoles) => {
-  const rolesByUser = new Map();
-  userRoles.forEach(({ userId, role }) => {
-    rolesByUser.set(userId, [...(rolesByUser.get(userId) ?? []), role]);
-  });
-
-  const labelByUser = new Map();
-  rolesByUser.forEach((roles, userId) => labelByUser.set(userId, buildRoleLabel(roles)));
-  return labelByUser;
-};
-
-// Agrupa las valoraciones por el creador de cada receta (no por quien la reseñó), para
-// saber cuántas valoraciones recibió cada usuario y con qué promedio. Cada receta ya
-// trae su averageRating y reviewCount calculados por el backend.
-// Recibe: recipes (crudas). Devuelve: Map de idUser -> { count, average } (average es
-// null si count es 0).
-export const buildReviewStatsByUser = (recipes) => {
-  const totalsByUser = new Map();
-
-  recipes.forEach((recipe) => {
-    const current = totalsByUser.get(recipe.idUser) ?? { count: 0, sum: 0 };
-    // El promedio de cada receta se pondera por su cantidad de reseñas, así una receta
-    // con 10 reseñas pesa más que una con 1 en el promedio del usuario.
-    const reviewCount = recipe.reviewCount ?? 0;
-    current.count += reviewCount;
-    current.sum += (recipe.averageRating ?? 0) * reviewCount;
-    totalsByUser.set(recipe.idUser, current);
-  });
-
-  const statsByUser = new Map();
-  totalsByUser.forEach(({ count, sum }, idUser) => {
-    statsByUser.set(idUser, {
-      count,
-      average: count > 0 ? Math.round((sum / count) * 10) / 10 : null,
-    });
-  });
-  return statsByUser;
 };
 
 // Pluraliza "receta"/"recetas" según la cantidad. Recibe: un número. Devuelve: "1 receta", "3 recetas".
@@ -140,29 +57,27 @@ export const formatRecipesCount = (count) => `${count} ${count === 1 ? 'receta' 
 // Recibe: un número. Devuelve: "1 valoración", "3 valoraciones".
 export const formatReviewsCount = (count) => `${count} ${count === 1 ? 'valoración' : 'valoraciones'}`;
 
-// Arma las filas de la tabla de usuarios uniendo activos e inactivos con toda la data
-// adicional ya calculada (recetas, rol, valoraciones). Guarda también el usuario crudo
-// completo (raw) para poder precargar el modal de edición con todos sus campos.
-// Recibe: usuarios activos, usuarios inactivos, y los Maps de recipeCountByUser,
-// roleLabelByUser y reviewStatsByUser (idUser -> valor calculado).
-// Devuelve: [{ id, username, fullName, initials, recipesCount, reviewStats, roleLabel,
-//             createdAt, isActive, raw }].
-export const buildUserRows = (activeUsers, inactiveUsers, recipeCountByUser, roleLabelByUser, reviewStatsByUser) => {
-  const toRow = (user, isActive) => ({
-    id: user.id,
+// Arma una fila de la tabla a partir de un usuario de /api/admin/users (que ya trae sus
+// roles, cuántas recetas tiene y las valoraciones que recibió). Guarda también el usuario
+// crudo (raw) para precargar el modal de edición con todos sus campos.
+// Recibe: el usuario crudo. Devuelve: { id, username, fullName, avatarUser, recipesCount,
+// reviewStats, roleLabel, createdAt, isActive, raw }.
+export const toUserRow = (user) => ({
+  id: user.id,
+  username: user.username,
+  fullName: `${user.name} ${user.lastName}`.trim(),
+  // Lo que necesita UserAvatar: la foto ya con la URL completa del backend (en la BD se
+  // guarda solo "/uploads/users/...") y los nombres para las iniciales si no tiene foto.
+  avatarUser: {
+    name: user.name,
+    lastName: user.lastName,
     username: user.username,
-    fullName: `${user.name} ${user.lastName}`.trim(),
-    initials: getPersonInitials(user),
-    recipesCount: recipeCountByUser.get(user.id) ?? 0,
-    reviewStats: reviewStatsByUser.get(user.id) ?? { count: 0, average: null },
-    roleLabel: roleLabelByUser.get(user.id) ?? 'Sin rol asignado',
-    createdAt: user.createdAt ?? null,
-    isActive,
-    raw: user,
-  });
-
-  return [
-    ...activeUsers.map((user) => toRow(user, true)),
-    ...inactiveUsers.map((user) => toRow(user, false)),
-  ];
-};
+    avatarUrl: resolveImageUrl(user.avatarUrl),
+  },
+  recipesCount: user.recipesCount ?? 0,
+  reviewStats: user.reviewStats ?? { count: 0, average: null },
+  roleLabel: buildRoleLabel(user.roles),
+  createdAt: user.createdAt ?? null,
+  isActive: !user.deletedAt,
+  raw: user,
+});

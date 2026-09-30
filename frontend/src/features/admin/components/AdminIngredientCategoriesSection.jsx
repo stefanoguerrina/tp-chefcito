@@ -19,15 +19,15 @@ function AdminIngredientCategoriesSection({ header }) {
     categoriesDistribution,
     isLoading,
     error,
-    handleRefresh,
+    handleRetry,
     handleCreateCategory,
     handleUpdateCategory,
     handleDeleteCategory,
   } = useAdminIngredientCategories();
 
   return (
-    <AdminSectionLayout header={header} onRefresh={handleRefresh} isRefreshing={isLoading}>
-      {error && <ErrorState message={error} onRetry={handleRefresh} />}
+    <AdminSectionLayout header={header}>
+      {error && <ErrorState message={error} onRetry={handleRetry} />}
       {isLoading && categories.length === 0 && (
         <p className="AdminPage-status">Cargando categorías...</p>
       )}

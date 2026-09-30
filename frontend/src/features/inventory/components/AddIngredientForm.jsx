@@ -4,6 +4,7 @@ import { useState } from 'react';
 import RequiredMark from '../../../core/components/RequiredMark.jsx';
 import FieldError from '../../../core/components/FieldError.jsx';
 import { getFieldAriaProps, getFieldErrorId } from '../../../shared/utils/fieldAria.js';
+import { normalizeDecimalInput, isValidQuantity, stepQuantity } from '../../../shared/utils/decimalInput.js';
 
 // Recibe:
 //   allIngredients: lista completa de ingredientes disponibles.
@@ -42,17 +43,15 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
     }
   };
 
-  // Ajusta la cantidad con +/- en enteros
+  // Ajusta la cantidad con +/- de a una unidad (mínimo 0).
   const handleStep = (delta) => {
-    const num = Number(quantity);
-    const current = !isNaN(num) && Number.isInteger(num) && num >= 0 ? num : 0;
-    const next = Math.max(0, current + delta);
-    setQuantity(String(next));
+    setQuantity(stepQuantity(quantity, delta));
     clearFieldError('quantity');
   };
 
+  // Acepta decimales con coma o punto: se guarda siempre con punto (ver decimalInput).
   const handleQtyChange = (e) => {
-    setQuantity(e.target.value);
+    setQuantity(normalizeDecimalInput(e.target.value));
     clearFieldError('quantity');
   };
 
@@ -60,13 +59,10 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
     e.preventDefault();
 
     // Se revisan los dos campos a la vez, así se marcan todos los que falten de una.
-    const clean = quantity.trim();
-    const parsed = Number(clean);
+    const parsed = Number(quantity);
     const errors = {};
     if (!selectedIngredient) errors.ingredient = 'Seleccioná un ingrediente de la lista desplegable.';
-    if (clean === '' || isNaN(parsed) || !Number.isInteger(parsed) || parsed < 0) {
-      errors.quantity = 'Ingresá una cantidad entera (0 o más).';
-    }
+    if (!isValidQuantity(quantity)) errors.quantity = 'Ingresá una cantidad (0 o más).';
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -79,8 +75,7 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
     setUnit('');
   };
 
-  const numVal = Number(quantity);
-  const isQtyValid = quantity.trim() !== '' && !isNaN(numVal) && Number.isInteger(numVal) && numVal >= 0;
+  const isQtyValid = isValidQuantity(quantity);
 
   return (
     // noValidate: los errores los muestra la app debajo de cada campo.
@@ -145,16 +140,15 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
               className="InventoryForm-stepBtn"
               aria-label="Reducir cantidad"
               onClick={() => handleStep(-1)}
-              disabled={isQtyValid && numVal <= 0}
+              disabled={isQtyValid && Number(quantity) <= 0}
             >
               <span className="material-symbols-outlined">remove</span>
             </button>
             <input
               id="add-ingredient-qty"
-              type="number"
+              type="text"
+              inputMode="decimal"
               className="InventoryForm-qtyInput"
-              min="0"
-              step="1"
               value={quantity}
               onChange={handleQtyChange}
               {...getFieldAriaProps('add-ingredient-qty', { error: fieldErrors.quantity, isRequired: true })}

@@ -2,6 +2,7 @@
 // Se ejecutan antes del controller para rechazar datos inválidos con mensajes claros.
 import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
+import { commaDecimalToDot } from '../../../core/middleware/decimalSanitizer.js';
 
 // Reglas de validación para crear un valor nutricional (POST /).
 export const validateCreateNutritionalValue = [
@@ -16,6 +17,7 @@ export const validateCreateNutritionalValue = [
     .withMessage('El nombre debe tener entre 2 y 100 caracteres.'),
   body('servingAmount')
     .optional({ nullable: true })
+    .customSanitizer(commaDecimalToDot)
     .isFloat({ min: 0 })
     .withMessage('La cantidad de porción debe ser un número positivo.'),
   body('servingUnit')
@@ -25,6 +27,7 @@ export const validateCreateNutritionalValue = [
     .withMessage('La unidad de porción no puede superar los 20 caracteres.'),
   body('value')
     .optional({ nullable: true })
+    .customSanitizer(commaDecimalToDot)
     .isFloat({ min: 0 })
     .withMessage('El valor debe ser un número positivo.'),
 ];
@@ -45,6 +48,7 @@ export const validateUpdateNutritionalValue = [
     .withMessage('El nombre debe tener entre 2 y 100 caracteres.'),
   body('servingAmount')
     .optional({ nullable: true })
+    .customSanitizer(commaDecimalToDot)
     .isFloat({ min: 0 })
     .withMessage('La cantidad de porción debe ser un número positivo.'),
   body('servingUnit')
@@ -54,6 +58,7 @@ export const validateUpdateNutritionalValue = [
     .withMessage('La unidad de porción no puede superar los 20 caracteres.'),
   body('value')
     .optional({ nullable: true })
+    .customSanitizer(commaDecimalToDot)
     .isFloat({ min: 0 })
     .withMessage('El valor debe ser un número positivo.'),
   // Verificamos que al menos un campo editable esté presente en el body.

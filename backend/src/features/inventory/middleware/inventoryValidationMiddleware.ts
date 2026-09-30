@@ -2,6 +2,7 @@
 // Se ejecutan antes del controller para rechazar datos inválidos con mensajes claros.
 import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
+import { commaDecimalToDot } from '../../../core/middleware/decimalSanitizer.js';
 
 // Reglas de validación para agregar un ingrediente al inventario (POST /).
 export const validateAddInventory = [
@@ -13,6 +14,7 @@ export const validateAddInventory = [
   body('availableQuantity')
     .notEmpty()
     .withMessage('La cantidad disponible es requerida.')
+    .customSanitizer(commaDecimalToDot)
     .isFloat({ min: 0 })
     .withMessage('La cantidad disponible debe ser un número mayor o igual a 0.'),
   body('unitOfMeasure')
@@ -30,6 +32,7 @@ export const validateUpdateInventory = [
     .withMessage('El ID de ingrediente debe ser un número entero positivo.'),
   body('availableQuantity')
     .optional()
+    .customSanitizer(commaDecimalToDot)
     .isFloat({ min: 0 })
     .withMessage('La cantidad disponible debe ser un número mayor o igual a 0.'),
   body('unitOfMeasure')

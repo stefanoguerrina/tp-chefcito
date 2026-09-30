@@ -21,6 +21,15 @@ export const getFieldAriaProps = (fieldId, { error, hint, isRequired = false } =
   };
 };
 
+// Indica si un objeto de errores por campo tiene algún error cargado (los campos ya
+// corregidos quedan en '' o undefined). Revisa también los errores anidados, como los de
+// cada fila de una lista ({ nutrients: { 0: 'Ingresá el valor.' } }).
+// Recibe: el objeto de errores. Devuelve: true si hay al menos uno.
+export const hasFieldErrors = (errors = {}) =>
+  Object.values(errors).some((value) =>
+    value && typeof value === 'object' ? hasFieldErrors(value) : Boolean(value)
+  );
+
 // Pasa los errores por campo que devuelve la API ([{ campo, mensaje }], ver ApiError) a un
 // objeto { [campoDelForm]: mensaje }, para mostrarlos debajo de cada input.
 // Recibe: fieldErrors y un mapa { campoDeLaApi: campoDelForm } (los campos que no están en

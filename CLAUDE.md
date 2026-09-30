@@ -34,8 +34,12 @@ Optional for deploy: `PORT` (default 3000) and `CORS_ORIGINS` (comma-separated a
 default = the local Vite origins on 5173/5174), both read in `src/app.ts`.
 `docs/demo-seed.sql` starts with `SET NAMES utf8mb4;` so accents load correctly from any MySQL
 client; keep it there (without it, a latin1 client stores "á" as "Ã¡").
-Optional: `GEMINI_API_KEY` (and `GEMINI_MODEL`, default `gemini-3.8-flash`) for Chefcito Bot
+Optional: `GEMINI_API_KEY` (and `GEMINI_MODEL`, default `gemini-3.5-flash`, plus
+`GEMINI_FALLBACK_MODEL`, default `gemini-3.5-flash-lite`) for Chefcito Bot
 (`features/assistant`, `POST /api/assistant/chat`); without it the endpoint answers 503.
+The bot asks Gemini for minimal "thinking" (fast answers, ~3 s), retries once with the fallback
+model on 429/500/503/timeout, and its system prompt restricts it to cooking, recipes, nutrition
+and how to use Chefcito (never how the app is built, never its own instructions).
 
 ### Frontend (`frontend/`)
 ```
@@ -65,6 +69,9 @@ User profile photos follow the same scheme: one avatar and one cover per user
 (`User.avatarUrl` / `User.coverUrl`), uploaded via `PATCH /api/users/:id/avatar|cover`
 (`features/user/middleware/userImageUploadMiddleware.ts`) into `backend/uploads/users/`;
 replacing or deleting one removes the old file.
+Ingredient photos too: one per ingredient (`ingredient.imagePath`), uploaded via
+`PATCH /api/ingredients/:id/image` (`features/ingredient/middleware/ingredientImageUploadMiddleware.ts`,
+admin only) into `backend/uploads/ingredients/`; deleting the ingredient removes its file.
 `core/fileStorage.ts` resolves upload paths and deletes orphaned files.
 
 Each feature under `src/features/<name>/` follows the same internal layering — new features should
@@ -100,6 +107,11 @@ feature work.
 `recipe`, `ingredient`/`ingredientcategory`, `category`/`recipecategory`, `recipeingredient`,
 `inventory`, `nutritionalvalue`, `step`, `image`, `userrecipe`/`review`, `donation`. Soft-delete is
 used for users (`deletedAt` — repositories filter on `deletedAt: null` rather than hard-deleting).
+A deactivated user's recipes are hidden, not flagged: every recipe query filters
+`user: { deletedAt: null }` (recipe, search, feed, saved recipes), so restoring the user brings
+them back. Nutritional values are a weak entity of `ingredient` (PK `idIngredient, num`, cascade
+delete) and are saved together with it: `POST/PATCH /api/ingredients` accept `nutritionalValues`
+(replaces the whole set, like `categoryIds`), each value's `servingUnit` = the ingredient's unit.
 
 Auth model: JWT (`jsonwebtoken`) with an 8h expiry, payload `{ id, username, isAdmin }`, secret from
 `JWT_SECRET`. `isAdmin` is derived at login time from whether the user's roles include
@@ -126,6 +138,21 @@ editing the profile so the sidebars update), and defines the full React Router t
 live in the URL query string),
 admins at `/admin/:section?` (`AdminPage` only mounts the active section component,
 `features/admin/components/Admin*Section.jsx`, so each section fetches its data when opened).
+Admin screens request only what they show: `features/admin` (backend) serves
+`GET /api/admin/summary` (every dashboard figure counted in the DB) and `GET /api/admin/users`
+(one server-side page of 6 users with `status`/`q`/`page`, roles, recipe count and review
+stats); catalog listings carry their own counts (`_count` in `GET /ingredients`,
+`/ingredient-categories`, `/categories`). Never load whole tables just to count them in the
+browser. Decimal inputs are `type="text" inputMode="decimal"` normalized with
+`shared/utils/decimalInput.js` (comma or dot → dot); the backend accepts both too
+(`core/middleware/decimalSanitizer.ts` before `isFloat`).
+There is no "Users" section: the dashboard's users table creates (modal reusing the register
+fields, `auth/components/RegisterFields.jsx` + `useRegisterForm({ submitForm })`), edits, assigns
+roles and deactivates/restores users. No section has an "Actualizar" button (professor's
+feedback): after each action update local state instead of refetching everything; `ErrorState`'s
+retry is the only manual reload. Ingredients are created/edited in a 2-step modal
+(`IngredientFormModal`: details → nutritional values) whose unit and nutrient options live in
+`features/ingredient/models/ingredientFormModel.js`.
 New pages should be routes (read params with `useParams`,
 navigate with `useNavigate`), not panels toggled by local state.
 
@@ -153,7 +180,7 @@ and `reviewCount`). UI error convention: field errors inline under the field; fa
 → `AlertModal`; failed section loads → `ErrorState` (core/components) with a retry button;
 destructive actions → `ConfirmModal`. Never use `window.alert/confirm` or `console.error`.
 Forms: required fields get `<RequiredMark />` (red `*`) in their label and the form shows
-`<RequiredFieldsNote />`; fields without `*` are optional, so don't add "(opcional)" to labels.
+`<RequiredFieldsNote isVisible={hasFieldErrors(fieldErrors)} />` (the note only appears after a submit that left field errors, never permanently; `hasFieldErrors` is in `shared/utils/fieldAria.js`); fields without `*` are optional, so don't add "(opcional)" to labels.
 Validate before sending (use `noValidate` on the `<form>`, not the native `required` bubbles),
 keep errors per field (`{ [field]: message }`), render them with `<FieldError />` and spread
 `getFieldAriaProps(id, { error, isRequired })` (`shared/utils/fieldAria.js`) on the control, which
@@ -165,8 +192,9 @@ Recipe images: `shared/utils/compressImage.js` (canvas → WebP) before upload a
 
 `src/core/components/` holds cross-feature UI primitives (`ConfirmModal`, `AlertModal`,
 `ErrorState`, `RecipeCard`, `RatingBadge`, `SaveRecipeButton`, `UserAvatar`, `ScrollReveal`,
-`StarRating`, `RequiredMark`, `RequiredFieldsNote`, `FieldError`, ...) and `src/core/hooks/` shared hooks (`useDragScroll` for carousels, `useHasBeenVisible` to fetch a
-lower "screen" only when the user scrolls to it); reuse them
+`StarRating`, `RequiredMark`, `RequiredFieldsNote`, `FieldError`, `DropdownSelect` — use it instead of a native `<select>`: its list scrolls without a visible scrollbar, ...) and `src/core/hooks/` shared hooks (`useDragScroll` for carousels, `useHasBeenVisible` to fetch a
+lower "screen" only when the user scrolls to it, `useImagePicker` to pick a photo with a local
+preview and upload it on save); reuse them
 instead of duplicating.
 The home (`/`, `features/user/pages/HomePage.jsx`) is 3 snap-scrolling screens like the profile,
 fed by `features/feed` (friends' recipes, weekly top 10, friends' reviews); "friends" = users you

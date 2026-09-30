@@ -26,27 +26,34 @@ const withRelations = {
   },
 } as const;
 
+// Las recetas de un usuario dado de baja (baja lógica, deletedAt con fecha) no se muestran
+// en ningún lado. No se borran ni se marcan: al reactivar al usuario vuelven a aparecer
+// solas. Mismo criterio que ya usan search y feed.
+const fromActiveUser = { user: { deletedAt: null } } as const;
+
 export const recipeRepository = {
 
-  // Devuelve todas las recetas junto con sus categorías, creador e imágenes.
+  // Devuelve todas las recetas (de usuarios activos) junto con sus categorías, creador e imágenes.
   findAll: () =>
     prisma.recipe.findMany({
+      where: fromActiveUser,
       include: withRelations,
       orderBy: { createdAt: 'desc' },
     }),
 
-  // Devuelve todas las recetas creadas por un usuario puntual.
+  // Devuelve todas las recetas creadas por un usuario puntual (vacío si está dado de baja).
   findAllByUser: (idUser: number) =>
     prisma.recipe.findMany({
-      where: { idUser },
+      where: { idUser, ...fromActiveUser },
       include: withRelations,
       orderBy: { createdAt: 'desc' },
     }),
 
-  // Busca una receta por ID, incluyendo sus categorías, creador e imágenes.
+  // Busca una receta por ID, incluyendo sus categorías, creador e imágenes. Si su creador
+  // está dado de baja, la receta cuenta como inexistente (404).
   findById: (id: number) =>
-    prisma.recipe.findUnique({
-      where: { id },
+    prisma.recipe.findFirst({
+      where: { id, ...fromActiveUser },
       include: withRelations,
     }),
 

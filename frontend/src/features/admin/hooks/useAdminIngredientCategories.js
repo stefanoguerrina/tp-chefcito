@@ -1,7 +1,7 @@
 // Hook que carga los datos de la sección "Categorías de Ingredientes" del panel de
-// administración (categorías y cuántos ingredientes tiene cada una) y expone las
-// acciones de alta, edición y borrado. Reutiliza los servicios que ya existen en las
-// features ingredientCategory/ingredient.
+// administración (categorías con cuántos ingredientes tiene cada una, ya contado en el
+// backend, y el total de ingredientes del resumen) y expone las acciones de alta, edición
+// y borrado.
 import { useState, useEffect, useMemo } from 'react';
 import {
   getAllIngredientCategories,
@@ -9,7 +9,7 @@ import {
   updateIngredientCategory,
   deleteIngredientCategory,
 } from '../../ingredientCategory/services/ingredientCategoryService.js';
-import { getAllIngredients } from '../../ingredient/services/ingredientService.js';
+import { getAdminSummary } from '../services/adminService.js';
 import {
   countIngredientsByCategory,
   buildTopCategoriesByIngredientCount,
@@ -27,26 +27,27 @@ export const useAdminIngredientCategories = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Pide en paralelo categorías e ingredientes (para calcular cuántos ingredientes tiene
-  // cada categoría a partir del ingredientcategoryingredient[] ya embebido).
+  // Pide en paralelo las categorías (cada una trae cuántos ingredientes tiene) y el
+  // resumen del panel (solo para el total de ingredientes, ya contado en la base).
   // El estado se actualiza solo dentro de los callbacks de la promesa (nunca de forma
   // sincrónica), así se puede llamar desde el useEffect sin renders en cascada.
   const fetchCategories = () =>
     Promise.all([
       fetchListOrEmpty(() => getAllIngredientCategories()),
-      fetchListOrEmpty(() => getAllIngredients()),
+      getAdminSummary(),
     ])
-      .then(([categoriesData, ingredientsData]) => {
+      .then(([categoriesData, summary]) => {
         setCategories(categoriesData);
-        setIngredientsCount(ingredientsData.length);
-        setIngredientCountByCategory(countIngredientsByCategory(ingredientsData));
+        setIngredientsCount(summary.ingredientsCount);
+        setIngredientCountByCategory(countIngredientsByCategory(categoriesData));
         setError('');
       })
       .catch((err) => setError(err.message || 'No pudimos cargar las categorías de ingrediente.'))
       .finally(() => setIsLoading(false));
 
-  // Recarga manual (botón "Actualizar"): muestra el loading y vuelve a pedir todo.
-  const handleRefresh = async () => {
+  // Reintento después de un error de carga (botón "Reintentar" de ErrorState): muestra
+  // el loading y vuelve a pedir todo.
+  const handleRetry = async () => {
     setIsLoading(true);
     await fetchCategories();
   };
@@ -95,7 +96,7 @@ export const useAdminIngredientCategories = () => {
     categoriesDistribution,
     isLoading,
     error,
-    handleRefresh,
+    handleRetry,
     handleCreateCategory,
     handleUpdateCategory,
     handleDeleteCategory,

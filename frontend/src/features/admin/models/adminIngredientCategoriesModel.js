@@ -3,22 +3,12 @@
 // y el filtro de la tabla por búsqueda. Sin fetch ni estado (lo maneja
 // useAdminIngredientCategories).
 
-// Cuenta cuántos ingredientes están vinculados a cada categoría, recorriendo el
-// ingredientcategoryingredient[] que ya viene embebido en cada ingrediente de
-// getAllIngredients() (no hace falta un endpoint nuevo: por ser una relación N:M, una
-// categoría puede repetirse en varios ingredientes).
-// Recibe: array de ingredientes crudos. Devuelve: Map de idCategory -> cantidad de ingredientes.
-export const countIngredientsByCategory = (ingredients) => {
-  const countByCategory = new Map();
-  ingredients.forEach((ingredient) => {
-    (ingredient.ingredientcategoryingredient ?? []).forEach((link) => {
-      const id = link.ingredientcategory?.id ?? link.idIngredientCategory;
-      if (id === undefined) return;
-      countByCategory.set(id, (countByCategory.get(id) ?? 0) + 1);
-    });
-  });
-  return countByCategory;
-};
+// Cuántos ingredientes tiene cada categoría. El backend ya lo cuenta y lo manda en cada
+// categoría (_count.ingredientcategoryingredient): así no hace falta pedir todos los
+// ingredientes solo para contar.
+// Recibe: categorías crudas. Devuelve: Map de idCategory -> cantidad de ingredientes.
+export const countIngredientsByCategory = (categories) =>
+  new Map(categories.map((category) => [category.id, category._count?.ingredientcategoryingredient ?? 0]));
 
 // Ranking de categorías con más ingredientes, para la tarjeta del dashboard (reutiliza el
 // mismo componente AdminTopIngredientsGrid que ya usa la sección de Ingredientes).

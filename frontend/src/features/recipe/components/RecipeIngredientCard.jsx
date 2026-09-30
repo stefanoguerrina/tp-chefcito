@@ -4,6 +4,7 @@
 // se puede escribir tocándola directamente, para no confundirla con texto suelto). No se
 // guarda una unidad aparte por receta: es la que ya tiene el ingrediente en el catálogo.
 import { useState } from 'react';
+import { normalizeDecimalInput } from '../../../shared/utils/decimalInput.js';
 
 // Recibe: item ({ idIngredient, quantity }), ingredientsCatalog (para mostrar nombre y
 // unidad), canDelete, onChange (cambios de cantidad) y onDelete.
@@ -38,12 +39,12 @@ function RecipeIngredientCard({ item, ingredientsCatalog, canDelete, onChange, o
           {isEditingQuantity ? (
             <span className="RecipeIngredientCard-qtyRow">
               <input
-                type="number"
-                min="0.01"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 autoFocus
                 value={item.quantity}
-                onChange={(e) => onChange({ quantity: e.target.value })}
+                // Acepta coma o punto: se guarda siempre con punto (ver decimalInput).
+                onChange={(e) => onChange({ quantity: normalizeDecimalInput(e.target.value) })}
                 onKeyDown={handleQuantityKeyDown}
                 onBlur={() => setIsEditingQuantity(false)}
                 placeholder="Cantidad"

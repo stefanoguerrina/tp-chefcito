@@ -41,17 +41,22 @@ export async function updateRole(id: number, data: UpdateRoleData) {
 
 // Elimina un rol. Devuelve un objeto de resultado: ok, not_found, is_admin_role
 // (el rol admin es parte del sistema y no puede borrarse) o has_users (si todavía
-// tiene usuarios asociados vía la tabla intermedia userrole).
+// tiene usuarios asociados vía la tabla intermedia userrole, con cuántos son).
 export async function deleteRole(
   id: number
-): Promise<{ ok: true } | { ok: false; reason: 'not_found' | 'is_admin_role' | 'has_users' }> {
+): Promise<
+  | { ok: true }
+  | { ok: false; reason: 'not_found' }
+  | { ok: false; reason: 'is_admin_role' }
+  | { ok: false; reason: 'has_users'; userCount: number }
+> {
   const existing = await roleRepository.findById(id);
   if (!existing) return { ok: false, reason: 'not_found' };
 
   if (id === ADMIN_ROLE_ID) return { ok: false, reason: 'is_admin_role' };
 
   const userCount = await roleRepository.countUsers(id);
-  if (userCount > 0) return { ok: false, reason: 'has_users' };
+  if (userCount > 0) return { ok: false, reason: 'has_users', userCount };
 
   await roleRepository.delete(id);
   return { ok: true };

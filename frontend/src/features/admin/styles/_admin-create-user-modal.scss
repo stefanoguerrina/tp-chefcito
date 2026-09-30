@@ -1,0 +1,48 @@
+// Estilos propios del alta de usuario del panel (features/admin/components/AdminCreateUserModal).
+// El modal y los campos usan las clases AuthModal-* del registro; acá solo va la opción
+// extra de "Darle rol de administrador".
+@use '../../../styles/abstracts' as *;
+
+.AdminCreateUserModal {
+  &-adminOption {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+
+    &:hover {
+      border-color: with-opacity($color-primary, 0.4);
+    }
+
+    input[type='checkbox'] {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      accent-color: $color-primary;
+      cursor: pointer;
+    }
+  }
+
+  &-adminText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &-adminTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-on-surface;
+  }
+
+  &-adminHint {
+    font-size: 12px;
+    color: $color-on-surface-variant;
+  }
+}

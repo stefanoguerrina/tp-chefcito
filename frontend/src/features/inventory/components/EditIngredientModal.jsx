@@ -2,6 +2,7 @@
 // Muestra el nombre como texto, un stepper (+/-) con input editable central,
 // y la unidad de medida como texto debajo del stepper.
 import { useState } from 'react';
+import { normalizeDecimalInput, isValidQuantity, stepQuantity } from '../../../shared/utils/decimalInput.js';
 import '../styles/_edit-ingredient-modal.scss';
 
 // Recibe:
@@ -16,34 +17,29 @@ function EditIngredientModal({ item, onConfirm, onClose }) {
 
   const unit = item.unitOfMeasure ?? item.ingredientBaseUnit ?? '';
 
-  // Parsea y valida el valor actual del input (debe ser número entero >= 0)
-  const numValue = Number(quantity);
-  const isValid = quantity.trim() !== '' && !isNaN(numValue) && Number.isInteger(numValue) && numValue >= 0;
+  // Valida el valor actual del input (número >= 0, con decimales).
+  const isValid = isValidQuantity(quantity);
 
-  // Ajusta la cantidad con +/- en enteros (mínimo 0)
+  // Ajusta la cantidad con +/- de a una unidad (mínimo 0)
   const handleStep = (delta) => {
-    const current = isValid ? numValue : 0;
-    const next = Math.max(0, current + delta);
-    setQuantity(String(next));
+    setQuantity(stepQuantity(quantity, delta));
     setQtyError('');
   };
 
+  // Acepta decimales con coma o punto: se guarda siempre con punto (ver decimalInput).
   const handleQtyChange = (e) => {
-    const val = e.target.value;
-    setQuantity(val);
+    setQuantity(normalizeDecimalInput(e.target.value));
     setQtyError('');
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const clean = quantity.trim();
-    const parsed = Number(clean);
-    if (clean === '' || isNaN(parsed) || !Number.isInteger(parsed) || parsed < 0) {
-      setQtyError('Ingresá una cantidad entera válida (número entero mayor o igual a 0).');
+    if (!isValid) {
+      setQtyError('Ingresá una cantidad válida (mayor o igual a 0).');
       return;
     }
     onConfirm(item.idIngredient, {
-      availableQuantity: parsed,
+      availableQuantity: Number(quantity),
       unitOfMeasure: item.unitOfMeasure ?? null,
     });
   };
@@ -89,7 +85,7 @@ function EditIngredientModal({ item, onConfirm, onClose }) {
                 className="EditModal-stepBtn"
                 aria-label="Reducir cantidad"
                 onClick={() => handleStep(-1)}
-                disabled={isValid && numValue <= 0}
+                disabled={isValid && Number(quantity) <= 0}
               >
                 <span className="material-symbols-outlined">remove</span>
               </button>
@@ -97,10 +93,9 @@ function EditIngredientModal({ item, onConfirm, onClose }) {
               <input
                 autoFocus
                 id="edit-modal-qty"
-                type="number"
+                type="text"
+                inputMode="decimal"
                 className="EditModal-qtyInput"
-                min="0"
-                step="1"
                 value={quantity}
                 onChange={handleQtyChange}
                 aria-label="Cantidad disponible"

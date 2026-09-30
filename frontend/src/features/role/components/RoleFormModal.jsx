@@ -50,11 +50,11 @@ function RoleFormModal({ initialData, onSubmit, onCancel }) {
         onClick={(event) => event.stopPropagation()}
       >
         <h3 className="RoleFormModal-title" id="role-form-modal-title">
-          {isEditing ? `Editar rol "${initialData.name}"` : 'Nuevo rol'}
+          {isEditing ? <>Editar rol <span className="EditingName">"{initialData.name}"</span></> : 'Nuevo rol'}
         </h3>
 
         <form onSubmit={handleSubmit} className="RoleFormModal-form" noValidate>
-          <RequiredFieldsNote />
+          <RequiredFieldsNote isVisible={Boolean(nameError)} />
 
           <div className="RoleFormModal-field">
             <label htmlFor="role-form-name">

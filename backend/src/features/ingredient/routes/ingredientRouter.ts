@@ -8,6 +8,8 @@ import {
   createIngredient,
   updateIngredientById,
   deleteIngredientById,
+  uploadIngredientImageHandler,
+  deleteIngredientImageHandler,
 } from '../controllers/ingredientController.js';
 import { verifyToken, verifyAdmin } from '../../../core/middleware/authMiddleware.js';
 import {
@@ -15,6 +17,7 @@ import {
   validateUpdateIngredient,
   handleValidationErrors,
 } from '../middleware/ingredientValidationMiddleware.js';
+import { uploadIngredientImage } from '../middleware/ingredientImageUploadMiddleware.js';
 import { nutritionalValueRouter } from '../../nutritionalValue/routes/nutritionalValueRouter.js';
 
 const ingredientRouter = Router();
@@ -47,6 +50,14 @@ ingredientRouter.patch(
 
 // DELETE /api/ingredients/:id — elimina un ingrediente (solo admin)
 ingredientRouter.delete('/:id', verifyToken, verifyAdmin, deleteIngredientById);
+
+// Foto del ingrediente: una sola por ingrediente, subida como archivo (multipart, campo
+// "image") y guardada en backend/uploads/ingredients/. Reemplazarla o quitarla borra el
+// archivo anterior del disco. Solo admin.
+// PATCH  /api/ingredients/:id/image — sube o reemplaza la foto
+// DELETE /api/ingredients/:id/image — quita la foto
+ingredientRouter.patch('/:id/image', verifyToken, verifyAdmin, uploadIngredientImage, uploadIngredientImageHandler);
+ingredientRouter.delete('/:id/image', verifyToken, verifyAdmin, deleteIngredientImageHandler);
 
 // /api/ingredients/:idIngredient/nutritional-values — CRUD dependiente de valores nutricionales
 ingredientRouter.use('/:idIngredient/nutritional-values', nutritionalValueRouter);

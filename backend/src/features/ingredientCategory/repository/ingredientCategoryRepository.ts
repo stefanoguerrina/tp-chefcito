@@ -5,9 +5,14 @@ import type { CreateIngredientCategoryData, UpdateIngredientCategoryData } from 
 
 export const ingredientCategoryRepository = {
 
-  // Devuelve todas las categorías de ingrediente, ordenadas por nombre.
+  // Devuelve todas las categorías de ingrediente, ordenadas por nombre, con cuántos
+  // ingredientes tiene cada una (_count.ingredientcategoryingredient): el panel admin lo
+  // muestra sin tener que pedir todos los ingredientes.
   findAll: () =>
-    prisma.ingredientcategory.findMany({ orderBy: { name: 'asc' } }),
+    prisma.ingredientcategory.findMany({
+      orderBy: { name: 'asc' },
+      include: { _count: { select: { ingredientcategoryingredient: true } } },
+    }),
 
   // Busca una categoría de ingrediente por ID.
   findById: (id: number) =>

@@ -1,10 +1,10 @@
-// Hook para elegir una foto desde el modal de edición de perfil (avatar o portada), sin
-// subirla todavía: guarda el archivo elegido y arma una vista previa local. La subida real
-// pasa recién al tocar "Guardar cambios" (ver EditProfileModal).
+// Hook para elegir una foto en un formulario sin subirla todavía: guarda el archivo elegido
+// y arma una vista previa local. La subida real pasa recién al guardar el formulario. Lo
+// usan el modal de edición de perfil (avatar y portada) y el de ingredientes del panel admin.
 import { useEffect, useState } from 'react';
-import { resolveImageUrl } from '../../../shared/utils/imageUrl.js';
+import { resolveImageUrl } from '../../shared/utils/imageUrl.js';
 
-// Recibe: initialUrl (la foto que ya tiene el usuario, o null).
+// Recibe: initialUrl (la foto que ya está guardada, o null).
 // Devuelve: { file, isRemoved, previewUrl, handleFileChange, handleRemove }.
 //   file: el File elegido (o null si no se eligió ninguno).
 //   isRemoved: true si el usuario quitó la foto que ya tenía.

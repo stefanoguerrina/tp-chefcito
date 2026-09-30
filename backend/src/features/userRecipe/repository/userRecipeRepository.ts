@@ -21,10 +21,12 @@ const withRecipe = {
 
 export const userRecipeRepository = {
 
-  // Devuelve todas las recetas guardadas (isSaved: true) por un usuario, ordenadas por fecha de guardado.
+  // Devuelve todas las recetas guardadas (isSaved: true) por un usuario, ordenadas por fecha
+  // de guardado. Se saltean las de creadores dados de baja: siguen guardadas, y vuelven a
+  // aparecer si el creador es reactivado.
   findAllByUser: (idUser: number) =>
     prisma.userrecipe.findMany({
-      where: { idUser, isSaved: true },
+      where: { idUser, isSaved: true, recipe: { user: { deletedAt: null } } },
       include: withRecipe,
       orderBy: { savedAt: 'desc' },
     }),

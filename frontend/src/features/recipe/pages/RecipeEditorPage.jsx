@@ -14,6 +14,7 @@ import AlertModal from '../../../core/components/AlertModal.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
 import RequiredFieldsNote from '../../../core/components/RequiredFieldsNote.jsx';
+import { hasRecipeErrors } from '../models/recipeModel.js';
 import { getRecipeById, createRecipe, updateRecipe } from '../services/recipeService.js';
 import { getAllCategories } from '../../category/services/categoryService.js';
 import { getAllIngredients } from '../../ingredient/services/ingredientService.js';
@@ -169,7 +170,7 @@ function RecipeEditorPage() {
     <div className="RecipeEditorPage">
       <header className="RecipeEditorPage-header">
         <h1 className="RecipeEditorPage-title">{isEditing ? 'Editar receta' : 'Crear receta'}</h1>
-        <RequiredFieldsNote />
+        <RequiredFieldsNote isVisible={hasRecipeErrors(validation.errors)} />
       </header>
 
       <div className="RecipeEditorPage-topbar">

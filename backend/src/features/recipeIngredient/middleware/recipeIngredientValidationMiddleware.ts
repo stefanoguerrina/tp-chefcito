@@ -2,6 +2,7 @@
 // Se ejecutan antes del controller para rechazar datos inválidos con mensajes claros.
 import { body, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
+import { commaDecimalToDot } from '../../../core/middleware/decimalSanitizer.js';
 
 // Reglas de validación para reemplazar los ingredientes de una receta (PUT /).
 export const validateReplaceRecipeIngredients = [
@@ -13,6 +14,7 @@ export const validateReplaceRecipeIngredients = [
     .withMessage('Cada ingrediente necesita un idIngredient entero positivo.'),
   body('ingredients.*.requiredQuantity')
     .optional({ nullable: true })
+    .customSanitizer(commaDecimalToDot)
     .isFloat({ min: 0.01 })
     .withMessage('La cantidad requerida debe ser un número positivo.'),
 ];

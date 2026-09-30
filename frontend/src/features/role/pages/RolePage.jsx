@@ -14,7 +14,25 @@ import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
+import { ADMIN_ROLE_ID } from '../models/roleModel.js';
 import '../styles/_role-page.scss';
+
+// Cuántos usuarios tienen asignado un rol (el backend lo manda en _count.userrole).
+// Recibe: un rol crudo. Devuelve: un número (0 si no vino el dato).
+const getRoleUsersCount = (role) => role._count?.userrole ?? 0;
+
+// Pluraliza "usuario"/"usuarios". Recibe: un número. Devuelve: "1 usuario", "3 usuarios".
+const formatUsersCount = (count) => `${count} ${count === 1 ? 'usuario' : 'usuarios'}`;
+
+// Motivo por el que un rol no se puede eliminar (se muestra como tooltip del botón), o
+// null si se puede. Mismas reglas que valida el backend al borrar: el rol admin es parte
+// del sistema, y un rol con usuarios asignados (activos o dados de baja) no se borra.
+const getDeleteBlockReason = (role) => {
+  if (role.id === ADMIN_ROLE_ID) return 'El rol de administrador no se puede eliminar';
+  const usersCount = getRoleUsersCount(role);
+  if (usersCount > 0) return `No se puede eliminar: lo tienen ${formatUsersCount(usersCount)}`;
+  return null;
+};
 
 function RolePage() {
   const [roles, setRoles] = useState([]);
@@ -42,7 +60,8 @@ function RolePage() {
       .catch((err) => setFetchError(err.message))
       .finally(() => setIsLoading(false));
 
-  // Recarga manual (botón "Actualizar" o "Reintentar"), mostrando el loading.
+  // Vuelve a pedir la lista mostrando el loading (después de crear/editar o al tocar
+  // "Reintentar" tras un error).
   const loadRoles = () => {
     setIsLoading(true);
     return fetchRoles();
@@ -93,15 +112,6 @@ function RolePage() {
         <div className="RolePage-actions">
           <button
             type="button"
-            className="RolePage-refreshButton"
-            onClick={loadRoles}
-            disabled={isLoading}
-            title="Actualizar"
-          >
-            <span className="material-symbols-outlined">refresh</span>
-          </button>
-          <button
-            type="button"
             className="RolePage-newButton"
             onClick={() => setFormTarget('create')}
             title="Nuevo rol"
@@ -127,14 +137,20 @@ function RolePage() {
               <tr>
                 <th>Rol</th>
                 <th>Descripción</th>
+                <th className="RolePage-cell--center">Usuarios</th>
                 <th className="RolePage-cell--center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {roles.map((role) => (
+              {roles.map((role) => {
+                const deleteBlockReason = getDeleteBlockReason(role);
+                return (
                 <tr key={role.id}>
                   <td className="RolePage-roleName">{role.name}</td>
                   <td className="RolePage-roleDescription">{role.description || '—'}</td>
+                  <td className="RolePage-cell--center RolePage-usersCount">
+                    {formatUsersCount(getRoleUsersCount(role))}
+                  </td>
                   <td className="RolePage-cell--center">
                     <div className="RolePage-rowActions">
                       <button
@@ -149,15 +165,16 @@ function RolePage() {
                         type="button"
                         className="RolePage-iconButton RolePage-iconButton--danger"
                         onClick={() => setPendingDeleteRole(role)}
-                        disabled={deletingRoleId === role.id}
-                        title="Eliminar rol"
+                        disabled={deletingRoleId === role.id || deleteBlockReason !== null}
+                        title={deleteBlockReason ?? 'Eliminar rol'}
                       >
                         <span className="material-symbols-outlined">delete</span>
                       </button>
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -174,7 +191,7 @@ function RolePage() {
       {pendingDeleteRole && (
         <ConfirmModal
           title={`Eliminar rol "${pendingDeleteRole.name}"`}
-          message="Esta acción no se puede deshacer y va a fallar si el rol todavía tiene usuarios asignados."
+          message="Esta acción no se puede deshacer. Ningún usuario tiene este rol asignado."
           confirmLabel="Eliminar"
           danger
           onConfirm={handleConfirmDelete}

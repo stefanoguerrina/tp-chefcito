@@ -1,120 +1,163 @@
-// Estilos del modal de alta/edición de ingrediente (features/ingredient/components/IngredientFormModal).
-// Mismo lenguaje visual que RoleFormModal (features/role): overlay con blur + tarjeta
-// clara con los tokens de styles/abstracts/_variables.scss.
+// Estilos del modal de alta/edición de ingrediente (features/ingredient/components/
+// IngredientFormModal y sus pasos). Mismo lenguaje visual que el resto de los modales del
+// panel: overlay con blur + tarjeta con los tokens de styles/abstracts/_variables.scss.
 @use '../../../styles/abstracts' as *;
 
-.IngredientFormModal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  background: rgba(30, 27, 23, 0.5);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: $spacing-lg;
-}
+.IngredientFormModal {
+  &-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(30, 27, 23, 0.5);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-md;
 
-.IngredientFormModal-card {
-  width: 100%;
-  max-width: 480px;
-  max-height: 85vh;
-  overflow-y: auto;
-  background: $color-surface-container-lowest;
-  border: 1px solid $color-outline-variant;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-level-2;
-  padding: $spacing-lg;
-}
-
-// Al editar, la tarjeta suma la columna de valores nutricionales: necesita más ancho
-// para no quedar angosta. En mobile queda igual (ahí las columnas van apiladas igual).
-.IngredientFormModal-card--wide {
-  @include respond-to(md) {
-    max-width: 760px;
-  }
-}
-
-.IngredientFormModal-title {
-  font-family: $font-body;
-  font-size: 18px;
-  font-weight: 700;
-  color: $color-on-background;
-  margin: 0 0 $spacing-md;
-}
-
-// Formulario + valores nutricionales: apilados en mobile (el formulario ya viene largo
-// como para además ponerlo angosto), lado a lado desde tablet para no hacer un modal
-// altísimo.
-.IngredientFormModal-columns {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-lg;
-
-  @include respond-to(md) {
-    flex-direction: row;
-    align-items: flex-start;
-
-    .IngredientFormModal-form {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .IngredientFormModal-nutrition {
-      flex: 1;
-      min-width: 0;
-      // Desde acá el separador pasa de arriba (mobile) a la izquierda.
-      padding-top: 0;
-      border-top: none;
-      padding-left: $spacing-lg;
-      border-left: 1px solid $color-outline-variant;
+    @include respond-to(sm) {
+      padding: $spacing-lg;
     }
   }
-}
 
-.IngredientFormModal-form {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
-}
+  &-card {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    background: $color-surface-container-lowest;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-level-2;
+    padding: $spacing-md;
 
-// En mobile (columnas apiladas) separa visualmente del formulario de arriba, ya que
-// ahí no hay borde lateral que lo distinga. Desde md, .IngredientFormModal-columns
-// lo pisa y pasa el borde al costado izquierdo (ver arriba).
-.IngredientFormModal-nutrition {
-  padding-top: $spacing-md;
-  border-top: 1px dashed $color-outline-variant;
-}
+    @include respond-to(sm) {
+      padding: $spacing-lg;
+    }
+  }
 
-.IngredientFormModal-row {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-md;
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+  }
 
-  @include respond-to(sm) {
-    flex-direction: row;
+  &-title {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 18px;
+    font-weight: 700;
+    color: $color-on-background;
+  }
 
-    .IngredientFormModal-field {
+  &-close {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    background: transparent;
+    color: $color-on-surface-variant;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+      color: $color-on-surface;
+    }
+  }
+
+  // --- Indicador de pasos ---
+
+  &-steps {
+    display: flex;
+    gap: $spacing-sm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
       flex: 1;
       min-width: 0;
     }
   }
-}
 
-.IngredientFormModal-field {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-xs;
+  &-step {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm;
+    border: none;
+    border-bottom: 3px solid $color-outline-variant;
+    background: transparent;
+    color: $color-on-surface-variant;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
 
-  label {
+    &--active {
+      border-bottom-color: $color-primary;
+      color: $color-on-surface;
+    }
+  }
+
+  &-stepNumber {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: $radius-full;
+    background: $color-surface-container-high;
+    color: $color-on-surface-variant;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+
+    .IngredientFormModal-step--active & {
+      background: $color-primary;
+      color: $color-on-primary;
+    }
+  }
+
+  // --- Formulario ---
+
+  &-form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &-field {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &-label {
     font-family: $font-body;
     font-size: 13px;
     font-weight: 600;
     color: $color-on-surface-variant;
   }
 
-  input[type='text'] {
+  &-input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
     padding: $spacing-sm $spacing-md;
     border: 1px solid $color-outline-variant;
     border-radius: $radius-md;
@@ -129,112 +172,421 @@
       border-color: $color-primary;
     }
   }
-}
 
-.IngredientFormModal-categoryList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-sm;
-  padding: $spacing-sm;
-  max-height: 140px;
-  overflow-y: auto;
-  border: 1px solid $color-outline-variant;
-  border-radius: $radius-md;
-  background: $color-surface-container;
-}
-
-// Sin ninguna categoría elegida al guardar: mismo borde rojo que los inputs con error.
-.IngredientFormModal-categoryList--invalid {
-  border-color: $color-error;
-}
-
-.IngredientFormModal-categoryEmpty {
-  margin: 0;
-  padding: $spacing-xs;
-  font-size: 13px;
-  color: $color-on-surface-variant;
-}
-
-.IngredientFormModal-categoryOption {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px $spacing-sm;
-  border-radius: $radius-full;
-  background: $color-surface-container-lowest;
-  border: 1px solid $color-outline-variant;
-  font-family: $font-body;
-  font-size: 13px;
-  color: $color-on-background;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-
-  &:hover {
-    border-color: with-opacity($color-primary, 0.35);
+  &-textarea {
+    resize: vertical;
+    min-height: 84px;
+    line-height: 1.4;
   }
 
-  input[type='checkbox'] {
-    accent-color: $color-primary;
-    width: 14px;
-    height: 14px;
+  &-empty {
+    margin: 0;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+  }
+
+  &-error {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-error;
+  }
+
+  // --- Foto + nombre y unidad ---
+
+  // Foto a la izquierda y, a su derecha, nombre y unidad uno debajo del otro. Con stretch
+  // la foto toma el alto exacto de los dos campos: arranca a la altura del label "Nombre"
+  // y termina con el borde inferior del input de la unidad.
+  &-identity {
+    display: flex;
+    align-items: stretch;
+    gap: $spacing-md;
+  }
+
+  &-identityFields {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  // Recuadro de la foto, con el botón adentro (como la foto principal del editor de
+  // recetas). El alto lo da la columna de campos de al lado (ver &-identity).
+  &-image {
+    position: relative;
+    flex-shrink: 0;
+    width: 112px;
+    min-height: 112px;
+    border-radius: $radius-lg;
+    border: 1px dashed $color-outline-variant;
+    background: $color-surface-container-low;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @include respond-to(sm) {
+      width: 140px;
+    }
+  }
+
+  &-imagePhoto {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  // Sin foto, todo el recuadro es el botón: ícono de subir en el centro y el texto debajo.
+  &-imageUpload {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm;
+    border: none;
+    background: transparent;
+    color: $color-on-surface-variant;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
     cursor: pointer;
-  }
-}
+    transition: background-color 0.15s ease, color 0.15s ease;
 
-.IngredientFormModal-error {
-  font-family: $font-body;
-  font-size: 13px;
-  color: $color-error;
-  margin: 0;
-}
+    .material-symbols-outlined {
+      font-size: 36px;
+      color: $color-primary;
+    }
 
-.IngredientFormModal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-sm;
-  margin-top: $spacing-xs;
-}
-
-.IngredientFormModal-confirm {
-  width: 100%;
-  border: none;
-  font-family: $font-body;
-  font-weight: 600;
-  padding: $spacing-md;
-  border-radius: $radius-full;
-  cursor: pointer;
-  background: $color-primary;
-  color: $color-on-primary;
-  transition: opacity 0.2s ease;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    &:hover {
+      background: $color-surface-container;
+      color: $color-on-surface;
+    }
   }
 
-  &:hover:not(:disabled) {
-    opacity: 0.9;
+  &-imageButton {
+    position: absolute;
+    left: 50%;
+    bottom: $spacing-sm;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px $spacing-sm;
+    border: none;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: $shadow-level-1;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+      color: $color-primary;
+    }
+
+    &:hover {
+      background: $color-primary;
+      color: $color-on-primary;
+
+      .material-symbols-outlined {
+        color: inherit;
+      }
+    }
   }
-}
 
-.IngredientFormModal-cancel {
-  width: 100%;
-  background: transparent;
-  color: $color-on-surface-variant;
-  border: 2px solid $color-outline-variant;
-  font-family: $font-body;
-  font-weight: 600;
-  padding: calc(#{$spacing-md} - 2px);
-  border-radius: $radius-full;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  // Botón redondo para quitar la foto, arriba a la derecha (solo si hay foto).
+  &-imageRemove {
+    position: absolute;
+    top: $spacing-xs;
+    right: $spacing-xs;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    background: rgba(0, 0, 0, 0.6);
+    color: $color-on-image;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover {
+      background: $color-error;
+      color: $color-on-error;
+    }
   }
 
-  &:hover:not(:disabled) {
+  // --- Título de un campo o bloque con su botón "+" al lado (categorías, valores) ---
+
+  &-fieldHeader {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &-addButton {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    background: with-opacity($color-primary, 0.15);
+    color: $color-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-primary;
+      color: $color-on-primary;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  // --- Categorías (chips, ver IngredientCategoryPicker) ---
+
+  &-categories {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $spacing-sm;
+    min-height: 40px;
+    padding: $spacing-sm;
+    box-sizing: border-box;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+
+    // Sin ninguna categoría elegida al avanzar: mismo borde rojo que los inputs con error.
+    &--invalid {
+      border-color: $color-error;
+    }
+  }
+
+  &-chip {
+    box-sizing: border-box;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 5px 0 $spacing-sm;
+    border-radius: $radius-full;
+    background: with-opacity($color-primary, 0.12);
+    color: $color-primary;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &-chipRemove {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    background: transparent;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    &:hover {
+      background: with-opacity($color-primary, 0.2);
+    }
+  }
+
+  // --- Valores nutricionales ---
+
+  // Cada bloque del paso 2 (porción y valores), con su título destacado.
+  &-section {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &-sectionTitle {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 700;
+    color: $color-on-surface;
+  }
+
+  &-serving {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &-servingInput {
+    width: 110px;
+  }
+
+  // La unidad de la porción no se edita: sale de la del ingrediente.
+  &-lockedUnit {
+    box-sizing: border-box;
+    min-width: 56px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 $spacing-md;
+    border-radius: $radius-md;
     background: $color-surface-container-high;
+    color: $color-on-surface-variant;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  &-nutrients {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &-nutrient {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &-nutrientRow {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &-nutrientName {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &-nutrientValue {
+    width: 88px;
+    flex-shrink: 0;
+  }
+
+  // Ancho fijo para que las filas queden alineadas aunque cambie la unidad (kcal / g / mg).
+  &-nutrientUnit {
+    width: 32px;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+  }
+
+  &-iconButton {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-error;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover {
+      background: $color-error;
+      color: $color-on-error;
+    }
+  }
+
+  // --- Botones de abajo ---
+
+  &-actions {
+    display: flex;
+    gap: $spacing-sm;
+    margin-top: $spacing-xs;
+
+    button {
+      flex: 1;
+    }
+  }
+
+  &-primary,
+  &-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: $spacing-sm $spacing-md;
+    min-height: 44px;
+    border-radius: $radius-full;
+    font-family: $font-body;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &-primary {
+    border: none;
+    background: $color-primary;
+    color: $color-on-primary;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+  }
+
+  &-secondary {
+    border: 2px solid $color-outline-variant;
+    background: transparent;
+    color: $color-on-surface-variant;
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-high;
+    }
   }
 }

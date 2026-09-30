@@ -2,6 +2,7 @@
 // que ya está en su inventario. Le muestra la cantidad actual y le permite
 // actualizarla con un stepper o cancelar la operación.
 import { useState } from 'react';
+import { normalizeDecimalInput, isValidQuantity, stepQuantity } from '../../../shared/utils/decimalInput.js';
 import '../styles/_duplicate-ingredient-modal.scss';
 
 // Recibe:
@@ -15,31 +16,28 @@ function DuplicateIngredientModal({ modal, onConfirm, onClose }) {
   const [error, setError] = useState('');
 
   const unit = modal.current?.unitOfMeasure ?? '';
-  const numValue = Number(quantity);
-  const isValid = quantity.trim() !== '' && !isNaN(numValue) && Number.isInteger(numValue) && numValue >= 0;
+  const isValid = isValidQuantity(quantity);
 
+  // +/- de a una unidad (mínimo 0).
   const handleStep = (delta) => {
-    const current = isValid ? numValue : 0;
-    const next = Math.max(0, current + delta);
-    setQuantity(String(next));
+    setQuantity(stepQuantity(quantity, delta));
     setError('');
   };
 
+  // Acepta decimales con coma o punto: se guarda siempre con punto (ver decimalInput).
   const handleQtyChange = (e) => {
-    setQuantity(e.target.value);
+    setQuantity(normalizeDecimalInput(e.target.value));
     setError('');
   };
 
   const handleConfirm = (e) => {
     e.preventDefault();
-    const clean = quantity.trim();
-    const parsed = Number(clean);
-    if (clean === '' || isNaN(parsed) || !Number.isInteger(parsed) || parsed < 0) {
-      setError('Ingresá una cantidad entera válida (mayor o igual a 0).');
+    if (!isValid) {
+      setError('Ingresá una cantidad válida (mayor o igual a 0).');
       return;
     }
     onConfirm(modal.idIngredient, {
-      availableQuantity: parsed,
+      availableQuantity: Number(quantity),
       unitOfMeasure: unit || null,
     });
   };
@@ -90,7 +88,7 @@ function DuplicateIngredientModal({ modal, onConfirm, onClose }) {
                 className="DuplicateModal-stepBtn"
                 aria-label="Reducir cantidad"
                 onClick={() => handleStep(-1)}
-                disabled={isValid && numValue <= 0}
+                disabled={isValid && Number(quantity) <= 0}
               >
                 <span className="material-symbols-outlined">remove</span>
               </button>
@@ -98,10 +96,9 @@ function DuplicateIngredientModal({ modal, onConfirm, onClose }) {
               <input
                 autoFocus
                 id="dup-modal-qty"
-                type="number"
+                type="text"
+                inputMode="decimal"
                 className="DuplicateModal-qtyInput"
-                min="0"
-                step="1"
                 value={quantity}
                 onChange={handleQtyChange}
                 aria-label="Nueva cantidad"

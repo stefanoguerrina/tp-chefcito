@@ -1,18 +1,16 @@
-// Tabla de gestión de ingredientes del dashboard: buscador + nombre, unidad y acciones
-// directas (valores nutricionales, editar, eliminar), con el alta de un ingrediente nuevo
-// en el mismo lugar (a diferencia de usuarios, acá no hace falta ir a otra sección).
+// Tabla de gestión de ingredientes del panel: buscador + foto, nombre, categoría, unidad y
+// acciones directas (categorías, editar con sus valores nutricionales, eliminar), con el
+// alta de un ingrediente nuevo en el mismo lugar. Cada fila es un AdminIngredientRow.
 import { useState } from 'react';
 import IngredientFormModal from '../../ingredient/components/IngredientFormModal.jsx';
 import IngredientCategoriesModal from '../../ingredient/components/IngredientCategoriesModal.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
+import AdminIngredientRow from './AdminIngredientRow.jsx';
 import {
   filterIngredientsByQuery,
-  getPrimaryCategory,
-  getExtraCategoriesCount,
   getIngredientColorIndex,
   formatIngredientsCount,
-  formatIngredientCode,
 } from '../models/adminIngredientsModel.js';
 import '../styles/_admin-ingredients-table.scss';
 
@@ -24,8 +22,8 @@ function AdminIngredientsTable({
   usageCountByIngredient,
   colorIndexByCategoryId,
   isLoading,
-  onCreateIngredient,
-  onUpdateIngredient,
+  onSaveIngredient,
+  onUpdateIngredientCategories,
   onDeleteIngredient,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,6 +40,8 @@ function AdminIngredientsTable({
   // para mostrar. Se muestra en un modal aparte en vez de un banner que queda pegado en
   // pantalla.
   const [deleteFailure, setDeleteFailure] = useState(null);
+  // Ingrediente que se guardó pero cuya foto no se pudo subir (con el motivo), o null.
+  const [imageFailure, setImageFailure] = useState(null);
 
   const filteredIngredients = filterIngredientsByQuery(ingredients, searchQuery);
 
@@ -62,20 +62,19 @@ function AdminIngredientsTable({
   const handlePreviousPage = () => setCurrentPage((page) => Math.max(page - 1, 1));
   const handleNextPage = () => setCurrentPage((page) => Math.min(page + 1, totalPages));
 
-  // Crea o edita según qué haya en formTarget.
-  const handleSubmitForm = async (data) => {
-    if (formTarget === 'create') {
-      await onCreateIngredient(data);
-    } else {
-      await onUpdateIngredient(formTarget.id, data);
-    }
+  // Crea o edita según qué haya en formTarget. Si falla el guardado de los datos, el
+  // error lo muestra el formulario (no se cierra); si solo falló la foto, el ingrediente
+  // ya quedó guardado: se cierra y se avisa en un modal.
+  const handleSubmitForm = async (formResult) => {
+    const { imageError } = await onSaveIngredient(formTarget === 'create' ? null : formTarget.id, formResult);
+    if (imageError) setImageFailure({ name: formResult.data.name, message: imageError });
     setFormTarget(null);
   };
 
   // Guarda las categorías elegidas en el modal rápido de categorías (reutiliza el mismo
   // PATCH que la edición completa, solo que con categoryIds nada más).
   const handleSubmitCategories = async (categoryIds) => {
-    await onUpdateIngredient(categoriesTarget.id, { categoryIds });
+    await onUpdateIngredientCategories(categoriesTarget.id, categoryIds);
     setCategoriesTarget(null);
   };
 
@@ -141,72 +140,23 @@ function AdminIngredientsTable({
                   <th>Categoría</th>
                   <th>Unidad</th>
                   <th className="AdminIngredientsTable-cell--center">Recetas asociadas</th>
+                  <th className="AdminIngredientsTable-cell--center">Valores nutricionales</th>
                   <th className="AdminIngredientsTable-cell--center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {pageIngredients.map((ingredient) => {
-                  const primaryCategory = getPrimaryCategory(ingredient);
-                  const extraCategoriesCount = getExtraCategoriesCount(ingredient);
-                  const colorIndex = getIngredientColorIndex(colorIndexByCategoryId, ingredient);
-                  const recipesCount = usageCountByIngredient.get(ingredient.id) ?? 0;
-
-                  return (
-                  <tr key={ingredient.id}>
-                    <td>
-                      <div className="AdminIngredientsTable-name">{ingredient.name}</div>
-                      <div className="AdminIngredientsTable-code">{formatIngredientCode(ingredient.id)}</div>
-                    </td>
-                    <td>
-                      <span className="AdminIngredientsTable-categoryBadge">
-                        <span
-                          className={`AdminIngredientsTable-categoryDot AdminIngredientsTable-categoryDot--${colorIndex}`}
-                        />
-                        {primaryCategory?.name ?? 'Sin categoría'}
-                      </span>
-                      {extraCategoriesCount > 0 && (
-                        <span className="AdminIngredientsTable-categoryExtra">+{extraCategoriesCount}</span>
-                      )}
-                    </td>
-                    <td className="AdminIngredientsTable-unit">{ingredient.unitOfMeasure || '—'}</td>
-                    <td className="AdminIngredientsTable-cell--center">
-                      <span className="AdminIngredientsTable-recipesCount">{recipesCount}</span>{' '}
-                      <span className="AdminIngredientsTable-recipesLabel">
-                        {recipesCount === 1 ? 'receta' : 'recetas'}
-                      </span>
-                    </td>
-                    <td className="AdminIngredientsTable-cell--center">
-                      <div className="AdminIngredientsTable-rowActions">
-                        <button
-                          type="button"
-                          className="AdminIngredientsTable-iconButton"
-                          onClick={() => setCategoriesTarget(ingredient)}
-                          title="Categorías"
-                        >
-                          <span className="material-symbols-outlined">category</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="AdminIngredientsTable-iconButton"
-                          onClick={() => setFormTarget(ingredient)}
-                          title="Editar ingrediente"
-                        >
-                          <span className="material-symbols-outlined">edit</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="AdminIngredientsTable-iconButton AdminIngredientsTable-iconButton--danger"
-                          onClick={() => setPendingDelete(ingredient)}
-                          disabled={deletingId === ingredient.id}
-                          title="Eliminar ingrediente"
-                        >
-                          <span className="material-symbols-outlined">delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  );
-                })}
+                {pageIngredients.map((ingredient) => (
+                  <AdminIngredientRow
+                    key={ingredient.id}
+                    ingredient={ingredient}
+                    colorIndex={getIngredientColorIndex(colorIndexByCategoryId, ingredient)}
+                    recipesCount={usageCountByIngredient.get(ingredient.id) ?? 0}
+                    isDeleting={deletingId === ingredient.id}
+                    onEditCategories={setCategoriesTarget}
+                    onEdit={setFormTarget}
+                    onDelete={setPendingDelete}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
@@ -264,11 +214,19 @@ function AdminIngredientsTable({
       {pendingDelete && (
         <ConfirmModal
           title={`Eliminar ingrediente "${pendingDelete.name}"`}
-          message="Esta acción no se puede deshacer y va a fallar si el ingrediente está en uso en inventarios, recetas o tiene valores nutricionales cargados."
+          message="Esta acción no se puede deshacer (también se borran su foto y sus valores nutricionales) y va a fallar si el ingrediente se usa en alguna receta o inventario."
           confirmLabel={deletingId === pendingDelete.id ? 'Eliminando...' : 'Eliminar'}
           danger
           onConfirm={handleConfirmDelete}
           onCancel={() => setPendingDelete(null)}
+        />
+      )}
+
+      {imageFailure && (
+        <AlertModal
+          title={`"${imageFailure.name}" se guardó sin la foto`}
+          message={`${imageFailure.message} Podés volver a subirla desde "Editar ingrediente".`}
+          onClose={() => setImageFailure(null)}
         />
       )}
 

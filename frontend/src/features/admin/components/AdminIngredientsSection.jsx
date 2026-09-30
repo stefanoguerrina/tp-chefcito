@@ -20,15 +20,15 @@ function AdminIngredientsSection({ header }) {
     colorIndexByCategoryId,
     isLoading,
     error,
-    handleRefresh,
-    handleCreateIngredient,
-    handleUpdateIngredient,
+    handleRetry,
+    handleSaveIngredient,
+    handleUpdateIngredientCategories,
     handleDeleteIngredient,
   } = useAdminIngredients();
 
   return (
-    <AdminSectionLayout header={header} onRefresh={handleRefresh} isRefreshing={isLoading}>
-      {error && <ErrorState message={error} onRetry={handleRefresh} />}
+    <AdminSectionLayout header={header}>
+      {error && <ErrorState message={error} onRetry={handleRetry} />}
       {isLoading && ingredients.length === 0 && (
         <p className="AdminPage-status">Cargando ingredientes...</p>
       )}
@@ -61,8 +61,8 @@ function AdminIngredientsSection({ header }) {
         usageCountByIngredient={usageCountByIngredient}
         colorIndexByCategoryId={colorIndexByCategoryId}
         isLoading={isLoading}
-        onCreateIngredient={handleCreateIngredient}
-        onUpdateIngredient={handleUpdateIngredient}
+        onSaveIngredient={handleSaveIngredient}
+        onUpdateIngredientCategories={handleUpdateIngredientCategories}
         onDeleteIngredient={handleDeleteIngredient}
       />
     </AdminSectionLayout>

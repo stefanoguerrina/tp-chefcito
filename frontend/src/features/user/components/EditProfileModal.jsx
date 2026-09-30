@@ -6,7 +6,7 @@
 import { useEffect, useId, useState } from 'react';
 import { updateUserService } from '../services/updateUserService.js';
 import { uploadUserImageService, deleteUserImageService } from '../services/userImageService.js';
-import { useImagePicker } from '../hooks/useImagePicker.js';
+import { useImagePicker } from '../../../core/hooks/useImagePicker.js';
 import { compressImage } from '../../../shared/utils/compressImage.js';
 import EditProfileImages from './EditProfileImages.jsx';
 import { PHONE_COUNTRY_PREFIX } from '../../auth/models/registerModel.js';
@@ -14,7 +14,7 @@ import ArgentinaFlag from '../../../core/components/ArgentinaFlag.jsx';
 import RequiredMark from '../../../core/components/RequiredMark.jsx';
 import RequiredFieldsNote from '../../../core/components/RequiredFieldsNote.jsx';
 import FieldError from '../../../core/components/FieldError.jsx';
-import { getFieldAriaProps, getFieldErrorId } from '../../../shared/utils/fieldAria.js';
+import { getFieldAriaProps, getFieldErrorId, hasFieldErrors } from '../../../shared/utils/fieldAria.js';
 import '../styles/_edit-profile-modal.scss';
 
 const BIO_MAX_LENGTH = 255;
@@ -163,7 +163,7 @@ function EditProfileModal({ user, onClose, onSaved }) {
           <EditProfileImages cover={cover} avatar={avatar} initials={getInitials(name, lastName)} />
 
           <form id={`${id}-form`} className="EditProfileModal-form" onSubmit={handleSubmit} noValidate>
-            <RequiredFieldsNote />
+            <RequiredFieldsNote isVisible={hasFieldErrors(fieldErrors)} />
 
             <div className="EditProfileModal-row">
               <Field id={`${id}-name`} label="Nombre" isRequired error={fieldErrors.name}>

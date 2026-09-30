@@ -2,13 +2,14 @@
 // del admin logueado con su botón de cerrar sesión. El comportamiento de colapsar/expandir
 // y el panel de mobile vienen de core/components/CollapsibleSidebar.
 // Recibe: activeSection (id de la sección abierta), onSelectSection (callback),
-//         adminName y adminInitials (para el pie, ver useAdminProfile) y onLogout (callback).
+//         adminName, adminInitials y adminAvatarUrl (para el pie, ver useAdminProfile) y
+//         onLogout (callback).
 import CollapsibleSidebar from '../../../core/components/CollapsibleSidebar.jsx';
 import { ADMIN_NAV_ITEMS } from '../models/adminSectionsModel.js';
 import { useThemeContext } from '../../../app/ThemeContext.jsx';
 import '../styles/_admin-sidebar.scss';
 
-function AdminSidebar({ activeSection, onSelectSection, adminName, adminInitials, onLogout }) {
+function AdminSidebar({ activeSection, onSelectSection, adminName, adminInitials, adminAvatarUrl, onLogout }) {
   const { isDarkMode, toggleTheme } = useThemeContext();
 
   // Las secciones del panel no son rutas propias sino botones que cambian la sección
@@ -33,7 +34,7 @@ function AdminSidebar({ activeSection, onSelectSection, adminName, adminInitials
       brandSubtitle="Panel de Administrador"
       items={items}
       footerItems={footerItems}
-      account={{ name: adminName, detail: 'Administrador', initials: adminInitials }}
+      account={{ name: adminName, detail: 'Administrador', initials: adminInitials, avatarUrl: adminAvatarUrl }}
     />
   );
 }

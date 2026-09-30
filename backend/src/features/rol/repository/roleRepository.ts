@@ -6,9 +6,13 @@ import type { CreateRoleData, UpdateRoleData } from '../models/roleModel.js';
 
 export const roleRepository = {
 
-  // Devuelve todos los roles, ordenados por nombre.
+  // Devuelve todos los roles, ordenados por nombre, con cuántos usuarios tiene asignado
+  // cada uno (_count.userrole), para que el panel sepa cuáles no se pueden eliminar.
   findAll: () =>
-    prisma.role.findMany({ orderBy: { name: 'asc' } }),
+    prisma.role.findMany({
+      orderBy: { name: 'asc' },
+      include: { _count: { select: { userrole: true } } },
+    }),
 
   // Busca un rol por ID.
   findById: (id: number) =>
@@ -38,7 +42,8 @@ export const roleRepository = {
     prisma.role.delete({ where: { id } }),
 
   // Cuenta cuántos usuarios tienen este rol asignado, vía la tabla intermedia N:M
-  // (para validar antes de borrar).
+  // (para validar antes de borrar). Cuenta también a los dados de baja: si se los
+  // reactiva, tienen que conservar su rol.
   countUsers: (id: number) =>
     prisma.userRole.count({ where: { roleId: id } }),
 
