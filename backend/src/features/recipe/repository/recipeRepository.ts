@@ -93,6 +93,17 @@ export const recipeRepository = {
   delete: (id: number) =>
     prisma.recipe.delete({ where: { id } }),
 
+  // Promedio y cantidad de reseñas de cada receta de la lista, en UNA sola consulta
+  // agrupada (así el frontend no tiene que pedir las reseñas receta por receta).
+  // Las recetas sin reseñas no aparecen en el resultado.
+  findReviewStats: (recipeIds: number[]) =>
+    prisma.review.groupBy({
+      by: ['idRecipe'],
+      where: { idRecipe: { in: recipeIds } },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+
   // Verifica que TODAS las categorías pasadas existan (para validar la FK antes de crear/actualizar).
   categoriesExist: async (categoryIds: number[]): Promise<boolean> => {
     if (categoryIds.length === 0) return true;

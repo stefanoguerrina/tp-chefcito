@@ -11,6 +11,10 @@ import { compressImage } from '../../../shared/utils/compressImage.js';
 import EditProfileImages from './EditProfileImages.jsx';
 import { PHONE_COUNTRY_PREFIX } from '../../auth/models/registerModel.js';
 import ArgentinaFlag from '../../../core/components/ArgentinaFlag.jsx';
+import RequiredMark from '../../../core/components/RequiredMark.jsx';
+import RequiredFieldsNote from '../../../core/components/RequiredFieldsNote.jsx';
+import FieldError from '../../../core/components/FieldError.jsx';
+import { getFieldAriaProps, getFieldErrorId } from '../../../shared/utils/fieldAria.js';
 import '../styles/_edit-profile-modal.scss';
 
 const BIO_MAX_LENGTH = 255;
@@ -44,14 +48,18 @@ const saveImageChange = async (userId, kind, picker, hadImage) => {
   return null;
 };
 
-// Un campo del formulario: label arriba, el control y, si el backend lo rechazó, su error
-// debajo. Recibe: id, label, error (texto o undefined) y children (el input/textarea).
-function Field({ id, label, error, children }) {
+// Un campo del formulario: label arriba (con * si es obligatorio), el control y, si está
+// vacío o el backend lo rechazó, su error debajo. Recibe: id, label, isRequired, error
+// (texto o undefined) y children (el input/textarea).
+function Field({ id, label, isRequired = false, error, children }) {
   return (
     <div className="EditProfileModal-field">
-      <label className="EditProfileModal-label" htmlFor={id}>{label}</label>
+      <label className="EditProfileModal-label" htmlFor={id}>
+        {label}
+        {isRequired && <RequiredMark />}
+      </label>
       {children}
-      {error && <p className="EditProfileModal-fieldError">{error}</p>}
+      <FieldError id={getFieldErrorId(id)} message={error} />
     </div>
   );
 }
@@ -83,9 +91,23 @@ function EditProfileModal({ user, onClose, onSaved }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isSaving, onClose]);
 
+  // Al escribir en un campo se borra solo SU error.
+  const clearFieldError = (field) => setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+
+    // Nombre y apellido son obligatorios (el backend los rechaza vacíos): se avisa debajo
+    // de cada uno sin llamar al backend.
+    const requiredErrors = {};
+    if (!name.trim()) requiredErrors.name = 'Ingresá tu nombre.';
+    if (!lastName.trim()) requiredErrors.lastName = 'Ingresá tu apellido.';
+    if (Object.keys(requiredErrors).length > 0) {
+      setFieldErrors(requiredErrors);
+      return;
+    }
+
     setFieldErrors({});
     setIsSaving(true);
     try {
@@ -141,29 +163,37 @@ function EditProfileModal({ user, onClose, onSaved }) {
           <EditProfileImages cover={cover} avatar={avatar} initials={getInitials(name, lastName)} />
 
           <form id={`${id}-form`} className="EditProfileModal-form" onSubmit={handleSubmit} noValidate>
+            <RequiredFieldsNote />
+
             <div className="EditProfileModal-row">
-              <Field id={`${id}-name`} label="Nombre" error={fieldErrors.name}>
+              <Field id={`${id}-name`} label="Nombre" isRequired error={fieldErrors.name}>
                 <input
                   id={`${id}-name`}
                   className="EditProfileModal-input"
                   type="text"
                   value={name}
-                  onChange={(event) => setName(event.target.value)}
+                  onChange={(event) => {
+                    setName(event.target.value);
+                    clearFieldError('name');
+                  }}
                   placeholder="Juan"
                   maxLength={100}
-                  required
+                  {...getFieldAriaProps(`${id}-name`, { error: fieldErrors.name, isRequired: true })}
                 />
               </Field>
-              <Field id={`${id}-lastName`} label="Apellido" error={fieldErrors.lastName}>
+              <Field id={`${id}-lastName`} label="Apellido" isRequired error={fieldErrors.lastName}>
                 <input
                   id={`${id}-lastName`}
                   className="EditProfileModal-input"
                   type="text"
                   value={lastName}
-                  onChange={(event) => setLastName(event.target.value)}
+                  onChange={(event) => {
+                    setLastName(event.target.value);
+                    clearFieldError('lastName');
+                  }}
                   placeholder="Pérez"
                   maxLength={100}
-                  required
+                  {...getFieldAriaProps(`${id}-lastName`, { error: fieldErrors.lastName, isRequired: true })}
                 />
               </Field>
             </div>
@@ -191,6 +221,7 @@ function EditProfileModal({ user, onClose, onSaved }) {
               <Field id={`${id}-specialty`} label="Especialidad" error={fieldErrors.specialty}>
                 <input
                   id={`${id}-specialty`}
+                  {...getFieldAriaProps(`${id}-specialty`, { error: fieldErrors.specialty })}
                   className="EditProfileModal-input"
                   type="text"
                   value={specialty}
@@ -202,6 +233,7 @@ function EditProfileModal({ user, onClose, onSaved }) {
               <Field id={`${id}-location`} label="Ubicación" error={fieldErrors.location}>
                 <input
                   id={`${id}-location`}
+                  {...getFieldAriaProps(`${id}-location`, { error: fieldErrors.location })}
                   className="EditProfileModal-input"
                   type="text"
                   value={location}
@@ -222,6 +254,7 @@ function EditProfileModal({ user, onClose, onSaved }) {
                 </span>
                 <input
                   id={`${id}-phone`}
+                  {...getFieldAriaProps(`${id}-phone`, { error: fieldErrors.phone })}
                   className="EditProfileModal-input EditProfileModal-input--addon"
                   type="tel"
                   autoComplete="tel-national"
@@ -236,6 +269,7 @@ function EditProfileModal({ user, onClose, onSaved }) {
             <Field id={`${id}-bio`} label="Biografía" error={fieldErrors.bio}>
               <textarea
                 id={`${id}-bio`}
+                {...getFieldAriaProps(`${id}-bio`, { error: fieldErrors.bio })}
                 className="EditProfileModal-input EditProfileModal-textarea"
                 value={bio}
                 onChange={(event) => setBio(event.target.value)}

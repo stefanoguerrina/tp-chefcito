@@ -5,6 +5,10 @@
 // los tokens de styles/abstracts/_variables.scss.
 import { useState } from 'react';
 import NutritionalValuePanel from '../pages/NutritionalValuePanel.jsx';
+import RequiredMark from '../../../core/components/RequiredMark.jsx';
+import RequiredFieldsNote from '../../../core/components/RequiredFieldsNote.jsx';
+import FieldError from '../../../core/components/FieldError.jsx';
+import { getFieldAriaProps, getFieldErrorId, mapApiFieldErrors } from '../../../shared/utils/fieldAria.js';
 import '../styles/_ingredient-form-modal.scss';
 
 // Recibe: initialData (null para crear, el ingrediente crudo para editar), categories
@@ -21,12 +25,15 @@ function IngredientFormModal({ initialData, categories, onSubmit, onCancel }) {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState(initialCategoryIds);
 
   const [error, setError] = useState('');
+  // Errores de los campos obligatorios ({ name, categoryIds }), debajo de cada uno.
+  const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditing = initialData !== null;
 
   // Alterna la selección de una categoría en el multiselect.
   const handleToggleCategory = (id) => {
+    setFieldErrors((prev) => ({ ...prev, categoryIds: '' }));
     setSelectedCategoryIds((prev) =>
       prev.includes(id) ? prev.filter((categoryId) => categoryId !== id) : [...prev, id]
     );
@@ -35,8 +42,12 @@ function IngredientFormModal({ initialData, categories, onSubmit, onCancel }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
-    if (selectedCategoryIds.length === 0) {
-      setError('Seleccioná al menos una categoría.');
+    // Obligatorios: nombre y al menos una categoría (igual que valida el backend).
+    const errors = {};
+    if (!name.trim()) errors.name = 'Ingresá un nombre.';
+    if (selectedCategoryIds.length === 0) errors.categoryIds = 'Seleccioná al menos una categoría.';
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
     setIsSubmitting(true);
@@ -48,7 +59,10 @@ function IngredientFormModal({ initialData, categories, onSubmit, onCancel }) {
         categoryIds: selectedCategoryIds,
       });
     } catch (err) {
-      setError(err.message);
+      // Si el backend señaló un campo (ej. nombre repetido), el error va debajo de ese campo.
+      const apiErrors = mapApiFieldErrors(err.fieldErrors, { name: 'name', categoryIds: 'categoryIds' });
+      if (Object.keys(apiErrors).length > 0) setFieldErrors(apiErrors);
+      else setError(err.message);
       setIsSubmitting(false);
     }
     // No hace falta setIsSubmitting(false) en el caso de éxito: el padre cierra el modal.
@@ -71,16 +85,25 @@ function IngredientFormModal({ initialData, categories, onSubmit, onCancel }) {
             (una al lado de la otra desde tablet) para no quedar con un modal larguísimo. */}
         <div className={isEditing ? 'IngredientFormModal-columns' : undefined}>
           <form onSubmit={handleSubmit} className="IngredientFormModal-form" noValidate>
+            <RequiredFieldsNote />
+
             <div className="IngredientFormModal-field">
-              <label htmlFor="ingf-name">Nombre</label>
+              <label htmlFor="ingf-name">
+                Nombre
+                <RequiredMark />
+              </label>
               <input
                 id="ingf-name"
                 type="text"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) => {
+                  setName(event.target.value);
+                  setFieldErrors((prev) => ({ ...prev, name: '' }));
+                }}
                 placeholder="Ej: Tomate"
-                required
+                {...getFieldAriaProps('ingf-name', { error: fieldErrors.name, isRequired: true })}
               />
+              <FieldError id={getFieldErrorId('ingf-name')} message={fieldErrors.name} />
             </div>
 
             <div className="IngredientFormModal-row">
@@ -96,20 +119,29 @@ function IngredientFormModal({ initialData, categories, onSubmit, onCancel }) {
               </div>
 
               <div className="IngredientFormModal-field">
-                <label htmlFor="ingf-description">Descripción (opcional)</label>
+                <label htmlFor="ingf-description">Descripción</label>
                 <input
                   id="ingf-description"
                   type="text"
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Opcional"
+                  placeholder="Ej: Tomate perita"
                 />
               </div>
             </div>
 
             <div className="IngredientFormModal-field">
-              <label>Categorías (seleccioná al menos una)</label>
-              <div className="IngredientFormModal-categoryList">
+              {/* Grupo de checkboxes: el "label" es un título del grupo (no apunta a un input). */}
+              <label id="ingf-categories-label">
+                Categorías (al menos una)
+                <RequiredMark />
+              </label>
+              <div
+                className={`IngredientFormModal-categoryList${fieldErrors.categoryIds ? ' IngredientFormModal-categoryList--invalid' : ''}`}
+                role="group"
+                aria-labelledby="ingf-categories-label"
+                {...getFieldAriaProps('ingf-categories', { error: fieldErrors.categoryIds })}
+              >
                 {categories.length === 0 && (
                   <p className="IngredientFormModal-categoryEmpty">
                     No hay categorías creadas todavía.
@@ -126,6 +158,7 @@ function IngredientFormModal({ initialData, categories, onSubmit, onCancel }) {
                   </label>
                 ))}
               </div>
+              <FieldError id={getFieldErrorId('ingf-categories')} message={fieldErrors.categoryIds} />
             </div>
 
             {error && <p className="IngredientFormModal-error">⚠ {error}</p>}

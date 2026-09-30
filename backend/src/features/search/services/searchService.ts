@@ -38,10 +38,23 @@ export async function quickSearch(term: string) {
     total: categoriesTotal,
   };
 
+  // Valoración de las pocas recetas encontradas, en una sola consulta agrupada: así la
+  // sección "Recetas sugeridas" no tiene que pedir las reseñas de cada una por separado.
+  const reviewStats = await searchRepository.findReviewStats(recipes.map((recipe) => recipe.id));
+  const statsByRecipeId = new Map(reviewStats.map((stat) => [stat.idRecipe, stat]));
+  const recipesWithStats = recipes.map((recipe) => {
+    const stats = statsByRecipeId.get(recipe.id);
+    return {
+      ...recipe,
+      averageRating: stats?._avg.rating ? Number(stats._avg.rating) : 0,
+      reviewCount: stats?._count._all ?? 0,
+    };
+  });
+
   return {
     term,
     categories: categorySection,
-    recipes: { items: recipes, total: recipesTotal },
+    recipes: { items: recipesWithStats, total: recipesTotal },
     users: { items: users, total: usersTotal },
   };
 }

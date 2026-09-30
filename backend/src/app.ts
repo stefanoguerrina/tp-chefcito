@@ -10,16 +10,23 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // Application initialization
 const app = express();
-const PORT = 3000;
+// Puerto y orígenes de CORS salen del .env (en el deploy el hosting define PORT y la URL
+// del frontend); si no están, se usan los valores de desarrollo local.
+const PORT = Number(process.env.PORT) || 3000;
 
 // Middleware
-// Orígenes permitidos para CORS: Vite usa 5173 por defecto, 5174 si el puerto ya está ocupado.
-const ALLOWED_ORIGINS = [
+// Orígenes permitidos para CORS. En el .env: CORS_ORIGINS separados por comas
+// (ej. "https://chefcito.vercel.app"). Por defecto, los de Vite en local: 5173, o 5174 si
+// el puerto ya está ocupado.
+const DEFAULT_ORIGINS = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:5174',
   'http://127.0.0.1:5174'
 ];
+const ALLOWED_ORIGINS = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : DEFAULT_ORIGINS;
 app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
 // Límite del body JSON: 1mb sobra para cualquier formulario. Las imágenes ya no viajan en
 // el JSON: se suben como archivo (multipart) y las procesa multer (ver features/image).

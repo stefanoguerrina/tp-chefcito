@@ -10,20 +10,24 @@ import { getAllRecipes } from '../../recipe/services/recipeService.js';
 import { getAllIngredients } from '../../ingredient/services/ingredientService.js';
 import { getAllIngredientCategories } from '../../ingredientCategory/services/ingredientCategoryService.js';
 import { getAllCategories } from '../../category/services/categoryService.js';
-import { getAllRoles, getRolesByUser } from '../../role/services/roleService.js';
-import { getReviewsByRecipe } from '../../review/services/reviewService.js';
+import { getAllRoles, getAllUserRoles, getRolesByUser } from '../../role/services/roleService.js';
 import {
   countRecipesByUser,
   buildRecipesLastWeek,
   buildTopCreators,
   buildRoleLabel,
+  buildRoleLabelsByUser,
   buildReviewStatsByUser,
   buildUserRows,
   sumSeries,
 } from '../models/adminDashboardModel.js';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
+import { useAuthContext } from '../../../app/AuthContext.jsx';
+import { useCurrentUser } from '../../../app/CurrentUserContext.jsx';
 
 export const useAdminDashboard = () => {
+  const { userId: currentUserId } = useAuthContext();
+  const { updateCurrentUser } = useCurrentUser();
   const [metrics, setMetrics] = useState(null);
   // Usuarios crudos (no ya las filas armadas): se guardan así para poder moverlos entre
   // activos/inactivos y actualizarlos in-place cuando la tabla da de baja, reactiva o edita.
@@ -39,10 +43,16 @@ export const useAdminDashboard = () => {
   // Estado de las acciones por fila de la tabla (dar de baja / reactivar).
   const [busyUserId, setBusyUserId] = useState(null);
 
-  // Pide en paralelo todo lo que muestra el dashboard. No toca el estado: devuelve los
-  // datos crudos para que fetchDashboard los guarde dentro del callback de la promesa.
+  // Pide en paralelo todo lo que muestra el dashboard: un pedido por recurso (8 en
+  // total, sin importar cuántos usuarios o recetas haya). Las recetas ya traen su
+  // valoración y los roles de todos los usuarios llegan juntos, así que no hace falta
+  // una segunda tanda de pedidos por usuario o por receta.
+  // Si falla solo la carga de roles no se rompe todo el dashboard: la columna "Rol"
+  // muestra "Sin rol asignado".
+  // No toca el estado: devuelve los datos crudos para que fetchDashboard los guarde
+  // dentro del callback de la promesa.
   const loadDashboardData = async () => {
-    const [users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles] =
+    const [users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles, userRoles] =
       await Promise.all([
         fetchListOrEmpty(() => searchUsersService({ inactive: false })),
         fetchListOrEmpty(() => searchUsersService({ inactive: true })),
@@ -51,49 +61,21 @@ export const useAdminDashboard = () => {
         fetchListOrEmpty(() => getAllIngredientCategories()),
         fetchListOrEmpty(() => getAllCategories()),
         fetchListOrEmpty(() => getAllRoles()),
+        getAllUserRoles().catch(() => []),
       ]);
 
-    // Segunda tanda: para cada usuario sus roles, y para cada receta sus reviews.
-    // Van en paralelo entre sí, pero después de la primera tanda porque dependen de
-    // sus resultados (necesitan la lista de usuarios y de recetas ya resueltas).
-    // Si algo de esto falla no se rompe todo el dashboard: la tabla simplemente
-    // muestra "Sin rol asignado" o "Sin valoraciones aún" para esos casos.
-    const allUsers = [...users, ...inactive];
-    const [roleResults, reviewResults] = await Promise.all([
-      Promise.all(
-        allUsers.map((user) =>
-          getRolesByUser(user.id).catch(() => null)
-        )
-      ),
-      Promise.all(
-        recipes.map((recipe) =>
-          getReviewsByRecipe(recipe.id).catch(() => ({ reviews: [], averageRating: null }))
-        )
-      ),
-    ]);
-
-    const roleLabelMap = new Map();
-    allUsers.forEach((user, index) => {
-      roleLabelMap.set(user.id, buildRoleLabel(roleResults[index]));
-    });
-
-    const reviewResultsByRecipeId = new Map();
-    recipes.forEach((recipe, index) => {
-      reviewResultsByRecipeId.set(recipe.id, reviewResults[index]);
-    });
-
-    return { users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles, roleLabelMap, reviewResultsByRecipeId };
+    return { users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles, userRoles };
   };
 
   // Guarda en el estado los datos ya cargados y arma el resumen de métricas.
-  const applyDashboardData = ({ users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles, roleLabelMap, reviewResultsByRecipeId }) => {
+  const applyDashboardData = ({ users, inactive, recipes, ingredients, ingredientCategories, recipeCategories, roles, userRoles }) => {
     const recipesLastWeek = buildRecipesLastWeek(recipes);
 
     setActiveUsers(users);
     setInactiveUsers(inactive);
     setRecipeCountByUser(countRecipesByUser(recipes));
-    setRoleLabelByUser(roleLabelMap);
-    setReviewStatsByUser(buildReviewStatsByUser(recipes, reviewResultsByRecipeId));
+    setRoleLabelByUser(buildRoleLabelsByUser(userRoles));
+    setReviewStatsByUser(buildReviewStatsByUser(recipes));
 
     setMetrics({
       activeUsersCount: users.length,
@@ -190,6 +172,8 @@ export const useAdminDashboard = () => {
       list.map((user) => (user.id === updatedUser.id ? { ...user, ...updatedUser } : user));
     setActiveUsers(patchList);
     setInactiveUsers(patchList);
+    // Si el admin se editó a sí mismo, el pie de su sidebar también muestra el cambio.
+    if (updatedUser.id === currentUserId) updateCurrentUser(updatedUser);
   };
 
   // El modal de roles (AdminUserRolesModal / UserRolesPanel) ya hizo la asignación o

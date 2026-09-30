@@ -54,7 +54,12 @@ GEMINI_API_KEY=
 ## 3. Crear la base de datos y cargar los datos de prueba
 
 1. Creá una base de datos vacía con el nombre que pusiste en `DB_NAME` (por ejemplo,
-   desde MySQL Workbench o la terminal: `CREATE DATABASE chefcito;`).
+   desde MySQL Workbench o la terminal):
+   ```sql
+   CREATE DATABASE chefcito CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+   El `CHARACTER SET` asegura que los acentos y la "ñ" se guarden bien aunque tu servidor
+   MySQL tenga otra configuración por defecto.
 2. Desde `backend/`, instalá las dependencias y creá las tablas a partir del modelo de
    datos del proyecto:
    ```bash
@@ -79,6 +84,13 @@ GEMINI_API_KEY=
 > amigos), después del `db push` ejecutá solo la **sección 8** de `demo-seed.sql` (desde
 > `-- 8. Seguidos` hasta el `COMMIT;` final): carga quién sigue a quién y reseñas de esta
 > semana, sin duplicar lo que ya tenías.
+
+> **¿Ves los acentos raros en la app (por ejemplo "buenÃ­sima" en vez de "buenísima")?**
+> Pasaba con versiones anteriores de `demo-seed.sql` cuando se cargaba desde un cliente de
+> MySQL que no usaba UTF-8 (por ejemplo, la terminal de Windows): los datos quedaban
+> guardados rotos en la base. El archivo ya lo corrige (empieza con `SET NAMES utf8mb4;`),
+> pero **los datos que ya estaban cargados no se arreglan solos**: tirá la base
+> (`DROP DATABASE chefcito;`), creala de nuevo como en el paso 1 y repetí los pasos 2 y 3.
 
 ## 4. Frontend (`frontend/.env`)
 

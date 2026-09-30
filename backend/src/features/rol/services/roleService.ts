@@ -67,6 +67,12 @@ export async function getUsersByRole(roleId: number) {
   return links.map((link) => toPublic(link.user));
 }
 
+// Devuelve las asignaciones de roles de todos los usuarios: [{ userId, role: { id, name } }].
+// Una lista vacía no es un error (puede que nadie tenga roles todavía).
+export async function getAllUserRoles() {
+  return roleRepository.findAllUserRoles();
+}
+
 // Devuelve los roles asignados a un usuario. Devuelve null si el usuario no existe.
 export async function getRolesByUser(userId: number) {
   const user = await userRepository.findById(userId);

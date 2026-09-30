@@ -27,6 +27,11 @@
 -- (hasheada con bcrypt — 10 salt rounds —, igual que hace el backend al registrarse)
 -- =====================================================================
 
+-- Este archivo está en UTF-8: se le avisa a MySQL para que lo lea así sin importar
+-- cómo esté configurado el cliente que lo ejecuta. Sin esto, un cliente en latin1
+-- (ej. la consola de Windows) guarda "á" como "Ã¡" y la app muestra los acentos rotos.
+SET NAMES utf8mb4;
+
 START TRANSACTION;
 
 -- ---------------------------------------------------------------------
@@ -419,6 +424,9 @@ INSERT INTO inventory (idUser, idIngredient, unitOfMeasure, availableQuantity) V
 --    El Top 10 cuenta solo las reseñas de los últimos 7 días, así que si
 --    pasa más de una semana, se va vaciando (es lo esperado).
 -- ---------------------------------------------------------------------
+-- Repetido acá por si esta sección se corre sola (ver el comienzo del archivo).
+SET NAMES utf8mb4;
+
 SET @user_juan   := (SELECT id FROM user WHERE username = 'juanperez' LIMIT 1);
 SET @user_maria  := (SELECT id FROM user WHERE username = 'mariagomez' LIMIT 1);
 SET @user_carlos := (SELECT id FROM user WHERE username = 'carlosdiaz' LIMIT 1);

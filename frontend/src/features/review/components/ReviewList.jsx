@@ -1,6 +1,7 @@
 // Reseñas de la comunidad sobre una receta (tarjeta del detalle de receta): promedio con
 // estrellas, botón "Escribir reseña" (abre ReviewModal), las 3 más recientes y "Ver todas"
-// para desplegar el resto. El autor de una reseña puede eliminarla.
+// para desplegar el resto. El autor de una reseña puede editarla (el mismo ReviewModal,
+// precargado) o eliminarla.
 // Carga sus propios datos al montarse.
 import { useState, useEffect } from 'react';
 import { getReviewsByRecipe, deleteReview } from '../services/reviewService.js';
@@ -29,6 +30,8 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [showModal, setShowModal] = useState(false);
+  // Reseña propia que se está editando en el modal, o null.
+  const [reviewToEdit, setReviewToEdit] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   // Reseña propia que se pidió eliminar (se confirma en un modal) o null.
@@ -63,8 +66,15 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipe.id]);
 
-  const handleReviewSuccess = () => {
+  // Cierra el modal (de alta o de edición) sin guardar nada.
+  const handleCloseModal = () => {
     setShowModal(false);
+    setReviewToEdit(null);
+  };
+
+  // Después de crear o editar, se recargan las reseñas (cambian el promedio y el orden).
+  const handleReviewSuccess = () => {
+    handleCloseModal();
     loadReviews();
   };
 
@@ -114,6 +124,7 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
               key={`${review.idUser}-${review.idReview}`}
               review={review}
               isOwn={review.author.id === currentUserId}
+              onEdit={() => setReviewToEdit(review)}
               onDelete={() => setReviewToDelete(review)}
             />
           ))}
@@ -145,10 +156,11 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
         <AlertModal title="No se pudo eliminar la reseña" message={deleteError} onClose={() => setDeleteError('')} />
       )}
 
-      {showModal && (
+      {(showModal || reviewToEdit) && (
         <ReviewModal
           recipe={recipe}
-          onClose={() => setShowModal(false)}
+          review={reviewToEdit}
+          onClose={handleCloseModal}
           onSuccess={handleReviewSuccess}
           onSave={onSaveRecipe}
           isSaved={isSaved}

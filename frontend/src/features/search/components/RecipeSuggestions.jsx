@@ -6,7 +6,6 @@ import AlertModal from '../../../core/components/AlertModal.jsx';
 import SearchResultsSection from './SearchResultsSection.jsx';
 import SearchMoreCard from './SearchMoreCard.jsx';
 import { useSavedRecipes } from '../../userRecipe/hooks/useSavedRecipes.js';
-import { useRecipeReviewStats } from '../../review/hooks/useRecipeReviewStats.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import { splitSectionForPreview } from '../models/searchModel.js';
 
@@ -14,15 +13,13 @@ import { splitSectionForPreview } from '../models/searchModel.js';
 // último lo ocupa la card "+N recetas más".
 const RECIPE_SLOTS = 4;
 
-// Recibe: section ({ items, total } con las recetas en forma de RecipeCard, ver
-// searchModel) y seeAllTo (URL del listado completo de recetas).
+// Recibe: section ({ items, total } con las recetas en forma de RecipeCard, ya con su
+// valoración, ver searchModel) y seeAllTo (URL del listado completo de recetas).
 function RecipeSuggestions({ section, seeAllTo }) {
   const navigate = useNavigate();
   const { userId } = useAuthContext();
   const { savedRecipeIds, handleToggleSave, saveError, clearSaveError } = useSavedRecipes();
   const { visibleItems, hiddenCount } = splitSectionForPreview(section, RECIPE_SLOTS);
-  // La búsqueda no trae el promedio de reseñas: se pide aparte, igual que en la home.
-  const reviewStatsByRecipe = useRecipeReviewStats(visibleItems.map((recipe) => recipe.id));
 
   return (
     <>
@@ -30,11 +27,7 @@ function RecipeSuggestions({ section, seeAllTo }) {
         {visibleItems.map((recipe) => (
           <RecipeCard
             key={recipe.id}
-            recipe={{
-              ...recipe,
-              rating: reviewStatsByRecipe[recipe.id]?.averageRating,
-              reviewsCount: reviewStatsByRecipe[recipe.id]?.reviewsCount,
-            }}
+            recipe={recipe}
             onClick={() => navigate(`/recetas/${recipe.id}`)}
             // Guardar una receta propia no tiene sentido (ya está en "Mis recetas").
             showSaveButton={recipe.authorId !== userId}

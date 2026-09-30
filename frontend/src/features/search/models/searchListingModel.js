@@ -201,8 +201,6 @@ export const createRecipeListing = (raw) => ({
   ...toPageInfo(raw),
   items: (raw?.items ?? []).map((recipe) => ({
     ...toRecipeResult(recipe),
-    rating: recipe.averageRating ?? 0,
-    reviewsCount: recipe.reviewCount ?? 0,
     pantryMatch: recipe.pantryMatch ? toPantryMatch(recipe.pantryMatch) : null,
   })),
   pantry: raw?.pantry ?? null,

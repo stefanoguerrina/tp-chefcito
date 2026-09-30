@@ -51,7 +51,7 @@ function RecipeCategoryPicker({ categories, selectedIds, onChange }) {
           algunas para poder agregarlas a tu receta.
         </p>
       ) : selectedCategories.length === 0 ? (
-        <p className="RecipeEditorCard-empty">Todavía no agregaste ninguna categoría (opcional).</p>
+        <p className="RecipeEditorCard-empty">Todavía no agregaste ninguna categoría.</p>
       ) : (
         <div className="RecipeCategoryPicker-grid">
           {selectedCategories.map((cat) => (

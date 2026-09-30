@@ -22,12 +22,18 @@ Run each from its respective directory (`backend/` or `frontend/`) — there is 
 ### Backend (`backend/`)
 ```
 npm run dev        # tsc-watch: compiles src/ to dist/ and runs node dist/app.js on every change
+npm run build      # prisma generate + tsc (production build into dist/)
+npm start          # node ./dist/app.js (run the production build)
 npx prisma generate    # regenerate Prisma client after editing prisma/schema.prisma
 npx prisma db push      # (or migrate) push schema changes to the MySQL database
 ```
 No test script is configured yet (`npm test` is a placeholder). No lint script is configured.
 Requires a `backend/.env` (gitignored) with `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`,
 `DB_NAME`, `JWT_SECRET`, and `DATABASE_URL` (mysql connection string used by Prisma).
+Optional for deploy: `PORT` (default 3000) and `CORS_ORIGINS` (comma-separated allowed origins;
+default = the local Vite origins on 5173/5174), both read in `src/app.ts`.
+`docs/demo-seed.sql` starts with `SET NAMES utf8mb4;` so accents load correctly from any MySQL
+client; keep it there (without it, a latin1 client stores "á" as "Ã¡").
 Optional: `GEMINI_API_KEY` (and `GEMINI_MODEL`, default `gemini-3.8-flash`) for Chefcito Bot
 (`features/assistant`, `POST /api/assistant/chat`); without it the endpoint answers 503.
 
@@ -109,13 +115,18 @@ extensions on relative imports since output is compiled to `dist/`).
 
 `src/main.jsx` renders `src/app/App.jsx`, which wraps everything in `AuthProvider`
 (`src/app/AuthContext.jsx`: session state via Context API + `useReducer`, read with
-`useAuthContext()`) and defines the full React Router tree. Access is enforced by
+`useAuthContext()`) and `CurrentUserProvider` (`src/app/CurrentUserContext.jsx`: fetches the
+logged-in user's profile — name, photos — once per session; read it with `useCurrentUser()`
+instead of calling `getUserByIdService` for the current user, and call `updateCurrentUser` after
+editing the profile so the sidebars update), and defines the full React Router tree. Access is enforced by
 `src/app/ProtectedRoute.jsx` (`allow="guest" | "user" | "admin"`): guests live at `/bienvenida`
 (`AuthPage`), common users under `UserLayout` (sidebar + `<Outlet />`: `/`, `/recetas/:id`,
 `/mis-recetas[/nueva|/:id/editar]`, `/perfil`, `/usuarios/:id`, `/inventario`, `/guardadas`,
 `/buscar?q=` and `/buscar/recetas|categorias|usuarios` — the `search` feature, whose listing filters
 live in the URL query string),
-admins at `/admin/:section?`. New pages should be routes (read params with `useParams`,
+admins at `/admin/:section?` (`AdminPage` only mounts the active section component,
+`features/admin/components/Admin*Section.jsx`, so each section fetches its data when opened).
+New pages should be routes (read params with `useParams`,
 navigate with `useNavigate`), not panels toggled by local state.
 
 Each feature under `src/features/<name>/` mirrors a slice of the backend's shape:
@@ -136,9 +147,17 @@ throws an `ApiError` (`shared/utils/ApiError.js`, with `status`, `isNotFound`, `
 `fieldErrors`) whose message is already user-friendly (validation field messages, offline,
 etc.). A 401 with a token fires `SESSION_EXPIRED_EVENT`, which `AuthContext` handles by logging
 out. Use `fetchListOrEmpty()` for list endpoints that answer 404 when empty — never compare
-error message strings. UI error convention: field errors inline under the field; failed actions
+error message strings. Avoid one request per item (N+1): if a list needs extra data per row
+(e.g. rating), have the backend include it (`GET /api/recipes` already returns `averageRating`
+and `reviewCount`). UI error convention: field errors inline under the field; failed actions
 → `AlertModal`; failed section loads → `ErrorState` (core/components) with a retry button;
 destructive actions → `ConfirmModal`. Never use `window.alert/confirm` or `console.error`.
+Forms: required fields get `<RequiredMark />` (red `*`) in their label and the form shows
+`<RequiredFieldsNote />`; fields without `*` are optional, so don't add "(opcional)" to labels.
+Validate before sending (use `noValidate` on the `<form>`, not the native `required` bubbles),
+keep errors per field (`{ [field]: message }`), render them with `<FieldError />` and spread
+`getFieldAriaProps(id, { error, isRequired })` (`shared/utils/fieldAria.js`) on the control, which
+also gives it the red border; map backend errors with `mapApiFieldErrors(err.fieldErrors, map)`.
 Data loading inside `useEffect` must only set state inside promise callbacks
 (`.then/.catch/.finally`), otherwise the `react-hooks/set-state-in-effect` lint rule fails.
 Recipe images: `shared/utils/compressImage.js` (canvas → WebP) before upload and
@@ -146,7 +165,8 @@ Recipe images: `shared/utils/compressImage.js` (canvas → WebP) before upload a
 
 `src/core/components/` holds cross-feature UI primitives (`ConfirmModal`, `AlertModal`,
 `ErrorState`, `RecipeCard`, `RatingBadge`, `SaveRecipeButton`, `UserAvatar`, `ScrollReveal`,
-`StarRating`, ...) and `src/core/hooks/` shared hooks (`useDragScroll` for carousels); reuse them
+`StarRating`, `RequiredMark`, `RequiredFieldsNote`, `FieldError`, ...) and `src/core/hooks/` shared hooks (`useDragScroll` for carousels, `useHasBeenVisible` to fetch a
+lower "screen" only when the user scrolls to it); reuse them
 instead of duplicating.
 The home (`/`, `features/user/pages/HomePage.jsx`) is 3 snap-scrolling screens like the profile,
 fed by `features/feed` (friends' recipes, weekly top 10, friends' reviews); "friends" = users you
@@ -181,7 +201,7 @@ Eres un asistente de IA configurado en el IDE Antigravity para ayudar con el pro
 - **Equipo:** 4 integrantes. Stéfano Guerrina es el Líder de Equipo (único responsable de revisar y mergear PRs a main).
 - **Documentos de Referencia:**
   - docs/README.md: Contiene la propuesta de la cátedra, rúbricas y pautas del proyecto. Debes seguirlas estrictamente.
-  - task-division.md: Contiene cómo se llevarán a cabo las tareas individuales.
+  - docs/tasks-division.md: Contiene cómo se llevarán a cabo las tareas individuales.
 
 ### 2. Restricciones Fundamentales y "Qué NO hacer"
 - **Cero Interferencia:** NUNCA modifiques ni reescribas código de la feature o rama de otro integrante sin que el usuario lo pida explícitamente.

@@ -12,6 +12,10 @@ import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import RequiredMark from '../../../core/components/RequiredMark.jsx';
+import RequiredFieldsNote from '../../../core/components/RequiredFieldsNote.jsx';
+import FieldError from '../../../core/components/FieldError.jsx';
+import { getFieldAriaProps, getFieldErrorId, mapApiFieldErrors } from '../../../shared/utils/fieldAria.js';
 import '../styles/_nutritional-value-panel.scss';
 
 // Formulario para crear o editar un valor nutricional.
@@ -22,11 +26,17 @@ function NutritionalValueForm({ initialData, onSubmit, onCancel }) {
   const [servingUnit, setServingUnit] = useState(initialData?.servingUnit ?? '');
   const [value, setValue] = useState(initialData?.value ?? '');
   const [error, setError] = useState('');
+  // Error del campo "Nombre" (el único obligatorio), debajo del campo.
+  const [nameError, setNameError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    if (!name.trim()) {
+      setNameError('Ingresá un nombre.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await onSubmit({
@@ -36,25 +46,36 @@ function NutritionalValueForm({ initialData, onSubmit, onCancel }) {
         value: value !== '' ? Number(value) : undefined,
       });
     } catch (err) {
-      setError(err.message);
+      const fieldErrors = mapApiFieldErrors(err.fieldErrors, { name: 'name' });
+      if (fieldErrors.name) setNameError(fieldErrors.name);
+      else setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form className="NutritionalValueForm" onSubmit={handleSubmit}>
+    // noValidate: el error del nombre lo muestra la app debajo del campo.
+    <form className="NutritionalValueForm" onSubmit={handleSubmit} noValidate>
+      <RequiredFieldsNote />
       <div className="NutritionalValueForm-row">
         <div className="NutritionalValueForm-field">
-          <label htmlFor="nvf-name">Nombre *</label>
+          <label htmlFor="nvf-name">
+            Nombre
+            <RequiredMark />
+          </label>
           <input
             id="nvf-name"
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
+            onChange={(e) => {
+              setName(e.target.value);
+              setNameError('');
+            }}
             placeholder="Ej: Proteínas"
+            {...getFieldAriaProps('nvf-name', { error: nameError, isRequired: true })}
           />
+          <FieldError id={getFieldErrorId('nvf-name')} message={nameError} />
         </div>
         <div className="NutritionalValueForm-field">
           <label htmlFor="nvf-serving-amount">Porción</label>

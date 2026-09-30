@@ -14,12 +14,16 @@ export const useAuth = () => {
     const [showLoginForm, setShowLoginForm] = useState(false);
     // Controla la visibilidad del formulario de registro.
     const [showRegisterForm, setShowRegisterForm] = useState(false);
-    // Indica si el último registro fue exitoso (para mostrar feedback al usuario).
-    const [registerSucces, setRegisterSucces] = useState(false);
+    // Email o usuario con el que arranca el login (el recién registrado; vacío si no).
+    const [loginIdentifier, setLoginIdentifier] = useState("");
     // Controla la visibilidad del modal "necesitás una cuenta" (ver handleShowAuthGate).
     const [showAuthGate, setShowAuthGate] = useState(false);
 
-    const handleShowLoginForm = () => setShowLoginForm(true);
+    // Abre el login vacío (desde la landing, el aviso de sesión vencida, etc.).
+    const handleShowLoginForm = () => {
+        setLoginIdentifier("");
+        setShowLoginForm(true);
+    };
     const handleHideLoginForm = () => setShowLoginForm(false);
 
     // Procesa la respuesta del backend tras un login exitoso: abre la sesión (AuthContext
@@ -35,16 +39,15 @@ export const useAuth = () => {
 
     const handleRegisterForm = () => setShowRegisterForm(true);
 
-    const handleHideRegisterForm = () => {
-        setRegisterSucces(false);
-        setShowRegisterForm(false);
-    };
+    const handleHideRegisterForm = () => setShowRegisterForm(false);
 
-    // Tras un registro exitoso, oculta el form de registro y muestra el de login.
-    const handleRegisterSubmit = () => {
+    // Botón "Iniciar sesión" del mensaje de cuenta creada: cambia al login con el usuario
+    // nuevo ya cargado, así solo le queda escribir la contraseña.
+    // Recibe: username de la cuenta recién creada.
+    const handleRegisteredGoToLogin = (username) => {
         handleHideRegisterForm();
-        setRegisterSucces(true);
         handleShowLoginForm();
+        setLoginIdentifier(username);
     };
 
     // Cierra el modal de login y abre el de registro (link "¿No tenés cuenta? Registrate").
@@ -78,13 +81,13 @@ export const useAuth = () => {
         showLoginForm,
         showRegisterForm,
         showAuthGate,
-        registerSucces,
+        loginIdentifier,
         handleShowLoginForm,
         handleHideLoginForm,
         handleLoginSessionSubmit,
         handleRegisterForm,
         handleHideRegisterForm,
-        handleRegisterSubmit,
+        handleRegisteredGoToLogin,
         handleSwitchToRegister,
         handleSwitchToLogin,
         handleShowAuthGate,

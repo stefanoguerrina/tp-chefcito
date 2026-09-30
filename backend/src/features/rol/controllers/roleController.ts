@@ -149,6 +149,19 @@ export const getUsersByRole = async (req: Request, res: Response): Promise<void>
   }
 };
 
+// Devuelve las asignaciones de roles de todos los usuarios en un solo pedido (para la
+// columna "Rol" del dashboard, sin pedir los roles usuario por usuario).
+// GET /api/roles/users
+export const getAllUserRoles = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const userRoles = await roleService.getAllUserRoles();
+    res.status(200).json(userRoles);
+  } catch (error) {
+    console.error('[getAllUserRoles] Error inesperado:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
 // Devuelve los roles asignados a un usuario dado (para el panel de administración de usuarios).
 // GET /api/roles/users/:userId
 export const getRolesByUserId = async (req: Request, res: Response): Promise<void> => {

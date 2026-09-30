@@ -47,12 +47,14 @@ La app queda disponible en `http://localhost:5173`.
 | Rutas | React Router (`react-router-dom`) |
 | Estado compartido | Context API + `useReducer` (sesión en `src/app/AuthContext.jsx`) |
 | Estilos | SASS, mobile-first, breakpoints SM (576px), MD (768px) y LG (1024px) |
+| Estado del usuario | `CurrentUserContext`: nombre y fotos del usuario logueado, compartidos por la sidebar y el perfil |
 
 ## Estructura
 
 ```
 src/
-├── app/                # App.jsx (rutas), AuthContext (sesión) y ProtectedRoute (acceso por rol)
+├── app/                # App.jsx (rutas), AuthContext (sesión), CurrentUserContext (datos del
+│                       # usuario logueado, pedidos una vez) y ProtectedRoute (acceso por rol)
 ├── core/components/    # Componentes reutilizables: modales, cards, ErrorState, etc.
 ├── core/hooks/         # Hooks reutilizables
 ├── shared/             # Configuración y utilidades (apiFetch, ApiError, imágenes)
@@ -71,12 +73,13 @@ src/
 | Ruta | Acceso |
 |---|---|
 | `/bienvenida` | Visitantes sin sesión (landing, login y registro) |
-| `/` | Inicio del usuario: recetas de la comunidad |
+| `/` | Inicio del usuario: recetas y reseñas de amigos (a quienes seguís) y Top 10 de la semana |
 | `/recetas/:id` | Detalle de una receta con sus reseñas |
 | `/mis-recetas`, `/mis-recetas/nueva`, `/mis-recetas/:id/editar` | Listado y editor de recetas propias |
 | `/perfil`, `/usuarios/:id` | Perfil propio y perfil de otro usuario |
 | `/inventario` | Ingredientes disponibles del usuario |
 | `/guardadas` | Recetas guardadas |
+| `/buscar?q=`, `/buscar/recetas`, `/buscar/categorias`, `/buscar/usuarios` | Buscador y listados con filtros (los filtros van en la URL) |
 | `/admin/:seccion?` | Panel de administración (solo rol administrador) |
 
 Las rutas de usuario y de administrador están protegidas por `ProtectedRoute`: sin sesión
@@ -88,7 +91,12 @@ Todas las llamadas al backend pasan por `shared/utils/apiFetch.js`, que conviert
 cualquier falla en un `ApiError` con un mensaje para el usuario (incluye los errores
 de validación del backend, la falta de conexión y la sesión vencida). En la interfaz:
 
-- **Error de un campo de formulario** → mensaje debajo del campo.
+- **Error de un campo de formulario** → mensaje debajo del campo y borde rojo (`FieldError`
+  de `core/components`). Los campos obligatorios llevan un `*` rojo en el label
+  (`RequiredMark`) y el formulario aclara "Los campos marcados con * son obligatorios"
+  (`RequiredFieldsNote`); los que no tienen `*` son opcionales. La validación se hace antes
+  de enviar, y si el backend rechaza un campo (ej. usuario o email repetido), su error también
+  va debajo de ese campo.
 - **Falla de una acción** (guardar, borrar) → modal de aviso (`AlertModal`).
 - **Falla al cargar una sección** → `ErrorState` con botón "Reintentar".
 - **Acciones destructivas** → confirmación con `ConfirmModal`.

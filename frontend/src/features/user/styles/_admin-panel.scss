@@ -421,8 +421,7 @@
     }
 }
 
-.admin-panel__form-hint {
-    margin: 10px 0 0;
-    font-size: 12px;
-    color: $color-on-surface-variant;
+// Nota "Los campos marcados con * son obligatorios" (RequiredFieldsNote), arriba de la grilla.
+.admin-panel__required-note {
+    margin-bottom: 14px;
 }

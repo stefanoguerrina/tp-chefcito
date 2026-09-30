@@ -1,3 +1,8 @@
+// Modelo del formulario de registro: estado inicial, validación campo por campo (las
+// mismas reglas que aplica el backend en authValidationMiddleware.ts) y traducción de los
+// errores por campo que devuelve la API a los nombres de este formulario.
+import { mapApiFieldErrors } from "../../../shared/utils/fieldAria.js";
+
 // Estado inicial del formulario de registro.
 // telephone y birthDate son opcionales — no bloquean el envío si están vacíos.
 export const formInitialState = {
@@ -10,14 +15,64 @@ export const formInitialState = {
     birthDate: ""
 };
 
-// El teléfono es opcional (así lo valida el backend: express-validator con
-// `optional({ checkFalsy: true })` en authValidationMiddleware.ts), por eso queda
-// afuera de este chequeo.
-const requiredFields = ["userName", "formalName", "surName", "password", "email"];
+// Largos que exige el backend (ver validateRegister en el backend).
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 50;
+export const PASSWORD_MIN_LENGTH = 6;
 
-export const checkEmptyFields = (form) => {
-    return requiredFields.some((field) => form[field] === "");
+// Formato básico de email (algo@algo.algo): el chequeo completo lo hace el backend.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Valida el formulario antes de enviarlo.
+// Recibe: form. Devuelve: { [campo]: mensaje } solo con los campos que tienen error
+// (objeto vacío = todo bien). El teléfono y la fecha son opcionales: así los valida el
+// backend (`optional({ checkFalsy: true })`), por eso no se chequean acá.
+export const validateRegisterForm = (form) => {
+    const errors = {};
+    const userName = form.userName.trim();
+    const email = form.email.trim();
+
+    if (!form.formalName.trim()) errors.formalName = "Ingresá tu nombre.";
+    if (!form.surName.trim()) errors.surName = "Ingresá tu apellido.";
+
+    if (!userName) {
+        errors.userName = "Elegí un nombre de usuario.";
+    } else if (userName.length < USERNAME_MIN_LENGTH || userName.length > USERNAME_MAX_LENGTH) {
+        errors.userName = `Debe tener entre ${USERNAME_MIN_LENGTH} y ${USERNAME_MAX_LENGTH} caracteres.`;
+    }
+
+    if (!email) {
+        errors.email = "Ingresá tu email.";
+    } else if (!EMAIL_PATTERN.test(email)) {
+        errors.email = "Ingresá un email válido (ej. nombre@mail.com).";
+    }
+
+    if (!form.password) {
+        errors.password = "Creá una contraseña.";
+    } else if (form.password.length < PASSWORD_MIN_LENGTH) {
+        errors.password = `Usá al menos ${PASSWORD_MIN_LENGTH} caracteres.`;
+    }
+
+    return errors;
 };
+
+// Nombre de cada campo en la API (lo que viene en `campo`) -> nombre en este formulario.
+const API_FIELD_TO_FORM_FIELD = {
+    username: "userName",
+    name: "formalName",
+    lastName: "surName",
+    email: "email",
+    password: "password",
+    phone: "telephone",
+    birthDate: "birthDate"
+};
+
+// Convierte los errores por campo de la API ([{ campo, mensaje }], ver ApiError) en el
+// mismo formato que validateRegisterForm, para mostrarlos debajo de cada input.
+// Recibe: fieldErrors. Devuelve: { [campoDelForm]: mensaje } (los campos que no son de
+// este formulario se ignoran).
+export const mapRegisterApiErrors = (fieldErrors) =>
+    mapApiFieldErrors(fieldErrors, API_FIELD_TO_FORM_FIELD);
 
 // Prefijo fijo de teléfono argentino: se muestra siempre junto al campo (no es un
 // desplegable de país, Chefcito por ahora solo opera en Argentina).

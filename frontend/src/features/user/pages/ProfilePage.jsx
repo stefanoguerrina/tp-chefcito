@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useProfileData } from '../hooks/useProfileData.js';
 import { useFollow } from '../../follow/hooks/useFollow.js';
+import { useHasBeenVisible } from '../../../core/hooks/useHasBeenVisible.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
@@ -26,7 +27,6 @@ import FeaturedRecipes from '../components/FeaturedRecipes.jsx';
 import ProfileMetrics from '../components/ProfileMetrics.jsx';
 import ProfileScrollHint from '../components/ProfileScrollHint.jsx';
 import { buildProfileMetrics } from '../models/profileMetricsModel.js';
-import { PROFILE_UPDATED_EVENT } from '../hooks/useSidebarProfile.js';
 import '../styles/_profile-page.scss';
 
 // ids de las secciones 2 y 3, para bajar hasta ellas con los avisos con flecha.
@@ -68,10 +68,13 @@ function ProfilePage() {
   const handleBack = () => (location.key !== 'default' ? navigate(-1) : navigate('/'));
 
   const { user, setUser, recipes, recipeReviewStats, isLoading, fetchError, retry } =
-    useProfileData(userId);
+    useProfileData(userId, isOwnProfile);
 
   const { followStatus, isFollowPending, handleToggleFollow, followError, clearFollowError } =
     useFollow(userId);
+
+  // La galería (pantalla 3) pide su listado recién cuando el usuario llega hasta ella.
+  const { ref: recipesScreenRef, hasBeenVisible: hasReachedRecipes } = useHasBeenVisible();
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   // Mensaje del aviso "Próximamente" al tocar "Donar" (todavía no existe); vacío = sin aviso.
@@ -155,23 +158,30 @@ function ProfilePage() {
       )}
 
       {/* 3. Todas las recetas. La galería se remonta al cambiar de perfil (key) para no
-          arrastrar el texto del buscador. */}
-      <section id={RECIPES_SECTION_ID} className="ProfilePage-screen ProfilePage-screen--recipes">
+          arrastrar el texto del buscador, y se monta (y pide sus datos) recién cuando el
+          usuario llega a esta pantalla. */}
+      <section
+        id={RECIPES_SECTION_ID}
+        ref={recipesScreenRef}
+        className="ProfilePage-screen ProfilePage-screen--recipes"
+      >
         <ScrollReveal className="ProfilePage-section">
           {recipes.length === 0 ? (
             <p className="ProfilePage-empty">
               {isOwnProfile ? 'Todavía no publicaste recetas.' : `${user.name} todavía no publicó recetas.`}
             </p>
           ) : (
-            <ProfileRecipeGallery
-              key={userId}
-              authorId={userId}
-              totalRecipes={recipes.length}
-              categories={getRecipeCategories(recipes)}
-              isOwnProfile={isOwnProfile}
-              ownerName={user.name}
-              onRecipeClick={handleRecipeCardClick}
-            />
+            hasReachedRecipes && (
+              <ProfileRecipeGallery
+                key={userId}
+                authorId={userId}
+                totalRecipes={recipes.length}
+                categories={getRecipeCategories(recipes)}
+                isOwnProfile={isOwnProfile}
+                ownerName={user.name}
+                onRecipeClick={handleRecipeCardClick}
+              />
+            )
           )}
         </ScrollReveal>
       </section>
@@ -181,10 +191,10 @@ function ProfilePage() {
           user={user}
           onClose={() => setIsEditingProfile(false)}
           onSaved={(updatedUser) => {
+            // En el perfil propio, setUser actualiza el usuario compartido
+            // (CurrentUserContext): la sidebar muestra el nombre y la foto nuevos sola.
             setUser(updatedUser);
             setIsEditingProfile(false);
-            // Avisa a la sidebar (useSidebarProfile) para que actualice su foto y nombre.
-            window.dispatchEvent(new CustomEvent(PROFILE_UPDATED_EVENT, { detail: updatedUser }));
           }}
         />
       )}

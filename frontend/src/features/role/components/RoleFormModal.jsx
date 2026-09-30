@@ -1,6 +1,10 @@
 // Modal para crear o editar un rol. Mismo lenguaje visual que ConfirmRoleModal (overlay +
 // tarjeta clara), pero con un formulario en vez de un mensaje de confirmación.
 import { useState } from 'react';
+import RequiredMark from '../../../core/components/RequiredMark.jsx';
+import RequiredFieldsNote from '../../../core/components/RequiredFieldsNote.jsx';
+import FieldError from '../../../core/components/FieldError.jsx';
+import { getFieldAriaProps, getFieldErrorId, mapApiFieldErrors } from '../../../shared/utils/fieldAria.js';
 import '../styles/_role-form-modal.scss';
 
 // Recibe: initialData (null para crear, { id, name, description } para editar),
@@ -9,6 +13,8 @@ function RoleFormModal({ initialData, onSubmit, onCancel }) {
   const [name, setName] = useState(initialData?.name ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [error, setError] = useState('');
+  // Error del campo "Nombre" (vacío, o el que devuelva el backend, ej. nombre repetido).
+  const [nameError, setNameError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditing = initialData !== null;
@@ -16,11 +22,19 @@ function RoleFormModal({ initialData, onSubmit, onCancel }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    // El nombre es obligatorio: se avisa debajo del campo sin llamar al backend.
+    if (!name.trim()) {
+      setNameError('Ingresá un nombre.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await onSubmit({ name: name.trim(), description: description.trim() || undefined });
     } catch (err) {
-      setError(err.message);
+      // Si el backend dijo que el problema es el nombre (ej. ya existe), va debajo del campo.
+      const fieldErrors = mapApiFieldErrors(err.fieldErrors, { name: 'name' });
+      if (fieldErrors.name) setNameError(fieldErrors.name);
+      else setError(err.message);
       setIsSubmitting(false);
     }
     // No hace falta setIsSubmitting(false) en el caso de éxito: el padre cierra el modal.
@@ -40,20 +54,29 @@ function RoleFormModal({ initialData, onSubmit, onCancel }) {
         </h3>
 
         <form onSubmit={handleSubmit} className="RoleFormModal-form" noValidate>
+          <RequiredFieldsNote />
+
           <div className="RoleFormModal-field">
-            <label htmlFor="role-form-name">Nombre</label>
+            <label htmlFor="role-form-name">
+              Nombre
+              <RequiredMark />
+            </label>
             <input
               id="role-form-name"
               type="text"
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event) => {
+                setName(event.target.value);
+                setNameError('');
+              }}
               placeholder="Ej: Moderador"
-              required
+              {...getFieldAriaProps('role-form-name', { error: nameError, isRequired: true })}
             />
+            <FieldError id={getFieldErrorId('role-form-name')} message={nameError} />
           </div>
 
           <div className="RoleFormModal-field">
-            <label htmlFor="role-form-description">Descripción (opcional)</label>
+            <label htmlFor="role-form-description">Descripción</label>
             <input
               id="role-form-description"
               type="text"

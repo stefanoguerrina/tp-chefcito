@@ -89,23 +89,36 @@ export const buildRoleLabel = (roles) => {
   return roles.map((role) => role.name).join(', ');
 };
 
-// Junta las reviews de todas las recetas y las agrupa por el creador de cada receta
-// (no por quien la reseñó), para saber cuántas valoraciones recibió cada usuario y con
-// qué promedio.
-// Recibe: recipes (crudas) y reviewResultsByRecipeId (Map de idReceta -> { reviews }).
-// Devuelve: Map de idUser -> { count, average } (average es null si count es 0).
-export const buildReviewStatsByUser = (recipes, reviewResultsByRecipeId) => {
+// Arma la etiqueta de rol de cada usuario a partir de todas las asignaciones juntas
+// (GET /api/roles/users), así no hace falta pedir los roles usuario por usuario.
+// Recibe: [{ userId, role: { name } }]. Devuelve: Map de idUser -> etiqueta (los usuarios
+// sin ningún rol no aparecen: buildUserRows les pone "Sin rol asignado").
+export const buildRoleLabelsByUser = (userRoles) => {
+  const rolesByUser = new Map();
+  userRoles.forEach(({ userId, role }) => {
+    rolesByUser.set(userId, [...(rolesByUser.get(userId) ?? []), role]);
+  });
+
+  const labelByUser = new Map();
+  rolesByUser.forEach((roles, userId) => labelByUser.set(userId, buildRoleLabel(roles)));
+  return labelByUser;
+};
+
+// Agrupa las valoraciones por el creador de cada receta (no por quien la reseñó), para
+// saber cuántas valoraciones recibió cada usuario y con qué promedio. Cada receta ya
+// trae su averageRating y reviewCount calculados por el backend.
+// Recibe: recipes (crudas). Devuelve: Map de idUser -> { count, average } (average es
+// null si count es 0).
+export const buildReviewStatsByUser = (recipes) => {
   const totalsByUser = new Map();
 
   recipes.forEach((recipe) => {
-    const result = reviewResultsByRecipeId.get(recipe.id);
-    if (!result) return;
-
     const current = totalsByUser.get(recipe.idUser) ?? { count: 0, sum: 0 };
-    result.reviews.forEach((review) => {
-      current.count += 1;
-      current.sum += Number(review.rating);
-    });
+    // El promedio de cada receta se pondera por su cantidad de reseñas, así una receta
+    // con 10 reseñas pesa más que una con 1 en el promedio del usuario.
+    const reviewCount = recipe.reviewCount ?? 0;
+    current.count += reviewCount;
+    current.sum += (recipe.averageRating ?? 0) * reviewCount;
     totalsByUser.set(recipe.idUser, current);
   });
 

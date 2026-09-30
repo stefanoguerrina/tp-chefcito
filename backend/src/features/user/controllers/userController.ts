@@ -95,12 +95,16 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     });
 
     if (!result.ok) {
+      // El campo va también en `errors` (mismo formato que los 422 de este controller) para
+      // que el formulario de alta muestre el error debajo del campo que corresponde.
       if (result.reason === 'username_taken') {
-        res.status(409).json({ message: 'El nombre de usuario ya está en uso.' });
+        const mensaje = 'El nombre de usuario ya está en uso.';
+        res.status(409).json({ message: mensaje, errors: [{ campo: 'username', mensaje }] });
         return;
       }
       if (result.reason === 'email_taken') {
-        res.status(409).json({ message: 'El email ingresado ya está registrado.' });
+        const mensaje = 'El email ingresado ya está registrado.';
+        res.status(409).json({ message: mensaje, errors: [{ campo: 'email', mensaje }] });
         return;
       }
     }

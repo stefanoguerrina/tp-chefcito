@@ -1,20 +1,27 @@
-// Modal del formulario de inicio de sesión.
+// Modal del formulario de inicio de sesión. Cada campo tiene su label (con * porque los
+// dos son obligatorios) y muestra su propio error debajo si se envía vacío.
 import { useState } from "react";
 import { useLoginForm } from "../hooks/useLoginForm";
+import { getFieldAriaProps } from "../../../shared/utils/fieldAria.js";
+import RequiredFieldsNote from "../../../core/components/RequiredFieldsNote.jsx";
+import AuthModalLayout from "./AuthModalLayout.jsx";
+import AuthField from "./AuthField.jsx";
+import PasswordInput from "./PasswordInput.jsx";
 import "../styles/_auth-modal.scss";
 
-const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister }) => {
+const TITLE_ID = "login-modal-title";
+
+// Recibe: onClose, onLoginSession, onSwitchToRegister e initialIdentifier (opcional: el
+// usuario recién registrado, para que solo le falte escribir la contraseña).
+const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister, initialIdentifier = "" }) => {
     const {
         form,
-        errorOfEmptyFields,
-        errorOfData,
+        isLoading,
+        fieldErrors,
+        loginError,
         handleInputChange,
         handleSubmit
-    } = useLoginForm({ onClose, onLoginSession });
-
-    // Estado puramente visual: si la contraseña se muestra en texto plano o no.
-    const [showPassword, setShowPassword] = useState(false);
-    const handleToggleShowPassword = () => setShowPassword((prev) => !prev);
+    } = useLoginForm({ onClose, onLoginSession, initialIdentifier });
 
     // Los inputs arrancan como readOnly para que el navegador no los autocomplete solo
     // al abrir el modal (Chrome rellena de una los campos con autoComplete="username"/
@@ -25,97 +32,69 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister }) => {
     const handleUnlockAutofill = () => setAutofillLocked(false);
 
     return (
-        <div className="AuthModal-overlay" onClick={onClose}>
-            <div
-                className="AuthModal-card"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="login-modal-title"
-                onClick={(event) => event.stopPropagation()}
-            >
-                <button
-                    type="button"
-                    className="AuthModal-closeButton"
-                    aria-label="Cerrar"
-                    onClick={onClose}
-                >
-                    <span className="material-symbols-outlined">close</span>
-                </button>
-
-                <div className="AuthModal-header">
-                    <div className="AuthModal-icon">
-                        <span className="material-symbols-outlined">restaurant_menu</span>
-                    </div>
-                    <h2 className="AuthModal-title" id="login-modal-title">¡Hola de nuevo!</h2>
-                    <p className="AuthModal-subtitle">Ingresá para seguir cocinando tu vida.</p>
+        <AuthModalLayout titleId={TITLE_ID} onClose={onClose}>
+            <div className="AuthModal-header">
+                <div className="AuthModal-icon">
+                    <span className="material-symbols-outlined">restaurant_menu</span>
                 </div>
+                <h2 className="AuthModal-title" id={TITLE_ID}>¡Hola de nuevo!</h2>
+                <p className="AuthModal-subtitle">Ingresá para seguir cocinando tu vida.</p>
+            </div>
 
-                <form className="AuthModal-form" onSubmit={handleSubmit}>
+            {/* noValidate: los errores los muestra la app debajo de cada campo. */}
+            <form className="AuthModal-form" onSubmit={handleSubmit} noValidate>
+                <RequiredFieldsNote />
+
+                <AuthField id="login-identifier" label="Email o nombre de usuario" isRequired error={fieldErrors.email}>
                     <input
                         className="AuthModal-input"
                         type="text"
-                        id="emailLogIn"
+                        id="login-identifier"
                         name="emailLogIn"
-                        placeholder="Email o usuario"
                         autoComplete="username"
                         readOnly={autofillLocked}
                         onFocus={handleUnlockAutofill}
                         value={form.email}
                         onChange={(event) => handleInputChange(event, "email")}
+                        {...getFieldAriaProps("login-identifier", { error: fieldErrors.email, isRequired: true })}
                     />
+                </AuthField>
 
-                    <div className="AuthModal-passwordWrapper">
-                        <input
-                            className="AuthModal-input"
-                            placeholder="Contraseña"
-                            type={showPassword ? "text" : "password"}
-                            id="passwordLogIn"
-                            name="passwordLogIn"
-                            autoComplete="current-password"
-                            readOnly={autofillLocked}
-                            onFocus={handleUnlockAutofill}
-                            value={form.password}
-                            onChange={(event) => handleInputChange(event, "password")}
-                        />
-                        <button
-                            type="button"
-                            className="AuthModal-toggleVisibility"
-                            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                            onClick={handleToggleShowPassword}
-                        >
-                            <span className="material-symbols-outlined">
-                                {showPassword ? "visibility_off" : "visibility"}
-                            </span>
-                        </button>
-                    </div>
+                <AuthField id="login-password" label="Contraseña" isRequired error={fieldErrors.password}>
+                    <PasswordInput
+                        id="login-password"
+                        name="passwordLogIn"
+                        autoComplete="current-password"
+                        readOnly={autofillLocked}
+                        onFocus={handleUnlockAutofill}
+                        // Si ya viene el usuario (recién registrado), el cursor arranca acá.
+                        autoFocus={Boolean(initialIdentifier)}
+                        value={form.password}
+                        onChange={(event) => handleInputChange(event, "password")}
+                        {...getFieldAriaProps("login-password", { error: fieldErrors.password, isRequired: true })}
+                    />
+                </AuthField>
 
-                    {errorOfEmptyFields && (
-                        <p className="AuthModal-error">Debés completar todos los campos.</p>
-                    )}
+                {loginError && <p className="AuthModal-error" role="alert">{loginError}</p>}
 
-                    {errorOfData && (
-                        <p className="AuthModal-error">
-                            {typeof errorOfData === 'string' ? errorOfData : 'Email o contraseña incorrectos.'}
-                        </p>
-                    )}
+                <button type="submit" className="AuthModal-submit" disabled={isLoading}>
+                    {isLoading ? "Ingresando..." : "Ingresar"}
+                </button>
+            </form>
 
-                    <button type="submit" className="AuthModal-submit">Ingresar</button>
-                </form>
-
-                <div className="AuthModal-footer">
-                    <p>
-                        ¿No tenés una cuenta?{' '}
-                        <button type="button" className="AuthModal-switchButton" onClick={onSwitchToRegister}>
-                            Registrate
-                        </button>
-                    </p>
-                    <p className="AuthModal-legal">
-                        Al continuar, aceptás las <a href="#">Condiciones del servicio</a> de Chefcito y confirmás
-                        que leíste nuestra <a href="#">Política de privacidad</a>.
-                    </p>
-                </div>
+            <div className="AuthModal-footer">
+                <p>
+                    ¿No tenés una cuenta?{' '}
+                    <button type="button" className="AuthModal-switchButton" onClick={onSwitchToRegister}>
+                        Registrate
+                    </button>
+                </p>
+                <p className="AuthModal-legal">
+                    Al continuar, aceptás las <a href="#">Condiciones del servicio</a> de Chefcito y confirmás
+                    que leíste nuestra <a href="#">Política de privacidad</a>.
+                </p>
             </div>
-        </div>
+        </AuthModalLayout>
     );
 };
 

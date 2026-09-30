@@ -143,6 +143,11 @@
   background: $color-surface-container;
 }
 
+// Sin ninguna categoría elegida al guardar: mismo borde rojo que los inputs con error.
+.IngredientFormModal-categoryList--invalid {
+  border-color: $color-error;
+}
+
 .IngredientFormModal-categoryEmpty {
   margin: 0;
   padding: $spacing-xs;

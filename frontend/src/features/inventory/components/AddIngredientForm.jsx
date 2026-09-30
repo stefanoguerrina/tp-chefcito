@@ -1,6 +1,9 @@
 // Formulario para buscar y agregar un ingrediente al inventario.
 // Muestra un input de búsqueda con dropdown de sugerencias + stepper de cantidad + unidad fija (texto) + botón agregar.
 import { useState } from 'react';
+import RequiredMark from '../../../core/components/RequiredMark.jsx';
+import FieldError from '../../../core/components/FieldError.jsx';
+import { getFieldAriaProps, getFieldErrorId } from '../../../shared/utils/fieldAria.js';
 
 // Recibe:
 //   allIngredients: lista completa de ingredientes disponibles.
@@ -11,7 +14,9 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
   const [selectedIngredient, setSelectedIngredient] = useState(null);
   const [quantity, setQuantity] = useState('1');
   const [unit, setUnit] = useState('');
-  const [formError, setFormError] = useState('');
+  // Errores de los dos campos obligatorios ({ ingredient, quantity }), debajo de cada uno.
+  const [fieldErrors, setFieldErrors] = useState({});
+  const clearFieldError = (field) => setFieldErrors((prev) => ({ ...prev, [field]: '' }));
 
   // Filtra por nombre (mínimo 1 carácter, máximo 8 resultados)
   const filtered =
@@ -25,11 +30,12 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
     setSelectedIngredient(ingredient);
     setSearch(ingredient.name);
     setUnit(ingredient.unitOfMeasure ?? '');
-    setFormError('');
+    clearFieldError('ingredient');
   };
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
+    clearFieldError('ingredient');
     if (selectedIngredient && e.target.value !== selectedIngredient.name) {
       setSelectedIngredient(null);
       setUnit('');
@@ -42,26 +48,27 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
     const current = !isNaN(num) && Number.isInteger(num) && num >= 0 ? num : 0;
     const next = Math.max(0, current + delta);
     setQuantity(String(next));
-    setFormError('');
+    clearFieldError('quantity');
   };
 
   const handleQtyChange = (e) => {
     setQuantity(e.target.value);
-    setFormError('');
+    clearFieldError('quantity');
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setFormError('');
 
-    if (!selectedIngredient) {
-      setFormError('Seleccioná un ingrediente de la lista desplegable.');
-      return;
-    }
+    // Se revisan los dos campos a la vez, así se marcan todos los que falten de una.
     const clean = quantity.trim();
     const parsed = Number(clean);
+    const errors = {};
+    if (!selectedIngredient) errors.ingredient = 'Seleccioná un ingrediente de la lista desplegable.';
     if (clean === '' || isNaN(parsed) || !Number.isInteger(parsed) || parsed < 0) {
-      setFormError('Ingresá una cantidad entera válida (mayor o igual a 0).');
+      errors.quantity = 'Ingresá una cantidad entera (0 o más).';
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
@@ -76,10 +83,14 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
   const isQtyValid = quantity.trim() !== '' && !isNaN(numVal) && Number.isInteger(numVal) && numVal >= 0;
 
   return (
-    <form className="InventoryForm" onSubmit={handleSubmit}>
+    // noValidate: los errores los muestra la app debajo de cada campo.
+    <form className="InventoryForm" onSubmit={handleSubmit} noValidate>
       {/* Buscador con dropdown */}
       <div className="InventoryForm-field InventoryForm-searchWrapper">
-        <label htmlFor="add-ingredient-search">Buscar ingrediente</label>
+        <label htmlFor="add-ingredient-search">
+          Buscar ingrediente
+          <RequiredMark />
+        </label>
         <input
           id="add-ingredient-search"
           type="text"
@@ -93,7 +104,9 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
           onChange={handleSearchChange}
           disabled={ingredientsLoading}
           autoComplete="off"
+          {...getFieldAriaProps('add-ingredient-search', { error: fieldErrors.ingredient, isRequired: true })}
         />
+        <FieldError id={getFieldErrorId('add-ingredient-search')} message={fieldErrors.ingredient} />
 
         {filtered.length > 0 && !selectedIngredient && (
           <ul className="InventoryForm-suggestions">
@@ -121,8 +134,12 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
       <div className="InventoryForm-row">
         {/* Stepper de cantidad */}
         <div className="InventoryForm-field InventoryForm-field--qty">
-          <label htmlFor="add-ingredient-qty">Cantidad</label>
-          <div className="InventoryForm-stepper">
+          <label htmlFor="add-ingredient-qty">
+            Cantidad
+            <RequiredMark />
+          </label>
+          {/* El borde lo tiene el stepper (el input no): con error, se marca el stepper. */}
+          <div className={`InventoryForm-stepper${fieldErrors.quantity ? ' InventoryForm-stepper--invalid' : ''}`}>
             <button
               type="button"
               className="InventoryForm-stepBtn"
@@ -140,7 +157,7 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
               step="1"
               value={quantity}
               onChange={handleQtyChange}
-              aria-label="Cantidad"
+              {...getFieldAriaProps('add-ingredient-qty', { error: fieldErrors.quantity, isRequired: true })}
             />
             <button
               type="button"
@@ -170,7 +187,8 @@ function AddIngredientForm({ allIngredients, ingredientsLoading, onAdd }) {
         </div>
       </div>
 
-      {formError && <p className="InventoryForm-error">{formError}</p>}
+      {/* Va debajo de la fila (y no dentro del stepper) para no desalinear el botón Agregar. */}
+      <FieldError id={getFieldErrorId('add-ingredient-qty')} message={fieldErrors.quantity} />
     </form>
   );
 }

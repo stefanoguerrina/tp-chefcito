@@ -7,14 +7,23 @@
 import { useState } from 'react';
 import RecipeStepCard from './RecipeStepCard.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
+import RequiredMark from '../../../core/components/RequiredMark.jsx';
+import FieldError from '../../../core/components/FieldError.jsx';
 import '../styles/_recipe-steps-editor-stage.scss';
 
 // Recibe: un número. Devuelve: el número con dos dígitos ("02"), como las píldoras.
 const pad = (number) => String(number).padStart(2, '0');
 
-// Recibe: steps (array de { instruction, estimatedTime }) y onStepsChange (recibe el
-// array completo ya modificado).
-function RecipeStepsEditorStage({ steps, onStepsChange }) {
+// Recibe una lista de números de paso (1, 2...). Devuelve: "del paso 2" o "de los pasos 2 y 3".
+const describeSteps = (numbers) =>
+  numbers.length === 1
+    ? `del paso ${numbers[0]}`
+    : `de los pasos ${numbers.slice(0, -1).join(', ')} y ${numbers[numbers.length - 1]}`;
+
+// Recibe: steps (array de { instruction, estimatedTime }), onStepsChange (recibe el
+// array completo ya modificado) e invalidStepIndexes (índices de los pasos sin
+// descripción al intentar publicar; vacío si no hay error).
+function RecipeStepsEditorStage({ steps, onStepsChange, invalidStepIndexes = [] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -40,7 +49,10 @@ function RecipeStepsEditorStage({ steps, onStepsChange }) {
   return (
     <section className="RecipeEditorCard RecipeStepsEditorStage">
       <div className="RecipeEditorCard-header">
-        <h2 className="RecipeEditorCard-title">Instrucciones</h2>
+        <h2 className="RecipeEditorCard-title">
+          Instrucciones
+          <RequiredMark />
+        </h2>
         <div className="RecipeStepsEditorStage-headerActions">
           <button
             type="button"
@@ -63,6 +75,16 @@ function RecipeStepsEditorStage({ steps, onStepsChange }) {
         </div>
       </div>
 
+      {/* Como se ve un paso por vez, el error dice cuáles faltan (y sus píldoras quedan en rojo). */}
+      <FieldError
+        id="recipe-steps-error"
+        message={
+          invalidStepIndexes.length > 0
+            ? `Completá la descripción ${describeSteps(invalidStepIndexes.map((index) => index + 1))}.`
+            : ''
+        }
+      />
+
       {/* Un segmento por paso: pintados hasta el actual, igual que en el detalle de receta. */}
       <div
         className="RecipeStepsEditorStage-progress"
@@ -81,6 +103,7 @@ function RecipeStepsEditorStage({ steps, onStepsChange }) {
         index={currentIndex}
         total={steps.length}
         onChange={handleChangeCurrentStep}
+        error={invalidStepIndexes.includes(currentIndex) ? 'Escribí qué hay que hacer en este paso.' : ''}
       />
 
       <div className="RecipeStepsEditorStage-nav">
@@ -99,9 +122,9 @@ function RecipeStepsEditorStage({ steps, onStepsChange }) {
             <button
               key={index}
               type="button"
-              className={`RecipeStepsEditorStage-pill${index === currentIndex ? ' RecipeStepsEditorStage-pill--active' : ''}`}
+              className={`RecipeStepsEditorStage-pill${index === currentIndex ? ' RecipeStepsEditorStage-pill--active' : ''}${invalidStepIndexes.includes(index) ? ' RecipeStepsEditorStage-pill--invalid' : ''}`}
               onClick={() => goTo(index)}
-              aria-label={`Ir al paso ${index + 1}`}
+              aria-label={`Ir al paso ${index + 1}${invalidStepIndexes.includes(index) ? ' (falta la descripción)' : ''}`}
             >
               {pad(index + 1)}
             </button>
