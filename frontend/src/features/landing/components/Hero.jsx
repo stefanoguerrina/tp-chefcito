@@ -1,40 +1,37 @@
-// Sección hero de la landing: título, bajada, CTA y collage flotante de imágenes.
+// Primera pantalla de la landing: título, bajada, CTA y collage flotante de imágenes.
+import dishPhoto1 from '../../../assets/hero-dish-1.jpg';
+import dishPhoto2 from '../../../assets/hero-dish-2.jpg';
+import dishPhoto3 from '../../../assets/hero-dish-3.jpg';
 import '../styles/_hero.scss';
 
-function Hero() {
-  // Baja suavemente hasta la sección de categorías/recetas.
-  const handleExploreClick = () => {
-    document.getElementById('explorar')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+// Recibe: onExploreClick, que baja suavemente a la pantalla siguiente. Quién es "la
+// siguiente" lo decide LandingPage, que es la que conoce el orden de las pantallas.
+function Hero({ onExploreClick }) {
   return (
-    <section className="Hero" id="top">
+    <section className="Hero">
       <div className="Hero-text">
-        <h1>Crea la vida que te encanta en la cocina</h1>
+        <h1>
+          Descubrí el <span className="Hero-highlight">placer</span> de cocinar algo rico y
+          distinto todos los días
+        </h1>
         <p>
           Descubre ideas para tus comidas diarias. Desde cenas rápidas hasta postres
           elaborados, encontrá tu próxima receta favorita y compartí las tuyas.
         </p>
-        <button type="button" className="Hero-cta" onClick={handleExploreClick}>
+        <button type="button" className="Hero-cta" onClick={onExploreClick}>
           Explorar recetas
         </button>
       </div>
 
       <div className="Hero-collage">
         <div className="Hero-image Hero-image--main">
-          <img src="https://picsum.photos/seed/chefcito-hero-1/500/500" alt="Plato preparado en Chefcito" />
+          <img src={dishPhoto1} alt="Plato emplatado con palta, pescado curado y brotes" />
         </div>
         <div className="Hero-image Hero-image--secondary">
-          <img
-            src="https://picsum.photos/seed/chefcito-hero-2/400/400"
-            alt="Postre casero"
-          />
+          <img src={dishPhoto2} alt="Pan casero recién horneado con queso y jamón crudo" />
         </div>
         <div className="Hero-image Hero-image--tertiary">
-          <img
-            src="https://picsum.photos/seed/chefcito-hero-3/400/400"
-            alt="Ensalada fresca"
-          />
+          <img src={dishPhoto3} alt="Canasta con verduras frescas y tomates" />
         </div>
       </div>
     </section>
