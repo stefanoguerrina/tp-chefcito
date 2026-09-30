@@ -1,0 +1,115 @@
+// Estilos del modal de donación (DonationModal). Reutiliza la tarjeta y los botones de
+// ConfirmModal; acá solo va lo propio: la grilla de montos fijos.
+@use '../../../styles/abstracts' as *;
+
+.DonationModal {
+  max-width: 480px;
+  max-height: calc(100vh - #{$spacing-xl});
+  overflow-y: auto;
+
+  &-status {
+    font-family: $font-body;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+    margin: 0 0 $spacing-lg;
+  }
+
+  // Mobile: una columna; desde sm, dos.
+  &-tiers {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-lg;
+
+    @include respond-to(sm) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  &-tier {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'icon label amount'
+      'icon description description';
+    align-items: center;
+    column-gap: $spacing-sm;
+    row-gap: 2px;
+    padding: $spacing-md;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-lg;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+    font-family: $font-body;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: $color-surface-container-low;
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.7;
+    }
+
+    &--selected,
+    &--selected:hover:not(:disabled) {
+      border-color: $color-primary;
+      background: with-opacity($color-primary, 0.08);
+    }
+  }
+
+  &-tierIcon {
+    grid-area: icon;
+    font-size: 28px;
+    color: $color-primary;
+  }
+
+  &-tierLabel {
+    grid-area: label;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  &-tierAmount {
+    grid-area: amount;
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-primary;
+  }
+
+  &-tierDescription {
+    grid-area: description;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+  }
+}
+
+// ConfirmModal no tiene estilo de deshabilitado: acá hace falta mientras no hay monto elegido
+// o mientras se redirige a Mercado Pago.
+.DonationModal .ConfirmModal-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+// Estado "Esperando tu pago" (DonationWaitingView).
+.DonationModal-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  text-align: center;
+}
+
+.DonationModal-waitingIcon {
+  font-size: 40px;
+  color: $color-primary;
+}
+
+// El link "Ir a pagar" usa el estilo de botón de ConfirmModal, pero es un <a>.
+.DonationModal-payLink {
+  text-align: center;
+  text-decoration: none;
+}

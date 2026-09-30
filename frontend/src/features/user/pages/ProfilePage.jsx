@@ -10,7 +10,7 @@
 // solo lectura, al que se llega tocando su nombre desde el detalle de una receta
 // (ver isOwnProfile más abajo): ahí no hay nada para editar, y "Editar perfil" se
 // reemplaza por "Seguir" (useFollow: las personas que seguís son tus "amigos" en la
-// home) y "Donar" (todavía sin funcionalidad: muestra un aviso "Próximamente").
+// home) y "Donar" (DonationModal: montos fijos, pago con Mercado Pago).
 import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useProfileData } from '../hooks/useProfileData.js';
@@ -26,6 +26,7 @@ import ProfileRecipeGallery from '../components/ProfileRecipeGallery.jsx';
 import FeaturedRecipes from '../components/FeaturedRecipes.jsx';
 import ProfileMetrics from '../components/ProfileMetrics.jsx';
 import ProfileScrollHint from '../components/ProfileScrollHint.jsx';
+import DonationModal from '../../donation/components/DonationModal.jsx';
 import { buildProfileMetrics } from '../models/profileMetricsModel.js';
 import '../styles/_profile-page.scss';
 
@@ -77,8 +78,8 @@ function ProfilePage() {
   const { ref: recipesScreenRef, hasBeenVisible: hasReachedRecipes } = useHasBeenVisible();
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  // Mensaje del aviso "Próximamente" al tocar "Donar" (todavía no existe); vacío = sin aviso.
-  const [comingSoonMessage, setComingSoonMessage] = useState('');
+  // Abre el modal para donarle al dueño del perfil (solo en perfiles ajenos).
+  const [isDonating, setIsDonating] = useState(false);
 
   // Recetas Destacadas: las 3 propias con mejor valoración promedio (0 si todavía
   // no tienen reseñas, así igual se completan los 3 huecos si hay pocas reseñas).
@@ -128,7 +129,7 @@ function ProfilePage() {
             followStatus={followStatus}
             isFollowPending={isFollowPending}
             onFollow={handleToggleFollow}
-            onDonate={() => setComingSoonMessage('Las donaciones a creadores todavía no están disponibles en Chefcito. ¡Estamos trabajando en eso!')}
+            onDonate={() => setIsDonating(true)}
           />
 
           {/* Las métricas se ven siempre (también sin recetas): ahí están los seguidores. */}
@@ -199,8 +200,8 @@ function ProfilePage() {
         />
       )}
 
-      {comingSoonMessage && (
-        <AlertModal title="Próximamente" message={comingSoonMessage} onClose={() => setComingSoonMessage('')} />
+      {isDonating && (
+        <DonationModal grantee={user} onClose={() => setIsDonating(false)} />
       )}
 
       {followError && (

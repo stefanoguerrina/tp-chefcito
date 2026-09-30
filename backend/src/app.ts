@@ -5,6 +5,7 @@ import { apiRouter } from "./routes/apiRouter.js";
 import path from 'path';
 import dotenv from 'dotenv';
 import { UPLOADS_DIR, UPLOADS_PUBLIC_PATH } from './core/fileStorage.js';
+import { expireStaleDonations } from './features/donation/services/donationService.js';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -41,7 +42,21 @@ app.get("/", (req, res) => {
 
 app.use("/api", apiRouter);
 
+// Cada cuánto se revisan las donaciones pendientes con el link de pago vencido.
+const DONATION_EXPIRATION_CHECK_MS = 10 * 60 * 1000;
+
+// Recibe nada. Revisa las donaciones pendientes vencidas (ver expireStaleDonations) y
+// registra el resultado; los errores se loguean para que nunca tiren abajo el servidor.
+const checkStaleDonations = () =>
+    expireStaleDonations()
+        .then((count) => {
+            if (count > 0) console.log(`[donations] ${count} donación(es) pendiente(s) actualizada(s).`);
+        })
+        .catch((error) => console.error('[donations] Falló la revisión de donaciones pendientes:', error));
+
 app.listen(PORT, () => {
     console.log(`Server listening in ${PORT}`);
-
+    // Una revisión al arrancar (por si el servidor estuvo apagado) y después cada 10 minutos.
+    checkStaleDonations();
+    setInterval(checkStaleDonations, DONATION_EXPIRATION_CHECK_MS);
 });

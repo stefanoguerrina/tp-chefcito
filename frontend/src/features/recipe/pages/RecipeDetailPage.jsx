@@ -17,6 +17,7 @@ import RecipeStepsPanel from '../components/RecipeStepsPanel.jsx';
 import ReviewList from '../../review/components/ReviewList.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import DonationModal from '../../donation/components/DonationModal.jsx';
 import '../styles/_recipe-detail-page.scss';
 
 // Cuánto tiempo queda visible el aviso flotante (ej. "¡Enlace copiado!").
@@ -38,8 +39,8 @@ function RecipeDetailPage() {
   // receta que estén acá llevan la etiqueta "Despensa".
   const [pantryIngredientIds, setPantryIngredientIds] = useState(new Set());
   const [toastMessage, setToastMessage] = useState('');
-  // Muestra el aviso "Próximamente" al tocar "Donar" (la CRUD de donaciones todavía no existe).
-  const [showDonationSoon, setShowDonationSoon] = useState(false);
+  // Abre el modal para donarle al autor de la receta (montos fijos, pago con Mercado Pago).
+  const [isDonating, setIsDonating] = useState(false);
 
   // Pide la receta completa. El estado se actualiza solo dentro de los callbacks de la
   // promesa, así se puede llamar desde el useEffect sin renders en cascada.
@@ -140,7 +141,7 @@ function RecipeDetailPage() {
             onShare={handleShare}
             onAuthorClick={handleAuthorClick}
             onEdit={handleEditRecipe}
-            onDonate={() => setShowDonationSoon(true)}
+            onDonate={() => setIsDonating(true)}
           />
           <RecipeIngredientsPanel
             ingredients={recipe.recipeingredient ?? []}
@@ -166,12 +167,8 @@ function RecipeDetailPage() {
         <AlertModal title="No se pudo guardar la receta" message={saveError} onClose={clearSaveError} />
       )}
 
-      {showDonationSoon && (
-        <AlertModal
-          title="Próximamente"
-          message="Las donaciones a creadores todavía no están disponibles en Chefcito. ¡Estamos trabajando en eso!"
-          onClose={() => setShowDonationSoon(false)}
-        />
+      {isDonating && recipe.user && (
+        <DonationModal grantee={recipe.user} onClose={() => setIsDonating(false)} />
       )}
     </article>
   );
