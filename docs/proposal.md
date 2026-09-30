@@ -44,7 +44,7 @@ Adicionales para Aprobación:
 
 |Req|Detalle|
 |:-|:-|
-|Listados | 1. Listado de recetas filtrado por tiempo de preparación. Muestra nombre y descripción de receta => Detalle CRUD Receta<br> 2.  Listado de las diez recetas mejor valoradas en un plazo solicitado. Muestra nombre, descripción, valoración de la receta y nombre del creador de la receta => Detalle muestra datos completos de la receta y del creador<br> 3. Listado de recetas filtrado por necesidades nutricionales. Muestra nombre y descripción de receta => Detalle CRUD Receta |
-|CUU/Epic | 1. Consultar recetas disponibles según categoría<br>2. Consultar recetas mejor valoradas en un plazo determinado |
+|Listados | 1. Listado de recetas filtrado por tiempo de preparación. Muestra nombre y descripción de receta => Detalle CRUD Receta<br> 2.  Listado semanal de las diez recetas mejor valoradas. Muestra nombre, descripción, valoración de la receta y nombre del creador de la receta => Detalle muestra datos completos de la receta y del creador<br> 3. Listado de recetas filtrado por necesidades nutricionales. Muestra nombre y descripción de receta => Detalle CRUD Receta |
+|CUU/Epic | 1. Consultar recetas disponibles según categoría<br>2. Consultar las recetas mejor valoradas de la semana |
 |Otros | 1. Brindar asistencia personalizada mediante un ChatBot implementado con IA |
 
