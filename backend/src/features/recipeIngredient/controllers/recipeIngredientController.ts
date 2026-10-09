@@ -3,7 +3,6 @@
 // Delega toda la lógica de negocio al recipeIngredientService; solo se encarga
 // de leer la request y armar la response HTTP correcta.
 import { Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as recipeIngredientService from '../services/recipeIngredientService.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
@@ -35,15 +34,6 @@ export const searchRecipeIngredientsByRecipe = async (req: AuthRequest, res: Res
 // Body: { ingredients: [{ idIngredient, requiredQuantity? }, ...] }.
 // PUT /api/recipes/:idRecipe/ingredients
 export const replaceRecipeIngredientsForRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const idRecipe = Number(req.params.idRecipe);
     const { ingredients } = req.body;

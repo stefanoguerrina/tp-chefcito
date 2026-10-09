@@ -7,7 +7,6 @@ import { deleteLocalUpload } from '../../../core/fileStorage.js';
 // Devuelve todos los ingredientes con sus categorías.
 export async function getAllIngredients() {
   const ingredients = await ingredientRepository.findAll();
-  if (ingredients.length === 0) return null;
   return ingredients;
 }
 

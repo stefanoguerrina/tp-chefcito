@@ -1,7 +1,14 @@
 // Servicio de donaciones: centraliza las llamadas HTTP de la feature donation (requieren token).
 // El que dona es siempre el usuario logueado: el backend lo toma del token.
 import { apiFetch } from '../../../shared/utils/apiFetch.js';
-import { donationTierFromApi, donationFromApi } from '../models/donationModel.js';
+import { donationTierFromApi, donationFromApi, donationHistoryFromApi } from '../models/donationModel.js';
+
+// Historial del usuario logueado: recibidas y realizadas, cada una con resumen y top 5.
+// Devuelve: ver donationHistoryFromApi. Lanza ApiError si falla.
+export const getMyDonations = async () => {
+  const raw = await apiFetch('/donations');
+  return donationHistoryFromApi(raw);
+};
 
 // Montos fijos para donar. Devuelve: lista de donationTierFromApi. Lanza ApiError si falla.
 export const getDonationTiers = async () => {

@@ -45,3 +45,41 @@ export interface DonationSummary {
   tierLabel: string | null;
   grantee: { id: number; username: string; name: string; lastName: string };
 }
+
+// Una fila del historial de donaciones (GET /api/donations). otherUser es la otra persona:
+// a quién se le donó (en "realizadas") o quién donó (en "recibidas").
+export interface DonationHistoryItem {
+  transactionRef: string;
+  amount: number;
+  currency: string;
+  status: DonationStatus;
+  tierLabel: string | null;
+  tierIcon: string | null;
+  createdAt: Date | null;
+  otherUser: { id: number; username: string; name: string; lastName: string; avatarUrl: string | null };
+}
+
+// Cuántas personas muestra el gráfico de "quiénes más donaron" / "a quiénes más donaste".
+export const DONATION_TOP_USERS_LIMIT = 5;
+
+// Una persona del top: cuánto sumaron sus donaciones completadas y cuántas fueron.
+export interface DonationTopUser {
+  user: DonationHistoryItem['otherUser'];
+  totalAmount: number;
+  count: number;
+}
+
+// Un lado del historial (recibidas o realizadas): las filas, los números del resumen y el
+// top de personas. stats y topUsers cuentan solo las donaciones completadas (las
+// pendientes, rechazadas o vencidas no movieron plata).
+export interface DonationHistorySide {
+  items: DonationHistoryItem[];
+  stats: { totalAmount: number; count: number; averageAmount: number };
+  topUsers: DonationTopUser[];
+}
+
+// Historial completo del usuario logueado (GET /api/donations).
+export interface DonationHistory {
+  received: DonationHistorySide;
+  sent: DonationHistorySide;
+}

@@ -1,11 +1,14 @@
 // Modal de aviso: se muestra cuando un visitante sin cuenta intenta usar una función
 // real de la app (ver una receta, guardarla, comentar, etc.) en vez de mandarlo
 // directo a un formulario. Deja elegir entre iniciar sesión o registrarse.
+import { useOverlayClose } from "../../../core/hooks/useOverlayClose.js";
 import "../styles/_auth-modal.scss";
 
 const AuthGateModal = ({ onClose, onLoginClick, onRegisterClick }) => {
+    const overlayCloseProps = useOverlayClose(onClose);
+
     return (
-        <div className="AuthModal-overlay" onClick={onClose}>
+        <div className="AuthModal-overlay" {...overlayCloseProps}>
             <div
                 className="AuthModal-card"
                 role="dialog"

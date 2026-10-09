@@ -1,12 +1,15 @@
 // Router de donation — define los endpoints de /api/donations (donaciones a creadores con
 // Mercado Pago). Todo requiere estar autenticado: el que dona es el usuario del token.
 import { Router } from 'express';
-import { getDonationTiers, createDonationCheckout, confirmDonation, getDonation } from '../controllers/donationController.js';
+import { getMyDonations, getDonationTiers, createDonationCheckout, confirmDonation, getDonation } from '../controllers/donationController.js';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 import { validateDonationCheckout, validateDonationConfirm, validateDonationRef } from '../middleware/donationValidationMiddleware.js';
 
 const donationRouter = Router();
+
+// GET /api/donations — historial del usuario logueado (recibidas y realizadas, con resumen y top 5)
+donationRouter.get('/', verifyToken, getMyDonations);
 
 // GET /api/donations/tiers — montos fijos para donar
 donationRouter.get('/tiers', verifyToken, getDonationTiers);

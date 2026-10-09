@@ -8,16 +8,48 @@
   <title>Chefcito</title>
   <meta name="description" content="Chefcito: planificá tus comidas con los ingredientes que tenés, creá y reseñá recetas y seguí a otros cocineros." />
 
+  <!-- Aplica el tema (claro u oscuro) antes de que cargue React, con la misma regla que
+       app/ThemeContext.jsx: si no, la pantalla de carga se vería blanca aunque el usuario
+       use el modo oscuro, hasta que React arranque. -->
+  <script>
+    try {
+      var savedTheme = localStorage.getItem('theme');
+      var isDark = savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+    } catch (error) {
+      // Sin acceso a localStorage: ThemeContext aplica el tema cuando arranca React.
+    }
+  </script>
+
+  <!-- Colores de los temas y estilos de la pantalla de carga: van acá (y no importados
+       desde el JS) para que la pantalla de carga se vea bien desde el primer instante. -->
+  <link rel="stylesheet" href="/src/styles/critical.scss" />
+
   <!-- Tipografía (Inter, toda la app) e íconos (Material Symbols) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+  <!-- Íconos: se piden SOLO los que usa la app (icon_names, en orden alfabético) y solo el
+       peso 400 (el único que usan los estilos): la fuente baja de ~1,1 MB a ~13 KB.
+       Al usar un ícono nuevo hay que agregarlo a esta lista; si no, se ve su nombre como
+       texto. Incluye los íconos de los montos de donación, que vienen del backend
+       (donationModel.ts). display=block: mientras carga no se muestra el nombre del ícono. -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,0..1&icon_names=add,add_box,add_photo_alternate,arrow_back,arrow_forward,auto_awesome,bakery_dining,bar_chart,bookmark,calendar_month,category,celebration,check,check_circle,chevron_left,chevron_right,close,cloud_off,credit_card_off,dark_mode,delete,delete_sweep,edit,emoji_events,error,expand_less,expand_more,filter_list,grid_view,grocery,group,group_add,home,hourglass_top,keyboard_arrow_down,kitchen,light_mode,local_cafe,local_pizza,location_on,lock,logout,manage_search,menu,menu_book,north_east,nutrition,outdoor_grill,person,person_add,person_remove,photo_camera,publish,rate_review,refresh,remove,restaurant,restaurant_menu,restore_from_trash,reviews,save,savings,schedule,search,search_off,send,share,shield_person,signal_cellular_alt,skillet,smart_toy,star,timer,timer_off,tune,undo,upload,view_list,visibility,visibility_off,volunteer_activism,workspace_premium&display=block"
     rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 
 <body>
-  <div id="root"></div>
+  <!-- Pantalla de carga inicial: misma estructura que core/components/LoadingScreen.jsx.
+       Se ve mientras se descarga la app y React la reemplaza al arrancar. -->
+  <div id="root">
+    <div class="LoadingScreen" role="status" aria-label="Cargando Chefcito">
+      <svg class="SwirlingLoader LoadingScreen-spinner" viewBox="0 0 800 800" width="64" height="64"
+        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle class="SwirlingLoader-circle" cx="400" cy="400" r="200" fill="none" stroke="currentColor"
+          stroke-linecap="round" stroke-width="50" />
+      </svg>
+    </div>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

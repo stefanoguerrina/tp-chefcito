@@ -6,6 +6,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { UPLOADS_DIR, UPLOADS_PUBLIC_PATH } from './core/fileStorage.js';
 import { expireStaleDonations } from './features/donation/services/donationService.js';
+import { handleNotFound, handleUnexpectedError } from './core/middleware/errorMiddleware.js';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -41,6 +42,10 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api", apiRouter);
+
+// Siempre al final: ruta inexistente → 404 JSON; error sin atrapar → JSON (ver errorMiddleware).
+app.use(handleNotFound);
+app.use(handleUnexpectedError);
 
 // Cada cuánto se revisan las donaciones pendientes con el link de pago vencido.
 const DONATION_EXPIRATION_CHECK_MS = 10 * 60 * 1000;

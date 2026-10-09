@@ -2,7 +2,6 @@
 // Delega toda la lógica de negocio al ingredientService; solo se encarga de leer
 // la request y armar la response HTTP correcta.
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as ingredientService from '../services/ingredientService.js';
 import { toPublicPath, deleteLocalUpload } from '../../../core/fileStorage.js';
 import { INGREDIENT_IMAGES_FOLDER } from '../middleware/ingredientImageUploadMiddleware.js';
@@ -32,10 +31,6 @@ const parseNutritionalValues = (raw: unknown): CreateNutritionalValueData[] | un
 export const searchIngredients = async (req: Request, res: Response): Promise<void> => {
   try {
     const ingredients = await ingredientService.getAllIngredients();
-    if (!ingredients || ingredients.length === 0) {
-      res.status(404).json({ message: 'No se encontraron ingredientes.' });
-      return;
-    }
     res.status(200).json(ingredients);
   } catch (error) {
     console.error('[searchIngredients] Error inesperado:', error);
@@ -72,15 +67,6 @@ export const getIngredientById = async (req: Request, res: Response): Promise<vo
 // ([{ name, servingAmount, servingUnit, value }]). La foto se sube aparte (PATCH /:id/image).
 // POST /api/ingredients
 export const createIngredient = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const { categoryIds, name, description, unitOfMeasure, imagePath, nutritionalValues } = req.body;
     const result = await ingredientService.createIngredient({
@@ -112,15 +98,6 @@ export const createIngredient = async (req: Request, res: Response): Promise<voi
 // reemplaza por completo ese set.
 // PATCH /api/ingredients/:id
 export const updateIngredientById = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const id = Number(req.params.id);
     const { categoryIds, name, description, unitOfMeasure, imagePath, nutritionalValues } = req.body;

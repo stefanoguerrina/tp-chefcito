@@ -67,6 +67,17 @@ $color-footer-muted: var(--color-footer-muted);
 $color-footer-accent: var(--color-footer-accent);
 $color-footer-hover: var(--color-footer-hover);
 
+// Fondo de la pantalla de carga: blanco en claro y negro en oscuro (más puro que
+// $color-background, que tiene un tinte verde).
+$color-loading-background: var(--color-loading-background);
+
+// Colores de las porciones de los gráficos (en orden: la 1 es la porción más grande).
+$color-chart-1: var(--color-chart-1);
+$color-chart-2: var(--color-chart-2);
+$color-chart-3: var(--color-chart-3);
+$color-chart-4: var(--color-chart-4);
+$color-chart-5: var(--color-chart-5);
+
 // Texto sobre fotos oscurecidas con un overlay negro: es blanco en los dos temas, a
 // diferencia de $color-on-primary (que en modo oscuro pasa a ser un verde muy oscuro).
 $color-on-image: #ffffff;

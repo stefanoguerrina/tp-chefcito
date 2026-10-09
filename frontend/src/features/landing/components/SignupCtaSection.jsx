@@ -32,6 +32,7 @@ function SignupCtaSection({ onRegisterClick }) {
           <img
             key={photo.place}
             src={photo.src}
+            loading="lazy"
             alt=""
             className={`SignupCtaSection-photo SignupCtaSection-photo--${photo.place}`}
             style={{ animationDelay: `${index * 0.3}s` }}

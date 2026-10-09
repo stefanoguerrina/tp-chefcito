@@ -11,7 +11,6 @@ const SALT_ROUNDS = 10;
 // Devuelve todos los usuarios activos sin su contraseña.
 export async function getAllUsers() {
   const users = await userRepository.findAll();
-  if (users.length === 0) return null;
   return users.map(toPublic);
 }
 
@@ -19,7 +18,6 @@ export async function getAllUsers() {
 // Solo accesible por administradores.
 export async function getDeletedUsers() {
   const users = await userRepository.findAllDeleted();
-  if (users.length === 0) return null;
   return users.map(toPublic);
 }
 

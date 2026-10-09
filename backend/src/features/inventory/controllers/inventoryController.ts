@@ -15,11 +15,6 @@ export const getInventory = async (req: Request, res: Response): Promise<void> =
     }
 
     const items = await inventoryService.getUserInventory(idUser);
-    if (!items) {
-      res.status(404).json({ message: 'El inventario está vacío.' });
-      return;
-    }
-
     res.status(200).json(items);
   } catch (error) {
     console.error('[getInventory] Error inesperado:', error);

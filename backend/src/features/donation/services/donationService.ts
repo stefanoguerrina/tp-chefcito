@@ -11,8 +11,16 @@ import { randomUUID } from 'node:crypto';
 import { donationRepository } from '../repository/donationRepository.js';
 import { userRepository } from '../../user/repository/userRepository.js';
 import { createCheckoutPreference, getPayment, searchPaymentsByReference, MercadoPagoHttpError } from './mercadoPagoService.js';
-import { DONATION_CURRENCY, DONATION_TIERS, DONATION_PAYMENT_WINDOW_MINUTES } from '../models/donationModel.js';
-import type { DonationStatus, DonationSummary, DonationTier } from '../models/donationModel.js';
+import { DONATION_CURRENCY, DONATION_TIERS, DONATION_PAYMENT_WINDOW_MINUTES, DONATION_TOP_USERS_LIMIT } from '../models/donationModel.js';
+import type {
+  DonationHistory,
+  DonationHistoryItem,
+  DonationHistorySide,
+  DonationStatus,
+  DonationSummary,
+  DonationTier,
+  DonationTopUser,
+} from '../models/donationModel.js';
 
 // A dónde vuelve el usuario desde Mercado Pago. En el deploy, FRONTEND_URL es la URL pública.
 const DEFAULT_FRONTEND_URL = 'http://localhost:5173';
@@ -52,6 +60,74 @@ const toSummary = (donation: NonNullable<Awaited<ReturnType<typeof donationRepos
 // Devuelve los montos fijos disponibles, en orden de menor a mayor.
 export function getTiers(): DonationTier[] {
   return DONATION_TIERS;
+}
+
+// Recibe una fila de donation y los datos de la otra persona (quien recibió o quien donó).
+// Devuelve la fila del historial, con el nombre y el ícono del monto fijo si coincide con uno.
+const toHistoryItem = (
+  donation: { transactionRef: string; amount: unknown; currency: string | null; status: string | null; createdAt: Date | null },
+  otherUser: DonationHistoryItem['otherUser']
+): DonationHistoryItem => {
+  const amount = Number(donation.amount);
+  const tier = DONATION_TIERS.find((option) => option.amount === amount);
+  return {
+    transactionRef: donation.transactionRef,
+    amount,
+    currency: donation.currency ?? DONATION_CURRENCY,
+    status: (donation.status ?? 'pending') as DonationStatus,
+    tierLabel: tier?.label ?? null,
+    tierIcon: tier?.icon ?? null,
+    createdAt: donation.createdAt,
+    otherUser,
+  };
+};
+
+// Recibe las filas de un lado del historial (recibidas o realizadas). Devuelve ese lado con
+// su resumen (total, cantidad y promedio) y el top de personas, contando solo las
+// donaciones completadas.
+const buildHistorySide = (items: DonationHistoryItem[]): DonationHistorySide => {
+  const completed = items.filter((item) => item.status === 'completed');
+  const totalAmount = completed.reduce((total, item) => total + item.amount, 0);
+
+  // Suma lo de cada persona (una misma persona puede haber donado varias veces).
+  const totalsByUser = new Map<number, DonationTopUser>();
+  completed.forEach((item) => {
+    const current = totalsByUser.get(item.otherUser.id) ?? { user: item.otherUser, totalAmount: 0, count: 0 };
+    totalsByUser.set(item.otherUser.id, {
+      ...current,
+      totalAmount: current.totalAmount + item.amount,
+      count: current.count + 1,
+    });
+  });
+  const topUsers = [...totalsByUser.values()]
+    .sort((a, b) => b.totalAmount - a.totalAmount)
+    .slice(0, DONATION_TOP_USERS_LIMIT);
+
+  return {
+    items,
+    stats: {
+      totalAmount,
+      count: completed.length,
+      // Redondeado: los montos se muestran sin centavos.
+      averageAmount: completed.length > 0 ? Math.round(totalAmount / completed.length) : 0,
+    },
+    topUsers,
+  };
+};
+
+// Historial de donaciones de idUser: las que hizo (en cualquier estado, para que vea también
+// las pendientes o rechazadas) y las que recibió (solo completadas: los intentos fallidos de
+// otros no le corresponden), cada lado con su resumen y su top de personas.
+export async function getDonationHistory(idUser: number): Promise<DonationHistory> {
+  const [sentRows, receivedRows] = await Promise.all([
+    donationRepository.findSentBy(idUser),
+    donationRepository.findCompletedReceivedBy(idUser),
+  ]);
+
+  return {
+    received: buildHistorySide(receivedRows.map((row) => toHistoryItem(row, row.user_donation_idDonorTouser))),
+    sent: buildHistorySide(sentRows.map((row) => toHistoryItem(row, row.user_donation_idGranteeTouser))),
+  };
 }
 
 // idDonor quiere donarle a idGrantee el monto fijo tierId.

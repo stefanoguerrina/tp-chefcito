@@ -2,7 +2,6 @@
 // Delega toda la lógica de negocio al imageService; solo se encarga de leer
 // la request y armar la response HTTP correcta.
 import { Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as imageService from '../services/imageService.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 import { deleteLocalUpload, toPublicPath } from '../../../core/fileStorage.js';
@@ -48,15 +47,6 @@ export const searchImagesByRecipe = async (req: AuthRequest, res: Response): Pro
 // isMain opcional. Si isMain=true, reemplaza a la imagen principal anterior.
 // POST /api/recipes/:idRecipe/images
 export const createImage = async (req: AuthRequest, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const idRecipe = Number(req.params.idRecipe);
     const imageUrl = resolveImageUrl(req) as string;
@@ -85,15 +75,6 @@ export const createImage = async (req: AuthRequest, res: Response): Promise<void
 // Actualiza una imagen existente (solo su dueño o un admin).
 // PATCH /api/recipes/:idRecipe/images/:id
 export const updateImageById = async (req: AuthRequest, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const idRecipe = Number(req.params.idRecipe);
     const id = Number(req.params.id);

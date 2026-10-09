@@ -3,7 +3,6 @@
 // Delega toda la lógica de negocio al nutritionalValueService; solo se encarga de leer
 // la request y armar la response HTTP correcta.
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as nutritionalValueService from '../services/nutritionalValueService.js';
 
 // Devuelve todos los valores nutricionales de un ingrediente.
@@ -22,11 +21,6 @@ export const searchNutritionalValuesByIngredient = async (req: Request, res: Res
       res.status(404).json({ message: 'Ingrediente no encontrado.' });
       return;
     }
-    if (!result || result.length === 0) {
-      res.status(404).json({ message: 'El ingrediente no tiene valores nutricionales cargados.' });
-      return;
-    }
-
     res.status(200).json(result);
   } catch (error) {
     console.error('[searchNutritionalValuesByIngredient] Error inesperado:', error);
@@ -63,15 +57,6 @@ export const getNutritionalValue = async (req: Request, res: Response): Promise<
 // se asigna automáticamente en el service/repository.
 // POST /api/ingredients/:idIngredient/nutritional-values
 export const createNutritionalValue = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const idIngredient = Number(req.params.idIngredient);
     const { name, servingAmount, servingUnit, value } = req.body;
@@ -92,15 +77,6 @@ export const createNutritionalValue = async (req: Request, res: Response): Promi
 // Actualiza un valor nutricional existente.
 // PATCH /api/ingredients/:idIngredient/nutritional-values/:num
 export const updateNutritionalValueByNum = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const idIngredient = Number(req.params.idIngredient);
     const num = Number(req.params.num);

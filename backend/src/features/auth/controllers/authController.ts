@@ -1,24 +1,11 @@
 // Controller de autenticación — maneja registro y login de usuarios.
 // La validación de formato la hace el middleware; acá se manejan reglas de negocio y respuestas HTTP.
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as authService from '../services/authService.js';
 
 // Registra un nuevo usuario.
 // POST /api/auth/register
 export const register = async (req: Request, res: Response): Promise<void> => {
-  // Doble chequeo: el middleware ya capturó errores, pero si algo pasó, respondemos acá.
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      errores: errors.array().map((e) => ({
-        campo: e.type === 'field' ? (e as any).path : 'general',
-        mensaje: e.msg,
-      })),
-    });
-    return;
-  }
-
   const { username, password, name, lastName, email, phone, birthDate } = req.body;
 
   try {
@@ -55,17 +42,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 // Autentica a un usuario con email o username y contraseña.
 // POST /api/auth/login
 export const login = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      errores: errors.array().map((e) => ({
-        campo: e.type === 'field' ? (e as any).path : 'general',
-        mensaje: e.msg,
-      })),
-    });
-    return;
-  }
-
   const { email, username, password } = req.body;
   // Acepta tanto email como username como identificador.
   const identifier = (email || username || '').trim();

@@ -1,0 +1,24 @@
+// Estilos de la pantalla de carga LoadingScreen (core/components) y de su copia estática
+// en index.html (mismas clases).
+@use '../../styles/abstracts' as *;
+
+.LoadingScreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-loading-background;
+  // El spinner pinta su trazo con currentColor: este es el verde de la app en cada tema.
+  color: $color-primary;
+}
+
+.LoadingScreen-spinner {
+  width: 64px;
+  height: 64px;
+
+  @include respond-to(md) {
+    width: 80px;
+    height: 80px;
+  }
+}

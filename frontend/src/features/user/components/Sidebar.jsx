@@ -15,6 +15,7 @@ const USER_NAV_LINKS = [
   { icon: 'add_box', label: 'Mis recetas', to: '/mis-recetas' },
   { icon: 'kitchen', label: 'Mi inventario', to: '/inventario' },
   { icon: 'bookmark', label: 'Recetas guardadas', to: '/guardadas' },
+  { icon: 'volunteer_activism', label: 'Donaciones', to: '/donaciones' },
 ];
 
 function Sidebar() {

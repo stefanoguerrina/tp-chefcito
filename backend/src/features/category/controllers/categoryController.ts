@@ -2,7 +2,6 @@
 // Delega toda la lógica de negocio al categoryService; solo se encarga de leer la request
 // y armar la response HTTP correcta.
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as categoryService from '../services/categoryService.js';
 
 // Devuelve la lista de todas las categorías existentes.
@@ -10,10 +9,6 @@ import * as categoryService from '../services/categoryService.js';
 export const searchCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const categories = await categoryService.getAllCategories();
-    if (!categories || categories.length === 0) {
-      res.status(404).json({ message: 'No se encontraron categorías.' });
-      return;
-    }
     res.status(200).json(categories);
   } catch (error) {
     console.error('[searchCategories] Error inesperado:', error);
@@ -43,17 +38,6 @@ export const getCategoryByName = async (req: Request, res: Response): Promise<vo
 // Devuelve 201 con la categoría creada, 409 si ya existe una con el mismo nombre, 422 si los datos son inválidos.
 // POST /api/categories — crea una categoría (solo admin)
 export const createCategory = async (req: Request, res: Response): Promise<void> => {
-  // Los errores de validación ya fueron chequeados por el middleware, pero como
-  // buena práctica siempre se verifica en el controller también.
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const { name, description } = req.body;
     const result = await categoryService.createCategory({ name, description });
@@ -76,15 +60,6 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
 // Devuelve 200 con los datos actualizados, 404 si no existe, 409 si el nuevo nombre ya está en uso, 422 si los datos son inválidos.
 // PATCH /api/categories/:id — actualiza una categoría (solo admin)
 export const updateCategoryById = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const categoryId = Number(req.params.id);
     const { name, description } = req.body;
