@@ -4,10 +4,9 @@
 import { categoryRepository } from '../repository/categoryRepository.js';
 import type { CreateCategoryData, UpdateCategoryData } from '../models/categoryModel.js';
 
-// Devuelve todas las categorías. Null si todavía no hay ninguna cargada.
+// Devuelve todas las categorías (array vacío si todavía no hay ninguna cargada).
 export async function getAllCategories() {
   const categories = await categoryRepository.findAll();
-  if (categories.length === 0) return null;
   return categories;
 }
 

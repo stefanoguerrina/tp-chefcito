@@ -6,7 +6,6 @@ import type { CreateIngredientCategoryData, UpdateIngredientCategoryData } from 
 // Devuelve todas las categorías de ingrediente.
 export async function getAllIngredientCategories() {
   const categories = await ingredientCategoryRepository.findAll();
-  if (categories.length === 0) return null;
   return categories;
 }
 

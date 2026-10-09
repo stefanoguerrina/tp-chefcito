@@ -8,7 +8,6 @@ import { ADMIN_ROLE_ID, DEFAULT_USER_ROLE_NAME, type CreateRoleData, type Update
 // Devuelve todos los roles.
 export async function getAllRoles() {
   const roles = await roleRepository.findAll();
-  if (roles.length === 0) return null;
   return roles;
 }
 

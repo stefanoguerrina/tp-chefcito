@@ -38,7 +38,7 @@ function ReviewItem({ review, isOwn, onEdit, onDelete }) {
       <div className="ReviewItem-header">
         <span className="ReviewItem-avatar">
           {author.avatarUrl && !avatarBroken ? (
-            <img src={author.avatarUrl} alt="" onError={() => setAvatarBroken(true)} />
+            <img src={author.avatarUrl} alt="" loading="lazy" onError={() => setAvatarBroken(true)} />
           ) : (
             getInitials(author)
           )}

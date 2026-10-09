@@ -65,6 +65,7 @@ Todos requieren token (el que dona es el usuario del token).
 
 | Método | Ruta | Body | Respuesta |
 |---|---|---|---|
+| GET | `/api/donations` | — | 200 `{ received, sent }`: historial del usuario del token (página `/donaciones`). Cada lado trae `items` (filas, de la más nueva a la más vieja), `stats` (`totalAmount`, `count`, `averageAmount`) y `topUsers` (las 5 personas que más donaron / a las que más se donó, con su total). `received.items` solo trae las completadas; `sent.items`, todas (con su estado). `stats` y `topUsers` cuentan solo completadas. Listas vacías si no hay nada |
 | GET | `/api/donations/tiers` | — | 200 lista de montos fijos |
 | POST | `/api/donations/checkout` | `{ idGrantee, tierId }` | 201 `{ checkoutUrl, transactionRef }` · 400 monto inválido / donarse a sí mismo · 404 usuario · 502 Mercado Pago · 503 sin configurar |
 | GET | `/api/donations/:transactionRef` | — | 200 donación (si está pendiente, antes busca el pago en Mercado Pago) · 404 no existe o es de otro usuario |

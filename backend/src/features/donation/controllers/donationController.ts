@@ -14,6 +14,18 @@ export const getDonationTiers = (_req: AuthRequest, res: Response): void => {
   res.status(200).json(donationService.getTiers());
 };
 
+// Historial del usuario logueado: { received, sent }, cada uno con sus filas, su resumen
+// (total, cantidad, promedio) y el top 5 de personas. Responde 200 aunque esté vacío.
+// GET /api/donations
+export const getMyDonations = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    res.status(200).json(await donationService.getDonationHistory(req.user!.id));
+  } catch (error) {
+    console.error('[getMyDonations] Error inesperado:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
 // Crea el pago en Mercado Pago y responde 201 con { checkoutUrl }.
 // POST /api/donations/checkout — body { idGrantee, tierId }
 export const createDonationCheckout = async (req: AuthRequest, res: Response): Promise<void> => {

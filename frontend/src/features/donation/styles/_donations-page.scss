@@ -1,0 +1,137 @@
+// Estilos de la página "Donaciones" (features/donation/pages/DonationsPage): encabezado,
+// selector Recibidas/Realizadas (DonationModeToggle) y la grilla de tarjetas. Las tarjetas
+// tienen su propio archivo. Mobile-first: una columna; desde lg, dos.
+@use '../../../styles/abstracts' as *;
+
+.DonationsPage {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: $spacing-lg $spacing-gutter-mobile;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+  font-family: $font-body;
+  color: $color-on-surface;
+
+  @include respond-to(md) {
+    padding: $spacing-xl $spacing-gutter-desktop;
+  }
+}
+
+.DonationsPage-header {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  padding-bottom: $spacing-lg;
+  border-bottom: 1px solid $color-outline-variant;
+}
+
+.DonationsPage-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+
+  @include respond-to(md) {
+    font-size: 32px;
+  }
+}
+
+.DonationsPage-subtitle {
+  margin: 0;
+  color: $color-on-surface-variant;
+}
+
+.DonationsPage-loading {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-xl 0;
+  color: $color-primary;
+}
+
+.DonationsPage-spinner {
+  width: 48px;
+  height: 48px;
+}
+
+// ---- Grilla de tarjetas ----
+.DonationsPage-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-md;
+
+  @include respond-to(lg) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: $spacing-lg;
+  }
+}
+
+.DonationsPage-column {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  @include respond-to(lg) {
+    gap: $spacing-lg;
+  }
+}
+
+.DonationsPage-activity {
+  display: flex;
+  min-height: 0;
+
+  // Desde lg, la actividad mide lo mismo que la columna de la izquierda y su lista
+  // scrollea por dentro. contain: size hace que esta columna no "empuje" la altura de la
+  // fila con su contenido: la fila la define la otra columna y esta se estira hasta ahí.
+  @include respond-to(lg) {
+    contain: size;
+  }
+}
+
+// ---- Selector Recibidas / Realizadas (DonationModeToggle) ----
+.DonationModeToggle {
+  align-self: center;
+  display: inline-flex;
+  gap: $spacing-xs;
+  padding: $spacing-xs;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-full;
+  background: $color-surface-container-lowest;
+  box-shadow: $shadow-level-1;
+}
+
+.DonationModeToggle-option {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  border-radius: $radius-full;
+  background: transparent;
+  color: $color-on-surface-variant;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  &:hover {
+    color: $color-on-surface;
+  }
+
+  &--active {
+    background: $color-surface-container-high;
+    color: $color-on-surface;
+
+    .material-symbols-outlined {
+      color: $color-primary;
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  }
+}

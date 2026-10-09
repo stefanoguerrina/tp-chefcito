@@ -2,7 +2,6 @@
 // Delega toda la lógica de negocio al stepService; solo se encarga de leer
 // la request y armar la response HTTP correcta.
 import { Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as stepService from '../services/stepService.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
@@ -34,15 +33,6 @@ export const searchStepsByRecipe = async (req: AuthRequest, res: Response): Prom
 // Body: { steps: [{ instruction, estimatedTime? }, ...] }, en el orden final deseado.
 // PUT /api/recipes/:idRecipe/steps
 export const replaceStepsForRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const idRecipe = Number(req.params.idRecipe);
     const { steps } = req.body;

@@ -197,10 +197,7 @@ Gastón. Actualizar [tasks-division.md](tasks-division.md) y definir quién defi
 |:-:|:-:|---|---|
 | B1 | 🟠 | `app.ts` hace `listen` al importarse (no se puede testear con Supertest) y no hay script de tests | `app.ts` arma y **exporta** `app`; `server.ts` hace `listen` y arranca el timer de donaciones. Actualizar `dev`/`start` y agregar `"test"` en [package.json](../backend/package.json) (completar también `"description"`). |
 | B2 | 🟡 | `handleValidationErrors` copiado en **16 features**, con dos formatos (auth responde `{ errores }`, el resto `{ message, errors }`). Ya existe el único en [validationMiddleware.ts](../backend/src/core/middleware/validationMiddleware.ts) (lo usan follow, feed y donation) | Borrar cada copia local e importar el de `core`. El front acepta los dos formatos, no rompe nada. |
-| B3 | 🟡 | 11 controllers vuelven a llamar `validationResult` aunque el middleware ya lo hizo | Borrar ese bloque (código muerto; en la defensa pueden preguntar por qué está). |
-| B4 | 🟡 | Listados vacíos responden **404** en vez de `200 []`: categorías, ingredientes, categorías de ingrediente, valores nutricionales, recetas, roles y usuarios | Devolver `200 []` (los endpoints nuevos ya lo hacen). `fetchListOrEmpty` del front sigue andando. |
 | B5 | 🟡 | Dos caminos a la BD: el health check usa un pool `mysql2` aparte ([database.ts](../backend/src/database.ts)) y devuelve `error.message` crudo | ``prisma.$queryRaw`SELECT 1` `` y borrar `database.ts`: se puede quitar `mysql2` y las `DB_HOST/PORT/USER/PASSWORD/NAME` del `.env` (más simple para el profe y el deploy). |
-| B6 | ⚪ | Ruta `/api/xxx` inexistente o error inesperado → HTML de Express | Middleware 404 JSON y error handler `(err, req, res, next)` al final de `app.ts`. |
 | B7 | ⚪ | Columna `recipe.saveCount` que nunca se actualiza ni se usa (el orden "Más populares" cuenta los guardados reales) | Sacarla del esquema (`db push`) o dejarla y saber explicarlo. |
 | B8 | ⚪ | El chequeo "dueño o admin" está hecho a mano en inventario y recetas guardadas | Parametrizar `verifyOwnerOrAdmin(paramName = 'id')`. |
 | B9 | ⚪ | La consulta "promedio y cantidad de reseñas por receta" está 3 veces (search, feed, recipe) | Una sola en `review/repository` y reutilizarla. |
@@ -378,7 +375,7 @@ propuesta: ajustarla en la próxima reunión (y dejarlo en la primera minuta).
 | Integrante | Pendiente | Test propio | CU que defiende |
 |---|---|---|---|
 | **Stéfano** (Dev A) | Propuesta + DER + links a PRs, README raíz e índice, GitHub Project, B1 (`app`/`server`), revisar PRs | Integración (Supertest) + unitario de `reviewService` | Reseñar recetas (+ Seguir, el CU extra) |
-| **Elías** (Dev B) | Documentación de la API (8), limpieza B2–B4 | Unitario de `pantryMatchService` | Recetas según ingredientes |
+| **Elías** (Dev B) | Documentación de la API (8), limpieza B2 | Unitario de `pantryMatchService` | Recetas según ingredientes |
 | **Juan** (Dev C) | Landing con datos reales (F1, hizo el rediseño), test E2E | Unitario de `recipeNutritionService` | Crear y publicar recetas (+ listados) |
 | **Gastón** (Dev D) | Donaciones: D1–D4, deploy (9) con Mercado Pago, test de componente del front | Unitario de `donationService` | Donar a creadores |
 

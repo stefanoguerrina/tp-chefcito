@@ -3,7 +3,6 @@
 // Delega toda la lógica de negocio al roleService; solo se encarga de leer la request
 // y armar la response HTTP correcta.
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as roleService from '../services/roleService.js';
 
 // Devuelve la lista de todos los roles.
@@ -11,10 +10,6 @@ import * as roleService from '../services/roleService.js';
 export const searchRoles = async (req: Request, res: Response): Promise<void> => {
   try {
     const roles = await roleService.getAllRoles();
-    if (!roles || roles.length === 0) {
-      res.status(404).json({ message: 'No se encontraron roles.' });
-      return;
-    }
     res.status(200).json(roles);
   } catch (error) {
     console.error('[searchRoles] Error inesperado:', error);
@@ -44,15 +39,6 @@ export const getRoleById = async (req: Request, res: Response): Promise<void> =>
 // Crea un nuevo rol.
 // POST /api/roles
 export const createRole = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const { name, description } = req.body;
     const result = await roleService.createRole({ name, description });
@@ -72,15 +58,6 @@ export const createRole = async (req: Request, res: Response): Promise<void> => 
 // Actualiza un rol existente.
 // PATCH /api/roles/:id
 export const updateRoleById = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const id = Number(req.params.id);
     const { name, description } = req.body;
@@ -140,11 +117,6 @@ export const getUsersByRole = async (req: Request, res: Response): Promise<void>
       res.status(404).json({ message: 'Rol no encontrado.' });
       return;
     }
-    if (users.length === 0) {
-      res.status(404).json({ message: 'Ningún usuario tiene asignado este rol.' });
-      return;
-    }
-
     res.status(200).json(users);
   } catch (error) {
     console.error('[getUsersByRole] Error inesperado:', error);
@@ -188,15 +160,6 @@ export const getRolesByUserId = async (req: Request, res: Response): Promise<voi
 // Body: { userId }
 // POST /api/roles/:id/users
 export const assignRoleToUser = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const roleId = Number(req.params.id);
     const userId = Number(req.body.userId);

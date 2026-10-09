@@ -28,14 +28,12 @@ async function withReviewStats<T extends { id: number }>(recipes: T[]) {
 // Devuelve todas las recetas con sus categorías, creador, imágenes y valoración.
 export async function getAllRecipes() {
   const recipes = await recipeRepository.findAll();
-  if (recipes.length === 0) return null;
   return withReviewStats(recipes);
 }
 
 // Devuelve todas las recetas creadas por un usuario puntual, con su valoración.
 export async function getRecipesByUser(idUser: number) {
   const recipes = await recipeRepository.findAllByUser(idUser);
-  if (recipes.length === 0) return null;
   return withReviewStats(recipes);
 }
 

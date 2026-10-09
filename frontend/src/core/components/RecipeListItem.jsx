@@ -8,7 +8,7 @@ function RecipeListItem({ recipe, position, onClick }) {
   return (
     <div className="RecipeListItem" onClick={onClick}>
       {typeof position === 'number' && <span className="RecipeListItem-position">{position}</span>}
-      <img className="RecipeListItem-image" src={recipe.image} alt={recipe.title} />
+      <img className="RecipeListItem-image" src={recipe.image} alt={recipe.title} loading="lazy" />
       <div>
         <h4 className="RecipeListItem-title">{recipe.title}</h4>
         <p className="RecipeListItem-author">por {recipe.author}</p>

@@ -2,7 +2,6 @@
 // Delega toda la lógica de negocio al userService; solo se encarga de leer la request
 // y armar la response HTTP correcta.
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as userService from '../services/userService.js';
 import { toPublicProfile, type UserImageField } from '../models/userModel.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
@@ -27,10 +26,6 @@ export const searchUsers = async (req: AuthRequest, res: Response): Promise<void
       ? await userService.getDeletedUsers()
       : await userService.getAllUsers();
 
-    if (!users || users.length === 0) {
-      res.status(404).json({ message: 'No se encontraron usuarios.' });
-      return;
-    }
     res.status(200).json(users);
   } catch (error) {
     console.error('[searchUsers] Error inesperado:', error);
@@ -71,15 +66,6 @@ export const getUserById = async (req: AuthRequest, res: Response): Promise<void
 // Permite opcionalmente asignarle el rol admin (makeAdmin=true).
 // POST /api/users
 export const createUser = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const { username, password, name, lastName, email, phone, birthDate, makeAdmin } = req.body;
 
@@ -147,17 +133,6 @@ export const deleteUserById = async (req: Request, res: Response): Promise<void>
 // Devuelve 200 con los datos actualizados, 404 si no existe, 422 si los datos son inválidos.
 // PATCH /api/users/:id
 export const updateUserById = async (req: Request, res: Response): Promise<void> => {
-  // Los errores de validación ya fueron chequeados por el middleware, pero como
-  // buena práctica siempre se verifica en el controller también.
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array(),
-    });
-    return;
-  }
-
   try {
     const userId = Number(req.params.id);
     const { name, lastName, phone, avatarUrl, bio, specialty, location, birthDate } = req.body;
@@ -238,15 +213,6 @@ export const deleteUserImageHandler = (field: UserImageField) =>
 // Body: { currentPassword, newPassword }
 // PATCH /api/users/:id/password
 export const changeUserPassword = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const userId = Number(req.params.id);
     const { currentPassword, newPassword } = req.body;

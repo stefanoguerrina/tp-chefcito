@@ -6,10 +6,9 @@ import prisma from '../../../core/prismaClient.js';
 import type { AddInventoryData, UpdateInventoryData } from '../models/inventoryModel.js';
 
 // Devuelve todos los ítems del inventario de un usuario.
-// Retorna null si el inventario está vacío.
+// Retorna un array vacío si el inventario no tiene ítems.
 export async function getUserInventory(idUser: number) {
   const items = await inventoryRepository.findByUser(idUser);
-  if (items.length === 0) return null;
   return items;
 }
 

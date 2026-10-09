@@ -2,7 +2,7 @@
 // Las variables SASS de abstracts/_variables.scss apuntan a estas (ej. $color-primary es
 // var(--color-primary)), así que todos los componentes cambian de tema sin tocarlos.
 // El tema activo lo decide el atributo data-theme de <html>, que maneja ThemeContext.
-// Se importa una sola vez, desde main.jsx.
+// Se carga una sola vez, desde index.html (a través de styles/critical.scss).
 
 // --- Tema claro (el diseño original de Chefcito) ---
 // Los neutros (fondo, superficies, outline, "muted") tiran a verde en vez de al
@@ -69,6 +69,18 @@
   --color-footer-muted: #d7ddd0;
   --color-footer-accent: #adefc2;
   --color-footer-hover: #ffffff;
+
+  // Fondo de la pantalla de carga (LoadingScreen): blanco puro en claro, negro en oscuro.
+  --color-loading-background: #ffffff;
+
+  // Colores de las porciones de los gráficos (ej. la dona de la página de donaciones):
+  // oliva, verde bosque, marrón, ámbar y terracota, para que se distingan entre sí sin
+  // salirse de la paleta de la app.
+  --color-chart-1: #4b6400;
+  --color-chart-2: #2b6a47;
+  --color-chart-3: #916d4e;
+  --color-chart-4: #d98e04;
+  --color-chart-5: #c8553d;
 
   --shadow-level-1: 0 4px 12px rgba(26, 31, 27, 0.08);
   --shadow-level-2: 0 8px 24px rgba(26, 31, 27, 0.12);
@@ -140,6 +152,15 @@
   --color-footer-muted: #a6b1a2;
   --color-footer-accent: #95d4a9;
   --color-footer-hover: #ffffff;
+
+  --color-loading-background: #000000;
+
+  // Mismos tonos que en claro, aclarados para leerse sobre el fondo oscuro.
+  --color-chart-1: #b0d266;
+  --color-chart-2: #95d4a9;
+  --color-chart-3: #e6bd98;
+  --color-chart-4: #f4a261;
+  --color-chart-5: #e07a5f;
 
   --shadow-level-1: 0 4px 12px rgba(0, 0, 0, 0.35);
   --shadow-level-2: 0 8px 24px rgba(0, 0, 0, 0.45);

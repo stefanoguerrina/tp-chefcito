@@ -1,0 +1,165 @@
+// Estilos de "Actividad reciente" (features/donation/components/DonationActivityList y
+// DonationActivityItem).
+@use '../../../styles/abstracts' as *;
+
+.DonationActivityList {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  background: $color-surface-container-lowest;
+  box-shadow: $shadow-level-1;
+}
+
+.DonationActivityList-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $color-on-surface-variant;
+}
+
+.DonationActivityList-items {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  // Desde lg la tarjeta tiene alto fijo (ver .DonationsPage-activity): la lista scrollea
+  // con la ruedita o el dedo, sin barra visible (igual que DropdownSelect), así la barra no
+  // le roba ancho a las filas ni tapa los montos.
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.DonationActivityList-empty {
+  margin: auto 0;
+  padding: $spacing-xl $spacing-md;
+  color: $color-on-surface-variant;
+  text-align: center;
+}
+
+// ---- Fila (DonationActivityItem) ----
+.DonationActivityItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+  padding: $spacing-sm 0;
+
+  & + & {
+    border-top: 1px solid $color-outline-variant;
+  }
+}
+
+.DonationActivityItem-user {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm + 4px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover .DonationActivityItem-name {
+    color: $color-primary;
+  }
+}
+
+.DonationActivityItem-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.DonationActivityItem-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.DonationActivityItem-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: 13px;
+  color: $color-on-surface-variant;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+    color: $color-primary;
+  }
+}
+
+.DonationActivityItem-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.DonationActivityItem-amount {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  // Lo recibido va en verde, como un ingreso.
+  &--received {
+    color: $color-secondary;
+  }
+}
+
+.DonationActivityItem-date {
+  font-size: 12px;
+  color: $color-on-surface-variant;
+  white-space: nowrap;
+}
+
+.DonationActivityItem-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px $spacing-sm;
+  border-radius: $radius-full;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  .material-symbols-outlined {
+    font-size: 14px;
+  }
+
+  &--completed {
+    background: with-opacity($color-secondary, 0.14);
+    color: $color-secondary;
+  }
+
+  &--pending {
+    background: with-opacity($color-tertiary, 0.16);
+    color: $color-tertiary;
+  }
+
+  &--rejected {
+    background: with-opacity($color-error, 0.12);
+    color: $color-error;
+  }
+
+  &--expired {
+    background: $color-surface-container-high;
+    color: $color-on-surface-variant;
+  }
+}

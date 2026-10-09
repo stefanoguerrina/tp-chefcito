@@ -65,6 +65,10 @@ There is no automated test suite in either package currently.
 `src/app.ts` builds the Express app, applies `cors`/`express.json`, and mounts everything under
 `/api` via `src/routes/apiRouter.ts`, which in turn mounts one router per feature
 (`src/features/<feature>/routes/*Router.ts`, e.g. `/api/auth`, `/api/users`, `/api/database`).
+The last two middlewares in `app.ts` (`core/middleware/errorMiddleware.ts`) keep every response
+JSON: `handleNotFound` (unknown route → 404 `{ message }`) and `handleUnexpectedError`
+(malformed/oversized body → 400/413, uncaught error → 500 without internal details). Keep them
+last; controllers still catch their own expected errors.
 
 Recipe images are uploaded as files with `multer` (`features/image/middleware/imageUploadMiddleware.ts`)
 into `backend/uploads/recipes/` (gitignored, served statically at `/uploads`); the DB column
@@ -149,6 +153,7 @@ editing the profile so the sidebars update), and defines the full React Router t
 (`AuthPage`), common users under `UserLayout` (sidebar + `<Outlet />` + the floating Chefcito Bot button,
 `features/assistant/components/AssistantFloatingButton.jsx`, that opens the chat from every section: `/`, `/recetas/:id`,
 `/mis-recetas[/nueva|/:id/editar]`, `/perfil`, `/usuarios/:id`, `/inventario`, `/guardadas`,
+`/donaciones` (received/sent dashboard: stats, top-5 SVG donut, activity; `GET /api/donations`; `?tipo=realizadas` picks the side),
 `/buscar?q=` and `/buscar/recetas|categorias|usuarios` — the `search` feature, whose listing filters
 live in the URL query string),
 admins at `/admin/:section?` (`AdminPage` only mounts the active section component,
@@ -169,7 +174,12 @@ retry is the only manual reload. Ingredients are created/edited in a 2-step moda
 (`IngredientFormModal`: details → nutritional values) whose unit and nutrient options live in
 `features/ingredient/models/ingredientFormModel.js`.
 New pages should be routes (read params with `useParams`,
-navigate with `useNavigate`), not panels toggled by local state.
+navigate with `useNavigate`), not panels toggled by local state. Pages are imported in `App.jsx`
+with `lazy(() => import(...))` (one chunk per page, inside a single `<Suspense>`), so a new page
+must be added the same way, never as a static import.
+Material Symbols are requested as a subset: `index.html` lists every icon used in
+`icon_names=` (alphabetical, weight 400 only). Using a new icon (in the frontend or as a
+backend-provided name, e.g. donation tiers) means adding it there, or its name shows as text.
 
 Each feature under `src/features/<name>/` mirrors a slice of the backend's shape:
 - `pages/` — route-level components
@@ -188,7 +198,8 @@ authenticated): it adds the JWT if present, sends JSON (or `FormData` for file u
 throws an `ApiError` (`shared/utils/ApiError.js`, with `status`, `isNotFound`, `isConflict`,
 `fieldErrors`) whose message is already user-friendly (validation field messages, offline,
 etc.). A 401 with a token fires `SESSION_EXPIRED_EVENT`, which `AuthContext` handles by logging
-out. Use `fetchListOrEmpty()` for list endpoints that answer 404 when empty — never compare
+out. List endpoints answer `200 []` when empty (never 404; keep it that way in new ones);
+`fetchListOrEmpty()` still wraps the existing list calls as a safety net — never compare
 error message strings. Avoid one request per item (N+1): if a list needs extra data per row
 (e.g. rating), have the backend include it (`GET /api/recipes` already returns `averageRating`
 and `reviewCount`). UI error convention: field errors inline under the field; failed actions
@@ -209,9 +220,14 @@ Recipe images: `shared/utils/compressImage.js` (canvas → WebP) before upload a
 
 `src/core/components/` holds cross-feature UI primitives (`ConfirmModal`, `AlertModal`,
 `ErrorState`, `RecipeCard`, `RatingBadge`, `SaveRecipeButton`, `UserAvatar`, `ScrollReveal`,
-`StarRating`, `RequiredMark`, `RequiredFieldsNote`, `FieldError`, `DropdownSelect` — use it instead of a native `<select>`: its list scrolls without a visible scrollbar, ...) and `src/core/hooks/` shared hooks (`useDragScroll` for carousels, `useHasBeenVisible` to fetch a
+`StarRating`, `RequiredMark`, `RequiredFieldsNote`, `FieldError`, `SwirlingLoader` (spinner,
+takes the parent's text color), `LoadingScreen` (full-screen loader: `<Suspense>` fallback in
+`App.jsx`, with a static copy inside `#root` in `index.html` — keep both in sync; their styles
+and `_themes.scss` are linked from `index.html` via `styles/critical.scss`, not imported from
+JS, so the loader is styled before the bundle downloads), `DropdownSelect` — use it instead of a native `<select>`: its list scrolls without a visible scrollbar, ...) and `src/core/hooks/` shared hooks (`useDragScroll` for carousels, `useHasBeenVisible` to fetch a
 lower "screen" only when the user scrolls to it, `useImagePicker` to pick a photo with a local
-preview and upload it on save); reuse them
+preview and upload it on save, `useOverlayClose(onClose)` spread on a modal's overlay so it only
+closes when the press starts and ends on the backdrop, never `onClick={onClose}`); reuse them
 instead of duplicating.
 The home (`/`, `features/user/pages/HomePage.jsx`) is 3 snap-scrolling screens like the profile,
 fed by `features/feed` (friends' recipes, weekly top 10, friends' reviews); "friends" = users you

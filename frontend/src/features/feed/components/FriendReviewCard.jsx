@@ -23,7 +23,7 @@ function FriendReviewCard({ review }) {
       </header>
 
       <Link className="FriendReviewCard-recipe" to={`/recetas/${recipe.id}`}>
-        <img className="FriendReviewCard-recipeImage" src={recipe.image} alt="" />
+        <img className="FriendReviewCard-recipeImage" src={recipe.image} alt="" loading="lazy" />
         <span className="FriendReviewCard-recipeText">
           <span className="FriendReviewCard-recipeLabel">Reseñó:</span>
           <span className="FriendReviewCard-recipeName">{recipe.name}</span>

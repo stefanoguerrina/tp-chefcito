@@ -80,7 +80,7 @@ function RecipeCard({
   return (
     <article className={classes} onClick={onClick}>
       <div className="RecipeCard-imageWrapper">
-        <img className="RecipeCard-image" src={image} alt={title} />
+        <img className="RecipeCard-image" src={image} alt={title} loading="lazy" />
         <div className="RecipeCard-imageShade" />
 
         {(onClick || hoverActions) && <RecipeHoverOverlay actions={hoverActions} />}
@@ -111,7 +111,7 @@ function RecipeCard({
           <div className="RecipeCard-author">
             {showAuthor && (
               authorAvatar && !avatarBroken ? (
-                <img className="RecipeCard-avatar" src={authorAvatar} alt="" onError={() => setAvatarBroken(true)} />
+                <img className="RecipeCard-avatar" src={authorAvatar} alt="" loading="lazy" onError={() => setAvatarBroken(true)} />
               ) : (
                 <span className="RecipeCard-avatar RecipeCard-avatar--initial">{authorInitial}</span>
               )

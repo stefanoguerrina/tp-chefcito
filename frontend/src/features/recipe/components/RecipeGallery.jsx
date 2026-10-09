@@ -55,7 +55,7 @@ function RecipeGallery({ recipe }) {
               aria-label={`Ver foto ${index + 1} de ${images.length}`}
               aria-pressed={index === selectedIndex}
             >
-              <img src={url} alt="" />
+              <img src={url} alt="" loading="lazy" />
             </button>
           ))}
         </div>

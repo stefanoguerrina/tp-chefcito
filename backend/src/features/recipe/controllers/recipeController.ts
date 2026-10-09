@@ -2,7 +2,6 @@
 // Delega toda la lógica de negocio al recipeService; solo se encarga de leer
 // la request y armar la response HTTP correcta.
 import { Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as recipeService from '../services/recipeService.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
@@ -23,10 +22,6 @@ export const searchRecipes = async (req: AuthRequest, res: Response): Promise<vo
       ? await recipeService.getRecipesByUser(idUser)
       : await recipeService.getAllRecipes();
 
-    if (!recipes || recipes.length === 0) {
-      res.status(404).json({ message: 'No se encontraron recetas.' });
-      return;
-    }
     res.status(200).json(recipes);
   } catch (error) {
     console.error('[searchRecipes] Error inesperado:', error);
@@ -65,15 +60,6 @@ export const getRecipeById = async (req: AuthRequest, res: Response): Promise<vo
 // opcional de IDs (ej. { "name": "Milanesa", "categoryIds": [1, 3] }).
 // POST /api/recipes
 export const createRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const { name, description, preparationTime, servings, difficulty, categoryIds } = req.body;
     const result = await recipeService.createRecipe(req.user!.id, {
@@ -101,15 +87,6 @@ export const createRecipe = async (req: AuthRequest, res: Response): Promise<voi
 // Si se envía categoryIds, reemplaza por completo el set de categorías actuales.
 // PATCH /api/recipes/:id
 export const updateRecipeById = async (req: AuthRequest, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const id = Number(req.params.id);
     const { name, description, preparationTime, servings, difficulty, categoryIds } = req.body;

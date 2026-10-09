@@ -2,7 +2,6 @@
 // Delega toda la lógica de negocio al ingredientCategoryService; solo se encarga de leer
 // la request y armar la response HTTP correcta.
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import * as ingredientCategoryService from '../services/ingredientCategoryService.js';
 
 // Devuelve la lista de todas las categorías de ingrediente.
@@ -10,10 +9,6 @@ import * as ingredientCategoryService from '../services/ingredientCategoryServic
 export const searchIngredientCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const categories = await ingredientCategoryService.getAllIngredientCategories();
-    if (!categories || categories.length === 0) {
-      res.status(404).json({ message: 'No se encontraron categorías de ingrediente.' });
-      return;
-    }
     res.status(200).json(categories);
   } catch (error) {
     console.error('[searchIngredientCategories] Error inesperado:', error);
@@ -48,15 +43,6 @@ export const getIngredientCategoryById = async (req: Request, res: Response): Pr
 // Crea una nueva categoría de ingrediente.
 // POST /api/ingredient-categories
 export const createIngredientCategory = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const { name, description } = req.body;
     const result = await ingredientCategoryService.createIngredientCategory({ name, description });
@@ -76,15 +62,6 @@ export const createIngredientCategory = async (req: Request, res: Response): Pro
 // Actualiza una categoría de ingrediente existente.
 // PATCH /api/ingredient-categories/:id
 export const updateIngredientCategoryById = async (req: Request, res: Response): Promise<void> => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-
   try {
     const id = Number(req.params.id);
     const { name, description } = req.body;
