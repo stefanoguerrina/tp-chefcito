@@ -2,7 +2,7 @@
 // Se mantiene separado de userRecipeRouter porque no cuelga de una receta puntual,
 // sino que lista todas las recetas guardadas por un usuario.
 import { Router } from 'express';
-import { listSavedRecipesByUser } from '../controllers/userRecipeController.js';
+import { handleListSavedRecipesByUser } from '../controllers/userRecipeController.js';
 import { verifyToken, verifyOwnerOrAdminOf } from '../../../core/middleware/authMiddleware.js';
 
 const savedRecipesRouter = Router();
@@ -12,7 +12,7 @@ savedRecipesRouter.get(
   '/:idUser',
   verifyToken,
   verifyOwnerOrAdminOf('idUser', 'Acceso denegado. Solo podés ver tus propias recetas guardadas.'),
-  listSavedRecipesByUser
+  handleListSavedRecipesByUser
 );
 
 export { savedRecipesRouter };

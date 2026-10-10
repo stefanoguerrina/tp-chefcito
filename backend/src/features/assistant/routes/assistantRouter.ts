@@ -3,13 +3,13 @@
 // consume la cuota de la API de IA.
 import { Router } from 'express';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
-import { chat } from '../controllers/assistantController.js';
+import { handleChat } from '../controllers/assistantController.js';
 import { validateChat } from '../middleware/assistantValidationMiddleware.js';
 import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const assistantRouter = Router();
 
 // POST /api/assistant/chat — envía la conversación y devuelve la respuesta del bot
-assistantRouter.post('/chat', verifyToken, validateChat, handleValidationErrors, chat);
+assistantRouter.post('/chat', verifyToken, validateChat, handleValidationErrors, handleChat);
 
 export { assistantRouter };

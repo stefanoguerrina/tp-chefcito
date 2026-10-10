@@ -146,7 +146,7 @@ sequenceDiagram
     F->>R: PATCH /api/recipes/7 + Bearer token
     R->>M: verifyToken → validateUpdateRecipe → handleValidationErrors
     M-->>F: 401 sin token / 422 datos inválidos
-    M->>C: updateRecipeById(req, res)
+    M->>C: handleUpdateRecipeById(req, res)
     C->>S: updateRecipe(7, userId, isAdmin, datos)
     S->>Repo: findById(7)
     Repo->>DB: SELECT

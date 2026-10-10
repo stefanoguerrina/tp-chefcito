@@ -3,13 +3,13 @@
 // Además monta, anidados bajo /:id/nutritional-values, los endpoints de valor nutricional.
 import { Router } from 'express';
 import {
-  searchIngredients,
-  getIngredientById,
-  createIngredient,
-  updateIngredientById,
-  deleteIngredientById,
-  uploadIngredientImageHandler,
-  deleteIngredientImageHandler,
+  handleSearchIngredients,
+  handleGetIngredientById,
+  handleCreateIngredient,
+  handleUpdateIngredientById,
+  handleDeleteIngredientById,
+  handleUploadIngredientImage,
+  handleDeleteIngredientImage,
 } from '../controllers/ingredientController.js';
 import { verifyToken, verifyAdmin } from '../../../core/middleware/authMiddleware.js';
 import {
@@ -23,10 +23,10 @@ import { nutritionalValueRouter } from '../../nutritionalValue/routes/nutritiona
 const ingredientRouter = Router();
 
 // GET /api/ingredients — devuelve todos los ingredientes con su categoría
-ingredientRouter.get('/', searchIngredients);
+ingredientRouter.get('/', handleSearchIngredients);
 
 // GET /api/ingredients/:id — devuelve un ingrediente por ID
-ingredientRouter.get('/:id', getIngredientById);
+ingredientRouter.get('/:id', handleGetIngredientById);
 
 // POST /api/ingredients — crea un ingrediente (solo admin)
 ingredientRouter.post(
@@ -35,7 +35,7 @@ ingredientRouter.post(
   verifyAdmin,
   validateCreateIngredient,
   handleValidationErrors,
-  createIngredient
+  handleCreateIngredient
 );
 
 // PATCH /api/ingredients/:id — modifica un ingrediente (solo admin)
@@ -45,19 +45,19 @@ ingredientRouter.patch(
   verifyAdmin,
   validateUpdateIngredient,
   handleValidationErrors,
-  updateIngredientById
+  handleUpdateIngredientById
 );
 
 // DELETE /api/ingredients/:id — elimina un ingrediente (solo admin)
-ingredientRouter.delete('/:id', verifyToken, verifyAdmin, deleteIngredientById);
+ingredientRouter.delete('/:id', verifyToken, verifyAdmin, handleDeleteIngredientById);
 
 // Foto del ingrediente: una sola por ingrediente, subida como archivo (multipart, campo
 // "image") y guardada en backend/uploads/ingredients/. Reemplazarla o quitarla borra el
 // archivo anterior del disco. Solo admin.
 // PATCH  /api/ingredients/:id/image — sube o reemplaza la foto
 // DELETE /api/ingredients/:id/image — quita la foto
-ingredientRouter.patch('/:id/image', verifyToken, verifyAdmin, uploadIngredientImage, uploadIngredientImageHandler);
-ingredientRouter.delete('/:id/image', verifyToken, verifyAdmin, deleteIngredientImageHandler);
+ingredientRouter.patch('/:id/image', verifyToken, verifyAdmin, uploadIngredientImage, handleUploadIngredientImage);
+ingredientRouter.delete('/:id/image', verifyToken, verifyAdmin, handleDeleteIngredientImage);
 
 // /api/ingredients/:idIngredient/nutritional-values — CRUD dependiente de valores nutricionales
 ingredientRouter.use('/:idIngredient/nutritional-values', nutritionalValueRouter);

@@ -243,7 +243,7 @@ contacto. Antes: PR `develop` → `main`.
 | Qué | Por qué / cómo |
 |---|---|
 | **Recorrido visual en 375 / 768 px y modo claro** | Casi todo se ajustó en escritorio y modo oscuro, y lo último no se probó a ojo: modales de categorías y de contraseña, lista de seguidores, desplegables de orden y del calendario, modal de editar cantidad del inventario y el panel admin con secciones que quedan montadas. Probar también en el navegador de la defensa (se usan `:has()` y `@container`). |
-| Documentos con datos viejos | [CLAUDE.md](../CLAUDE.md): "IDE Antigravity", "React en TypeScript y JavaScript" y el ejemplo `RecipeCard.tsx` (el front es solo JSX). [backend/README.md](../backend/README.md): dice que los handlers llevan prefijo `handle` (no es así). [asistente-ia.md](asistente-ia.md): §1 habla del banner del buscador (hoy es un botón flotante) y §7.1 de un problema ya resuelto. |
+| Documentos con datos viejos | [CLAUDE.md](../CLAUDE.md): "IDE Antigravity", "React en TypeScript y JavaScript" y el ejemplo `RecipeCard.tsx` (el front es solo JSX). [asistente-ia.md](asistente-ia.md): §1 habla del banner del buscador (hoy es un botón flotante) y §7.1 de un problema ya resuelto. |
 | Migraciones de Prisma | Hoy se usa `db push`. Pasar a `migrate` obliga a cada uno a marcar la migración inicial como aplicada en su base: decidirlo en grupo; mientras tanto, avisar en cada PR que toque `schema.prisma`. |
 | Webhook de Mercado Pago | En el deploy (https) permitiría confirmar el pago al instante aunque el usuario cierre todo. Solo si sobra tiempo. |
 

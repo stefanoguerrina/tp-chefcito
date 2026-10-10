@@ -3,8 +3,8 @@
 // mergeParams: true permite leer :idRecipe, definido en el router padre.
 import { Router } from 'express';
 import {
-  searchRecipeIngredientsByRecipe,
-  replaceRecipeIngredientsForRecipe,
+  handleSearchRecipeIngredientsByRecipe,
+  handleReplaceRecipeIngredientsForRecipe,
 } from '../controllers/recipeIngredientController.js';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import {
@@ -15,7 +15,7 @@ import { handleValidationErrors } from '../../../core/middleware/validationMiddl
 const recipeIngredientRouter = Router({ mergeParams: true });
 
 // GET /api/recipes/:idRecipe/ingredients — devuelve los ingredientes de la receta (lectura pública)
-recipeIngredientRouter.get('/', searchRecipeIngredientsByRecipe);
+recipeIngredientRouter.get('/', handleSearchRecipeIngredientsByRecipe);
 
 // PUT /api/recipes/:idRecipe/ingredients — reemplaza la lista completa de ingredientes (solo dueño o admin)
 recipeIngredientRouter.put(
@@ -23,7 +23,7 @@ recipeIngredientRouter.put(
   verifyToken,
   validateReplaceRecipeIngredients,
   handleValidationErrors,
-  replaceRecipeIngredientsForRecipe
+  handleReplaceRecipeIngredientsForRecipe
 );
 
 export { recipeIngredientRouter };

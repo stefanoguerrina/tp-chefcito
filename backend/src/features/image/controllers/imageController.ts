@@ -20,7 +20,7 @@ const discardUploadedFile = (req: AuthRequest): void => {
 
 // Devuelve las imágenes de una receta (la principal primero).
 // GET /api/recipes/:idRecipe/images
-export const searchImagesByRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleSearchImagesByRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
 
@@ -37,7 +37,7 @@ export const searchImagesByRecipe = async (req: AuthRequest, res: Response): Pro
 
     res.status(200).json(images);
   } catch (error) {
-    console.error('[searchImagesByRecipe] Error inesperado:', error);
+    console.error('[handleSearchImagesByRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -46,7 +46,7 @@ export const searchImagesByRecipe = async (req: AuthRequest, res: Response): Pro
 // Body: multipart con el archivo en "image", o JSON { imageUrl } con un link externo;
 // isMain opcional. Si isMain=true, reemplaza a la imagen principal anterior.
 // POST /api/recipes/:idRecipe/images
-export const createImage = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleCreateImage = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     const imageUrl = resolveImageUrl(req) as string;
@@ -67,14 +67,14 @@ export const createImage = async (req: AuthRequest, res: Response): Promise<void
     res.status(201).json(result.image);
   } catch (error) {
     discardUploadedFile(req);
-    console.error('[createImage] Error inesperado:', error);
+    console.error('[handleCreateImage] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Actualiza una imagen existente (solo su dueño o un admin).
 // PATCH /api/recipes/:idRecipe/images/:id
-export const updateImageById = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleUpdateImageById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     const id = Number(req.params.id);
@@ -96,14 +96,14 @@ export const updateImageById = async (req: AuthRequest, res: Response): Promise<
     res.status(200).json(result.image);
   } catch (error) {
     discardUploadedFile(req);
-    console.error('[updateImageById] Error inesperado:', error);
+    console.error('[handleUpdateImageById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Elimina una imagen por ID (solo su dueño o un admin).
 // DELETE /api/recipes/:idRecipe/images/:id
-export const deleteImageById = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleDeleteImageById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     const id = Number(req.params.id);
@@ -126,7 +126,7 @@ export const deleteImageById = async (req: AuthRequest, res: Response): Promise<
 
     res.status(200).json({ message: 'Imagen eliminada correctamente.' });
   } catch (error) {
-    console.error('[deleteImageById] Error inesperado:', error);
+    console.error('[handleDeleteImageById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

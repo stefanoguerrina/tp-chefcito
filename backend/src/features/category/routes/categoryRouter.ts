@@ -1,11 +1,11 @@
 // Router de categoría — define los endpoints de /api/categories y aplica middlewares de autenticación y validación.
 import { Router } from 'express';
 import {
-  searchCategories,
-  getCategoryByName,
-  createCategory,
-  updateCategoryById,
-  deleteCategoryById,
+  handleSearchCategories,
+  handleGetCategoryByName,
+  handleCreateCategory,
+  handleUpdateCategoryById,
+  handleDeleteCategoryById,
 } from '../controllers/categoryController.js';
 import { verifyToken, verifyAdmin } from '../../../core/middleware/authMiddleware.js';
 import {
@@ -18,18 +18,18 @@ import { handleValidationErrors } from '../../../core/middleware/validationMiddl
 const categoryRouter = Router();
 
 // GET /api/categories — devuelve todas las categorías existentes (requiere token de usuario)
-categoryRouter.get('/', verifyToken, searchCategories);
+categoryRouter.get('/', verifyToken, handleSearchCategories);
 
 // GET /api/categories/name/:name — busca una categoría por su nombre exacto (requiere token de usuario)
-categoryRouter.get('/name/:name', verifyToken, getCategoryByName);
+categoryRouter.get('/name/:name', verifyToken, handleGetCategoryByName);
 
 // POST /api/categories — crea una nueva categoría (solo admin)
-categoryRouter.post('/', verifyToken, verifyAdmin, validateCreateCategory, handleValidationErrors, createCategory);
+categoryRouter.post('/', verifyToken, verifyAdmin, validateCreateCategory, handleValidationErrors, handleCreateCategory);
 
 // PATCH /api/categories/:id — modifica los datos (name, description) de una categoría (solo admin)
-categoryRouter.patch('/:id', verifyToken, verifyAdmin, validateUpdateCategory, handleValidationErrors, updateCategoryById);
+categoryRouter.patch('/:id', verifyToken, verifyAdmin, validateUpdateCategory, handleValidationErrors, handleUpdateCategoryById);
 
 // DELETE /api/categories/:id — elimina definitivamente una categoría (solo admin)
-categoryRouter.delete('/:id', verifyToken, verifyAdmin, validateCategoryId, handleValidationErrors, deleteCategoryById);
+categoryRouter.delete('/:id', verifyToken, verifyAdmin, validateCategoryId, handleValidationErrors, handleDeleteCategoryById);
 
 export { categoryRouter };

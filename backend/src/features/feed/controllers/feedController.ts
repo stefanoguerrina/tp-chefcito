@@ -18,37 +18,37 @@ const numberOrDefault = (value: unknown, fallback: number) =>
 
 // Últimas recetas de las personas que sigue el usuario. Query opcional: limit.
 // GET /api/feed/friends/recipes
-export const getFriendsRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleGetFriendsRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const limit = numberOrDefault(req.query.limit, FRIENDS_RECIPES_DEFAULT_LIMIT);
     res.status(200).json(await feedService.getFriendsRecipes(req.user!.id, limit));
   } catch (error) {
-    console.error('[getFriendsRecipes] Error inesperado:', error);
+    console.error('[handleGetFriendsRecipes] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Últimas reseñas de las personas que sigue el usuario. Query opcional: limit.
 // GET /api/feed/friends/reviews
-export const getFriendsReviews = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleGetFriendsReviews = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const limit = numberOrDefault(req.query.limit, FRIENDS_REVIEWS_DEFAULT_LIMIT);
     res.status(200).json(await feedService.getFriendsReviews(req.user!.id, limit));
   } catch (error) {
-    console.error('[getFriendsReviews] Error inesperado:', error);
+    console.error('[handleGetFriendsReviews] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Recetas mejor valoradas en los últimos `days` días. Query opcional: days y limit.
 // GET /api/feed/top-recipes
-export const getTopRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleGetTopRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const days = numberOrDefault(req.query.days, TOP_RECIPES_DEFAULT_DAYS);
     const limit = numberOrDefault(req.query.limit, TOP_RECIPES_DEFAULT_LIMIT);
     res.status(200).json(await feedService.getTopRecipes(days, limit));
   } catch (error) {
-    console.error('[getTopRecipes] Error inesperado:', error);
+    console.error('[handleGetTopRecipes] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

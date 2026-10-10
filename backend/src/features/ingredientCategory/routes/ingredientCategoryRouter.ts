@@ -2,11 +2,11 @@
 // Las lecturas son públicas; las escrituras requieren token de administrador.
 import { Router } from 'express';
 import {
-  searchIngredientCategories,
-  getIngredientCategoryById,
-  createIngredientCategory,
-  updateIngredientCategoryById,
-  deleteIngredientCategoryById,
+  handleSearchIngredientCategories,
+  handleGetIngredientCategoryById,
+  handleCreateIngredientCategory,
+  handleUpdateIngredientCategoryById,
+  handleDeleteIngredientCategoryById,
 } from '../controllers/ingredientCategoryController.js';
 import { verifyToken, verifyAdmin } from '../../../core/middleware/authMiddleware.js';
 import {
@@ -18,10 +18,10 @@ import { handleValidationErrors } from '../../../core/middleware/validationMiddl
 const ingredientCategoryRouter = Router();
 
 // GET /api/ingredient-categories — devuelve todas las categorías de ingrediente
-ingredientCategoryRouter.get('/', searchIngredientCategories);
+ingredientCategoryRouter.get('/', handleSearchIngredientCategories);
 
 // GET /api/ingredient-categories/:id — devuelve una categoría por ID
-ingredientCategoryRouter.get('/:id', getIngredientCategoryById);
+ingredientCategoryRouter.get('/:id', handleGetIngredientCategoryById);
 
 // POST /api/ingredient-categories — crea una categoría (solo admin)
 ingredientCategoryRouter.post(
@@ -30,7 +30,7 @@ ingredientCategoryRouter.post(
   verifyAdmin,
   validateCreateIngredientCategory,
   handleValidationErrors,
-  createIngredientCategory
+  handleCreateIngredientCategory
 );
 
 // PATCH /api/ingredient-categories/:id — modifica una categoría (solo admin)
@@ -40,10 +40,10 @@ ingredientCategoryRouter.patch(
   verifyAdmin,
   validateUpdateIngredientCategory,
   handleValidationErrors,
-  updateIngredientCategoryById
+  handleUpdateIngredientCategoryById
 );
 
 // DELETE /api/ingredient-categories/:id — elimina una categoría (solo admin)
-ingredientCategoryRouter.delete('/:id', verifyToken, verifyAdmin, deleteIngredientCategoryById);
+ingredientCategoryRouter.delete('/:id', verifyToken, verifyAdmin, handleDeleteIngredientCategoryById);
 
 export { ingredientCategoryRouter };

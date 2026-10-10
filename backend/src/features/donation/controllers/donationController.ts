@@ -10,25 +10,25 @@ const PAYMENT_UNAVAILABLE_MESSAGE = 'No pudimos comunicarnos con Mercado Pago. I
 
 // Montos fijos para donar.
 // GET /api/donations/tiers
-export const getDonationTiers = (_req: AuthRequest, res: Response): void => {
+export const handleGetDonationTiers = (_req: AuthRequest, res: Response): void => {
   res.status(200).json(donationService.getTiers());
 };
 
 // Historial del usuario logueado: { received, sent }, cada uno con sus filas, su resumen
 // (total, cantidad, promedio) y el top 5 de personas. Responde 200 aunque esté vacío.
 // GET /api/donations
-export const getMyDonations = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleGetMyDonations = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     res.status(200).json(await donationService.getDonationHistory(req.user!.id));
   } catch (error) {
-    console.error('[getMyDonations] Error inesperado:', error);
+    console.error('[handleGetMyDonations] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Crea el pago en Mercado Pago y responde 201 con { checkoutUrl }.
 // POST /api/donations/checkout — body { idGrantee, tierId }
-export const createDonationCheckout = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleCreateDonationCheckout = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const result = await donationService.createCheckout(req.user!.id, Number(req.body.idGrantee), req.body.tierId);
     if (!result.ok) {
@@ -52,14 +52,14 @@ export const createDonationCheckout = async (req: AuthRequest, res: Response): P
     }
     res.status(201).json({ checkoutUrl: result.checkoutUrl, transactionRef: result.transactionRef });
   } catch (error) {
-    console.error('[createDonationCheckout] Error inesperado:', error);
+    console.error('[handleCreateDonationCheckout] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Estado actual de una donación propia (si sigue pendiente, antes se busca el pago en Mercado Pago).
 // GET /api/donations/:transactionRef
-export const getDonation = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleGetDonation = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const result = await donationService.syncDonation(req.user!.id, String(req.params.transactionRef));
     if (!result.ok) {
@@ -68,14 +68,14 @@ export const getDonation = async (req: AuthRequest, res: Response): Promise<void
     }
     res.status(200).json(result.donation);
   } catch (error) {
-    console.error('[getDonation] Error inesperado:', error);
+    console.error('[handleGetDonation] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Confirma el pago con el que el usuario volvió de Mercado Pago y responde con la donación.
 // POST /api/donations/confirm — body { paymentId }
-export const confirmDonation = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleConfirmDonation = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const result = await donationService.confirmPayment(req.user!.id, String(req.body.paymentId));
     if (!result.ok) {
@@ -94,7 +94,7 @@ export const confirmDonation = async (req: AuthRequest, res: Response): Promise<
     }
     res.status(200).json(result.donation);
   } catch (error) {
-    console.error('[confirmDonation] Error inesperado:', error);
+    console.error('[handleConfirmDonation] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

@@ -6,19 +6,19 @@ import * as categoryService from '../services/categoryService.js';
 
 // Devuelve la lista de todas las categorías existentes.
 // GET /api/categories — devuelve todas las categorías (requiere token de usuario)
-export const searchCategories = async (req: Request, res: Response): Promise<void> => {
+export const handleSearchCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const categories = await categoryService.getAllCategories();
     res.status(200).json(categories);
   } catch (error) {
-    console.error('[searchCategories] Error inesperado:', error);
+    console.error('[handleSearchCategories] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Busca una categoría por su nombre exacto, recibido como parámetro en la URL.
 // GET /api/categories/name/:name — devuelve una categoría por nombre (requiere token de usuario)
-export const getCategoryByName = async (req: Request, res: Response): Promise<void> => {
+export const handleGetCategoryByName = async (req: Request, res: Response): Promise<void> => {
   try {
     const name = String(req.params.name);
     const category = await categoryService.getCategoryByName(name);
@@ -28,7 +28,7 @@ export const getCategoryByName = async (req: Request, res: Response): Promise<vo
     }
     res.status(200).json(category);
   } catch (error) {
-    console.error('[getCategoryByName] Error inesperado:', error);
+    console.error('[handleGetCategoryByName] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -37,7 +37,7 @@ export const getCategoryByName = async (req: Request, res: Response): Promise<vo
 // Solo un admin puede realizar esta acción (controlado por verifyAdmin en el router).
 // Devuelve 201 con la categoría creada, 409 si ya existe una con el mismo nombre, 422 si los datos son inválidos.
 // POST /api/categories — crea una categoría (solo admin)
-export const createCategory = async (req: Request, res: Response): Promise<void> => {
+export const handleCreateCategory = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description } = req.body;
     const result = await categoryService.createCategory({ name, description });
@@ -50,7 +50,7 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
 
     res.status(201).json(result.category);
   } catch (error) {
-    console.error('[createCategory] Error inesperado:', error);
+    console.error('[handleCreateCategory] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -59,7 +59,7 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
 // Solo un admin puede realizar esta acción (controlado por verifyAdmin en el router).
 // Devuelve 200 con los datos actualizados, 404 si no existe, 409 si el nuevo nombre ya está en uso, 422 si los datos son inválidos.
 // PATCH /api/categories/:id — actualiza una categoría (solo admin)
-export const updateCategoryById = async (req: Request, res: Response): Promise<void> => {
+export const handleUpdateCategoryById = async (req: Request, res: Response): Promise<void> => {
   try {
     const categoryId = Number(req.params.id);
     const { name, description } = req.body;
@@ -77,7 +77,7 @@ export const updateCategoryById = async (req: Request, res: Response): Promise<v
 
     res.status(200).json(updated);
   } catch (error) {
-    console.error('[updateCategoryById] Error inesperado:', error);
+    console.error('[handleUpdateCategoryById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -87,7 +87,7 @@ export const updateCategoryById = async (req: Request, res: Response): Promise<v
 // Recibe el ID como parámetro en la URL.
 // Devuelve 200 con los datos de la categoría eliminada, 404 si no existe, 400 si el ID es inválido.
 // DELETE /api/categories/:id — elimina una categoría (solo admin)
-export const deleteCategoryById = async (req: Request, res: Response): Promise<void> => {
+export const handleDeleteCategoryById = async (req: Request, res: Response): Promise<void> => {
   try {
     const categoryId = Number(req.params.id);
 
@@ -104,7 +104,7 @@ export const deleteCategoryById = async (req: Request, res: Response): Promise<v
 
     res.status(200).json(deletedCategory);
   } catch (error) {
-    console.error('[deleteCategoryById] Error inesperado:', error);
+    console.error('[handleDeleteCategoryById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

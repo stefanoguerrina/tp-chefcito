@@ -7,19 +7,19 @@ import * as roleService from '../services/roleService.js';
 
 // Devuelve la lista de todos los roles.
 // GET /api/roles
-export const searchRoles = async (req: Request, res: Response): Promise<void> => {
+export const handleSearchRoles = async (req: Request, res: Response): Promise<void> => {
   try {
     const roles = await roleService.getAllRoles();
     res.status(200).json(roles);
   } catch (error) {
-    console.error('[searchRoles] Error inesperado:', error);
+    console.error('[handleSearchRoles] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Devuelve un rol por ID.
 // GET /api/roles/:id
-export const getRoleById = async (req: Request, res: Response): Promise<void> => {
+export const handleGetRoleById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -31,14 +31,14 @@ export const getRoleById = async (req: Request, res: Response): Promise<void> =>
 
     res.status(200).json(role);
   } catch (error) {
-    console.error('[getRoleById] Error inesperado:', error);
+    console.error('[handleGetRoleById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Crea un nuevo rol.
 // POST /api/roles
-export const createRole = async (req: Request, res: Response): Promise<void> => {
+export const handleCreateRole = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description } = req.body;
     const result = await roleService.createRole({ name, description });
@@ -50,14 +50,14 @@ export const createRole = async (req: Request, res: Response): Promise<void> => 
 
     res.status(201).json(result.role);
   } catch (error) {
-    console.error('[createRole] Error inesperado:', error);
+    console.error('[handleCreateRole] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Actualiza un rol existente.
 // PATCH /api/roles/:id
-export const updateRoleById = async (req: Request, res: Response): Promise<void> => {
+export const handleUpdateRoleById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
     const { name, description } = req.body;
@@ -70,14 +70,14 @@ export const updateRoleById = async (req: Request, res: Response): Promise<void>
 
     res.status(200).json(updated);
   } catch (error) {
-    console.error('[updateRoleById] Error inesperado:', error);
+    console.error('[handleUpdateRoleById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Elimina un rol por ID.
 // DELETE /api/roles/:id
-export const deleteRoleById = async (req: Request, res: Response): Promise<void> => {
+export const handleDeleteRoleById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -101,14 +101,14 @@ export const deleteRoleById = async (req: Request, res: Response): Promise<void>
 
     res.status(200).json({ message: 'Rol eliminado correctamente.' });
   } catch (error) {
-    console.error('[deleteRoleById] Error inesperado:', error);
+    console.error('[handleDeleteRoleById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Devuelve los usuarios que tienen asignado un rol (lectura de la tabla intermedia userrole).
 // GET /api/roles/:id/users
-export const getUsersByRole = async (req: Request, res: Response): Promise<void> => {
+export const handleGetUsersByRole = async (req: Request, res: Response): Promise<void> => {
   try {
     const roleId = Number(req.params.id);
 
@@ -119,7 +119,7 @@ export const getUsersByRole = async (req: Request, res: Response): Promise<void>
     }
     res.status(200).json(users);
   } catch (error) {
-    console.error('[getUsersByRole] Error inesperado:', error);
+    console.error('[handleGetUsersByRole] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -127,19 +127,19 @@ export const getUsersByRole = async (req: Request, res: Response): Promise<void>
 // Devuelve las asignaciones de roles de todos los usuarios en un solo pedido (para la
 // columna "Rol" del dashboard, sin pedir los roles usuario por usuario).
 // GET /api/roles/users
-export const getAllUserRoles = async (_req: Request, res: Response): Promise<void> => {
+export const handleGetAllUserRoles = async (_req: Request, res: Response): Promise<void> => {
   try {
     const userRoles = await roleService.getAllUserRoles();
     res.status(200).json(userRoles);
   } catch (error) {
-    console.error('[getAllUserRoles] Error inesperado:', error);
+    console.error('[handleGetAllUserRoles] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Devuelve los roles asignados a un usuario dado (para el panel de administración de usuarios).
 // GET /api/roles/users/:userId
-export const getRolesByUserId = async (req: Request, res: Response): Promise<void> => {
+export const handleGetRolesByUserId = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = Number(req.params.userId);
 
@@ -151,7 +151,7 @@ export const getRolesByUserId = async (req: Request, res: Response): Promise<voi
 
     res.status(200).json(roles);
   } catch (error) {
-    console.error('[getRolesByUserId] Error inesperado:', error);
+    console.error('[handleGetRolesByUserId] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -159,7 +159,7 @@ export const getRolesByUserId = async (req: Request, res: Response): Promise<voi
 // Asigna un rol a un usuario (crea el vínculo en la tabla intermedia userrole).
 // Body: { userId }
 // POST /api/roles/:id/users
-export const assignRoleToUser = async (req: Request, res: Response): Promise<void> => {
+export const handleAssignRoleToUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const roleId = Number(req.params.id);
     const userId = Number(req.body.userId);
@@ -181,14 +181,14 @@ export const assignRoleToUser = async (req: Request, res: Response): Promise<voi
 
     res.status(201).json({ message: 'Rol asignado correctamente al usuario.' });
   } catch (error) {
-    console.error('[assignRoleToUser] Error inesperado:', error);
+    console.error('[handleAssignRoleToUser] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Quita un rol de un usuario (elimina el vínculo en la tabla intermedia userrole).
 // DELETE /api/roles/:id/users/:userId
-export const removeRoleFromUser = async (req: Request, res: Response): Promise<void> => {
+export const handleRemoveRoleFromUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const roleId = Number(req.params.id);
     const userId = Number(req.params.userId);
@@ -202,7 +202,7 @@ export const removeRoleFromUser = async (req: Request, res: Response): Promise<v
 
     res.status(200).json({ message: 'Rol quitado correctamente al usuario.' });
   } catch (error) {
-    console.error('[removeRoleFromUser] Error inesperado:', error);
+    console.error('[handleRemoveRoleFromUser] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

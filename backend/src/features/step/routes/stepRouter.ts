@@ -2,7 +2,7 @@
 // /api/recipes/:idRecipe/steps
 // mergeParams: true permite leer :idRecipe, definido en el router padre.
 import { Router } from 'express';
-import { searchStepsByRecipe, replaceStepsForRecipe } from '../controllers/stepController.js';
+import { handleSearchStepsByRecipe, handleReplaceStepsForRecipe } from '../controllers/stepController.js';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import { validateReplaceSteps } from '../middleware/stepValidationMiddleware.js';
 import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
@@ -10,9 +10,9 @@ import { handleValidationErrors } from '../../../core/middleware/validationMiddl
 const stepRouter = Router({ mergeParams: true });
 
 // GET /api/recipes/:idRecipe/steps — devuelve los pasos de la receta (lectura pública)
-stepRouter.get('/', searchStepsByRecipe);
+stepRouter.get('/', handleSearchStepsByRecipe);
 
 // PUT /api/recipes/:idRecipe/steps — reemplaza la lista completa de pasos (solo dueño o admin)
-stepRouter.put('/', verifyToken, validateReplaceSteps, handleValidationErrors, replaceStepsForRecipe);
+stepRouter.put('/', verifyToken, validateReplaceSteps, handleValidationErrors, handleReplaceStepsForRecipe);
 
 export { stepRouter };
