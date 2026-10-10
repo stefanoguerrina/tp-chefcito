@@ -5,7 +5,7 @@
   position: fixed;
   inset: 0;
   z-index: 300;
-  background: rgba(0, 0, 0, 0.55);
+  background: $color-scrim;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: flex;
@@ -59,21 +59,15 @@
   gap: $spacing-xs;
   min-width: 0;
 
-  select {
+  // Mes y año: DropdownSelect, más compactos que en un formulario.
+  .DropdownSelect {
     flex: 1;
-    min-width: 0;
-    border: 1px solid $color-outline-variant;
-    border-radius: $radius-md;
-    padding: 6px 2px;
-    font-family: $font-body;
-    font-size: 13px;
-    color: $color-on-background;
-    background: $color-surface;
+  }
 
-    &:focus {
-      outline: none;
-      border-color: $color-primary;
-    }
+  .DropdownSelect-trigger {
+    min-height: 0;
+    padding: 6px $spacing-xs 6px $spacing-sm;
+    font-size: 13px;
   }
 }
 

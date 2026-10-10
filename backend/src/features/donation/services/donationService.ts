@@ -219,6 +219,7 @@ export async function syncDonation(
 // idUser volvió de Mercado Pago con paymentId. Consulta el pago y actualiza su donación.
 // Solo el que donó puede confirmar su propia donación. Llamarlo dos veces con el mismo pago
 // no tiene efecto extra (vuelve a guardar el mismo estado), así que se puede reintentar.
+// Una donación que ya está 'completed' se devuelve sin cambios.
 export async function confirmPayment(
   idUser: number,
   paymentId: string
@@ -244,6 +245,11 @@ export async function confirmPayment(
   // Si la donación es de otro usuario se responde igual que si no existiera, para no
   // revelar donaciones ajenas.
   if (!donation || donation.idDonor !== idUser) return { ok: false, reason: 'donation_not_found' };
+
+  // Una donación completada ya se cobró: no se cambia más. Si hubo varios intentos (ej. uno
+  // rechazado y después uno aprobado) y el usuario vuelve con el payment_id del rechazado
+  // (desde una pestaña vieja), no tiene que pasar a 'rejected'.
+  if (donation.status === 'completed') return { ok: true, donation: toSummary(donation) };
 
   const updated = await donationRepository.updateStatus(
     donation.idDonor,

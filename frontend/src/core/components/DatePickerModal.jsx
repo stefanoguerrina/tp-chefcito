@@ -1,5 +1,7 @@
 // Modal de selección de fecha: calendario de mes propio, sin librerías externas.
 import { useState } from 'react';
+import { useOverlayClose } from '../hooks/useOverlayClose.js';
+import DropdownSelect from './DropdownSelect.jsx';
 import './_date-picker-modal.scss';
 
 const MONTH_NAMES = [
@@ -24,10 +26,13 @@ const DatePickerModal = ({ value, onSelect, onClose }) => {
     const initialDate = value ? new Date(`${value}T00:00:00`) : new Date();
     const [viewYear, setViewYear] = useState(initialDate.getFullYear());
     const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
+    const overlayCloseProps = useOverlayClose(onClose);
 
     const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let year = currentYear; year >= currentYear - 110; year--) years.push(year);
+    // Opciones de los desplegables de mes y año ({ value, label }, ver DropdownSelect).
+    const monthOptions = MONTH_NAMES.map((name, index) => ({ value: index, label: name }));
+    const yearOptions = [];
+    for (let year = currentYear; year >= currentYear - 110; year--) yearOptions.push({ value: year, label: String(year) });
 
     const firstDayOfMonth = new Date(viewYear, viewMonth, 1);
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -66,11 +71,12 @@ const DatePickerModal = ({ value, onSelect, onClose }) => {
     return (
         <div
             className="DatePickerModal-overlay"
+            onMouseDown={overlayCloseProps.onMouseDown}
             // Este modal puede abrirse sobre otro modal (ver RegisterForm): sin stopPropagation
-            // acá, un click en su fondo también cerraría el modal padre al burbujear.
+            // acá, un click en su fondo también llegaría al modal padre al burbujear.
             onClick={(event) => {
                 event.stopPropagation();
-                onClose();
+                overlayCloseProps.onClick(event);
             }}
         >
             <div
@@ -91,16 +97,8 @@ const DatePickerModal = ({ value, onSelect, onClose }) => {
                     </button>
 
                     <div className="DatePickerModal-selectors">
-                        <select value={viewMonth} onChange={(event) => setViewMonth(Number(event.target.value))}>
-                            {MONTH_NAMES.map((name, index) => (
-                                <option key={name} value={index}>{name}</option>
-                            ))}
-                        </select>
-                        <select value={viewYear} onChange={(event) => setViewYear(Number(event.target.value))}>
-                            {years.map((year) => (
-                                <option key={year} value={year}>{year}</option>
-                            ))}
-                        </select>
+                        <DropdownSelect value={viewMonth} options={monthOptions} onChange={setViewMonth} aria-label="Mes" />
+                        <DropdownSelect value={viewYear} options={yearOptions} onChange={setViewYear} aria-label="Año" />
                     </div>
 
                     <button

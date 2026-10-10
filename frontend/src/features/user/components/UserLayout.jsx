@@ -2,12 +2,20 @@
 // activa (<Outlet />). Cada sección (Inicio, Mis recetas, Perfil, etc.) es una ruta hija
 // definida en App.jsx, así que se puede navegar con la URL, usar "Atrás" y recargar (F5).
 // Abajo a la derecha, en todas las secciones, el botón flotante de Chefcito Bot.
+// Al entrar, precarga en segundo plano el código de las demás secciones, así navegar entre
+// ellas no tiene que esperar a que se descarguen.
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
+import { preloadPages, USER_PAGE_LOADERS } from '../../../app/pageLoaders.js';
 import Sidebar from './Sidebar.jsx';
 import AssistantFloatingButton from '../../assistant/components/AssistantFloatingButton.jsx';
 import '../styles/_home-page.scss';
 
 function UserLayout() {
+  useEffect(() => {
+    preloadPages(USER_PAGE_LOADERS);
+  }, []);
+
   return (
     <div className="HomePage">
       <Sidebar />

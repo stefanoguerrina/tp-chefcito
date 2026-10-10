@@ -1,7 +1,6 @@
 // Middlewares de validación para la búsqueda, usando express-validator.
 // Se ejecutan antes del controller para rechazar búsquedas inválidas con mensajes claros.
-import { query, validationResult } from 'express-validator';
-import { Request, Response, NextFunction } from 'express';
+import { query } from 'express-validator';
 import {
   NAME_OR_RECIPES_SORTS,
   NUTRITION_GOAL_KEYS,
@@ -96,17 +95,3 @@ export const validateNameOrRecipesListing = [
     .isIn(NAME_OR_RECIPES_SORTS)
     .withMessage(`El orden debe ser uno de: ${NAME_OR_RECIPES_SORTS.join(', ')}.`),
 ];
-
-// Middleware que lee los errores de express-validator y responde 422 si los hay.
-// Se debe usar después de las reglas de validación en el router.
-export const handleValidationErrors = (req: Request, res: Response, next: NextFunction): void => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación. Revisá los campos enviados.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-  next();
-};

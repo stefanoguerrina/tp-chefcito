@@ -29,7 +29,7 @@
     position: fixed;
     inset: 0;
     z-index: 300;
-    background: rgba(0, 0, 0, 0.8);
+    background: $color-scrim;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -397,6 +397,18 @@
       &:hover:not(:disabled) {
         background: $color-on-surface-variant;
       }
+    }
+  }
+
+  // Botón "Cambiar contraseña" dentro del formulario: abre ChangePasswordModal.
+  &-passwordButton {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    .material-symbols-outlined {
+      font-size: 18px;
     }
   }
 }

@@ -43,8 +43,8 @@ const formatRating = (rating, reviewsCount) =>
 //   saveButtonInCorner: el botón de guardar va en la esquina de arriba a la derecha de la
 //   card (más chico) en vez de sobre la foto. Pensado para la disposición horizontal.
 //   authorNote: texto corto al lado del nombre del autor (ej. "hace 3 días").
-//   children: contenido extra opcional debajo de la bajada (ej. en la búsqueda "Con mi
-//   despensa", cuántos ingredientes de la receta tiene el usuario).
+//   children: contenido extra opcional debajo de la bajada (ej. en la búsqueda con el
+//   filtro "Inventario", cuántos ingredientes de la receta tiene el usuario).
 function RecipeCard({
   recipe, onClick, showSaveButton = true, showAuthor = true, showTime = true, showRating = true,
   showCategories = true, horizontal = false, saveButtonInCorner = false, authorNote,

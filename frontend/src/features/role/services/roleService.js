@@ -7,11 +7,6 @@ export const getAllRoles = async () => {
   return await apiFetch('/roles');
 };
 
-// Obtiene un rol por ID.
-export const getRoleById = async (id) => {
-  return await apiFetch(`/roles/${id}`);
-};
-
 // Crea un nuevo rol.
 // Recibe: { name, description? }
 export const createRole = async (data) => {

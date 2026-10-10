@@ -1,17 +1,17 @@
-// Aviso arriba del listado en modo "Con mi despensa": cuenta para cuántas recetas tenés
-// todo, o explica que se muestran las que más se acercan (o que la despensa está vacía).
+// Aviso arriba del listado en modo "Inventario": cuenta para cuántas recetas tenés
+// todo, o explica que se muestran las que más se acercan (o que el inventario está vacío).
 import { Link } from 'react-router-dom';
 import '../styles/_pantry-match.scss';
 
 // Recibe: pantry ({ inventoryCount, completeCount }, del backend) y total (recetas que
-// tienen al menos un ingrediente de la despensa).
+// tienen al menos un ingrediente del inventario).
 function PantryNotice({ pantry, total }) {
   if (pantry.inventoryCount === 0) {
     return (
       <div className="PantryNotice PantryNotice--empty">
         <span className="material-symbols-outlined" aria-hidden="true">kitchen</span>
         <p>
-          Tu despensa está vacía. Cargá los ingredientes que tenés en casa y te mostramos qué
+          Tu inventario está vacío. Cargá los ingredientes que tenés en casa y te mostramos qué
           recetas podés preparar.
         </p>
         <Link to="/inventario" className="PantryNotice-link">Cargar ingredientes</Link>

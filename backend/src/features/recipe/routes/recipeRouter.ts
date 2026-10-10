@@ -14,8 +14,8 @@ import { verifyToken, readOptionalToken } from '../../../core/middleware/authMid
 import {
   validateCreateRecipe,
   validateUpdateRecipe,
-  handleValidationErrors,
 } from '../middleware/recipeValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 import { stepRouter } from '../../step/routes/stepRouter.js';
 import { imageRouter } from '../../image/routes/imageRouter.js';
 import { recipeIngredientRouter } from '../../recipeIngredient/routes/recipeIngredientRouter.js';

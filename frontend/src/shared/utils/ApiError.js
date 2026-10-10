@@ -1,6 +1,6 @@
 // Error de la API: además del mensaje amigable, guarda el código HTTP y los errores por
-// campo que devolvió el backend. Permite decidir qué hacer según el status (ej. 404 = lista
-// vacía, 409 = duplicado) en vez de comparar textos del mensaje.
+// campo que devolvió el backend. Permite decidir qué hacer según el status (ej. 404 = no
+// existe, 409 = duplicado) en vez de comparar textos del mensaje.
 export class ApiError extends Error {
   // Recibe: message (texto para el usuario), status (código HTTP, 0 si no hubo respuesta),
   // fieldErrors ([{ campo, mensaje }], vacío si no aplica) y data (el body crudo del error).

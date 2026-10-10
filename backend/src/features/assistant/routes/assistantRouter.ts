@@ -4,7 +4,8 @@
 import { Router } from 'express';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import { chat } from '../controllers/assistantController.js';
-import { validateChat, handleValidationErrors } from '../middleware/assistantValidationMiddleware.js';
+import { validateChat } from '../middleware/assistantValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const assistantRouter = Router();
 

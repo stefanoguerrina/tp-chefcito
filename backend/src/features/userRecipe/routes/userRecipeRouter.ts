@@ -13,8 +13,8 @@ import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import {
   validateCreateUserRecipe,
   validateUpdateUserRecipe,
-  handleValidationErrors,
 } from '../middleware/userRecipeValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 // mergeParams: true permite acceder a :idRecipe del router padre (recipeRouter).
 const userRecipeRouter = Router({ mergeParams: true });

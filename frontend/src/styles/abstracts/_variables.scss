@@ -46,12 +46,11 @@ $color-error: var(--color-error);
 $color-on-error: var(--color-on-error);
 $color-on-error-container: var(--color-on-error-container);
 
-// Tonos propios de la sección Inventario ("Mi despensa").
+// Tonos propios de la sección Inventario.
 $color-pantry-cream: var(--color-pantry-cream);
 $color-pantry-lime: var(--color-pantry-lime);
 $color-pantry-lime-light: var(--color-pantry-lime-light);
 $color-pantry-green: var(--color-pantry-green);
-$color-pantry-warning: var(--color-pantry-warning);
 $color-pantry-muted: var(--color-pantry-muted);
 $color-pantry-muted-light: var(--color-pantry-muted-light);
 
@@ -81,6 +80,10 @@ $color-chart-5: var(--color-chart-5);
 // Texto sobre fotos oscurecidas con un overlay negro: es blanco en los dos temas, a
 // diferencia de $color-on-primary (que en modo oscuro pasa a ser un verde muy oscuro).
 $color-on-image: #ffffff;
+
+// Fondo oscuro semitransparente detrás de los modales. Es igual en los dos temas: su
+// trabajo es oscurecer lo que queda atrás, sea claro u oscuro.
+$color-scrim: rgba(0, 0, 0, 0.55);
 
 // --- Espaciados ---
 $spacing-xs: 4px;

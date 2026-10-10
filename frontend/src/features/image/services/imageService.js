@@ -3,6 +3,7 @@
 // backend lo guarda en disco con multer) o pegando un link externo (viaja como JSON).
 // En ambos casos la BD guarda solo la URL/ruta, nunca la imagen en sí.
 import { apiFetch } from '../../../shared/utils/apiFetch.js';
+import { imageFromApi } from '../models/imageModel.js';
 
 // Arma el body según el origen de la imagen.
 // Recibe: { file?, imageUrl?, isMain? }. Devuelve: un FormData (si hay archivo) o un JSON.
@@ -16,28 +17,26 @@ const buildImageBody = ({ file, imageUrl, isMain }) => {
   return JSON.stringify({ imageUrl, isMain });
 };
 
-// Trae las imágenes de una receta, la principal primero (lectura pública).
-export const getImagesByRecipe = async (idRecipe) => {
-  return await apiFetch(`/recipes/${idRecipe}/images`);
-};
-
 // Agrega una imagen a una receta (requiere ser el dueño o admin).
-// Recibe: idRecipe, { file? | imageUrl?, isMain? }. Devuelve: la imagen creada.
+// Recibe: idRecipe, { file? | imageUrl?, isMain? }. Devuelve: la imagen creada (imageFromApi).
 export const createImage = async (idRecipe, data) => {
-  return await apiFetch(`/recipes/${idRecipe}/images`, {
+  const image = await apiFetch(`/recipes/${idRecipe}/images`, {
     method: 'POST',
     body: buildImageBody(data),
   });
+  return imageFromApi(image);
 };
 
 // Reemplaza una imagen existente (requiere ser el dueño o admin). El backend borra el
 // archivo anterior si era una foto subida.
-// Recibe: idRecipe, id, { file? | imageUrl?, isMain? }.
+// Recibe: idRecipe, id, { file? | imageUrl?, isMain? }. Devuelve: la imagen actualizada
+// (imageFromApi).
 export const updateImage = async (idRecipe, id, data) => {
-  return await apiFetch(`/recipes/${idRecipe}/images/${id}`, {
+  const image = await apiFetch(`/recipes/${idRecipe}/images/${id}`, {
     method: 'PATCH',
     body: buildImageBody(data),
   });
+  return imageFromApi(image);
 };
 
 // Elimina una imagen por ID (requiere ser el dueño o admin).

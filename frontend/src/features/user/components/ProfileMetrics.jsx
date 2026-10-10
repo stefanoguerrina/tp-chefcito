@@ -1,15 +1,19 @@
 // Métricas del perfil en formato "bento", debajo de la portada: una tarjeta grande a la
 // izquierda (recetas publicadas y valoración promedio) y tres apiladas a la derecha
 // (seguidores, seguidos y categoría principal), cada una con su ícono a la izquierda y el
-// dato a su lado.
+// dato a su lado. Seguidores y seguidos son botones: abren la lista de personas.
+import { useState } from 'react';
 import RatingStars from '../../../core/components/RatingStars.jsx';
+import FollowListModal from '../../follow/components/FollowListModal.jsx';
 import '../styles/_profile-metrics.scss';
 
-// Recibe: metrics (ver buildProfileMetrics en models/profileMetricsModel.js) y followStatus
-// ({ followersCount, followingCount } de useFollow, o null mientras carga o si falló: ahí
-// las dos tarjetas muestran "—").
-function ProfileMetrics({ metrics, followStatus }) {
+// Recibe: userId (el del perfil), metrics (ver buildProfileMetrics en
+// models/profileMetricsModel.js) y followStatus ({ followersCount, followingCount } de
+// useFollow, o null mientras carga o si falló: ahí las dos tarjetas muestran "—").
+function ProfileMetrics({ userId, metrics, followStatus }) {
   const { rating, recipesCount, categories } = metrics;
+  // Lista abierta en el modal: 'followers', 'following' o null (cerrado).
+  const [openFollowList, setOpenFollowList] = useState(null);
 
   return (
     <div className="ProfileMetrics">
@@ -44,21 +48,33 @@ function ProfileMetrics({ metrics, followStatus }) {
       </article>
 
       <div className="ProfileMetrics-group">
-        <article className="ProfileMetrics-card">
+        {/* Dentro de un <button> no puede haber <p>: los textos van en <span> (con
+            display: block, ver ProfileMetrics-card--button). */}
+        <button
+          type="button"
+          className="ProfileMetrics-card ProfileMetrics-card--button"
+          onClick={() => setOpenFollowList('followers')}
+          aria-label="Ver seguidores"
+        >
           <span className="ProfileMetrics-icon material-symbols-outlined" aria-hidden="true">group</span>
-          <div>
-            <p className="ProfileMetrics-label">Seguidores</p>
-            <p className="ProfileMetrics-value">{followStatus?.followersCount ?? '—'}</p>
-          </div>
-        </article>
+          <span>
+            <span className="ProfileMetrics-label">Seguidores</span>
+            <span className="ProfileMetrics-value">{followStatus?.followersCount ?? '—'}</span>
+          </span>
+        </button>
 
-        <article className="ProfileMetrics-card">
+        <button
+          type="button"
+          className="ProfileMetrics-card ProfileMetrics-card--button"
+          onClick={() => setOpenFollowList('following')}
+          aria-label="Ver seguidos"
+        >
           <span className="ProfileMetrics-icon material-symbols-outlined" aria-hidden="true">person_add</span>
-          <div>
-            <p className="ProfileMetrics-label">Seguidos</p>
-            <p className="ProfileMetrics-value">{followStatus?.followingCount ?? '—'}</p>
-          </div>
-        </article>
+          <span>
+            <span className="ProfileMetrics-label">Seguidos</span>
+            <span className="ProfileMetrics-value">{followStatus?.followingCount ?? '—'}</span>
+          </span>
+        </button>
 
         <article className="ProfileMetrics-card">
           <span className="ProfileMetrics-icon material-symbols-outlined" aria-hidden="true">
@@ -70,6 +86,10 @@ function ProfileMetrics({ metrics, followStatus }) {
           </div>
         </article>
       </div>
+
+      {openFollowList && (
+        <FollowListModal userId={userId} initialKind={openFollowList} onClose={() => setOpenFollowList(null)} />
+      )}
     </div>
   );
 }

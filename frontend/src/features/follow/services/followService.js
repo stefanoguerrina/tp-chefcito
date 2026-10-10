@@ -1,7 +1,7 @@
 // Servicio de "Seguir": centraliza las llamadas HTTP de la feature follow (requieren token).
 // Quien sigue es siempre el usuario logueado: el backend lo toma del token.
 import { apiFetch } from '../../../shared/utils/apiFetch.js';
-import { followStatusFromApi } from '../models/followModel.js';
+import { followStatusFromApi, followListUserFromApi } from '../models/followModel.js';
 
 // Estado de seguimiento de un perfil (¿lo sigo? + sus seguidores y seguidos).
 // Recibe: userId del perfil. Devuelve: ver followStatusFromApi. Lanza ApiError si falla.
@@ -20,4 +20,12 @@ export const followUser = async (userId) => {
 export const unfollowUser = async (userId) => {
   const raw = await apiFetch(`/users/${userId}/follow`, { method: 'DELETE' });
   return followStatusFromApi(raw, userId);
+};
+
+// Lista de un perfil: quiénes lo siguen ('followers') o a quiénes sigue ('following').
+// Recibe: userId del perfil y kind. Devuelve: las personas (followListUserFromApi), [] si
+// no hay nadie.
+export const getFollowList = async (userId, kind) => {
+  const raw = await apiFetch(`/users/${userId}/follow/${kind}`);
+  return raw.map(followListUserFromApi);
 };

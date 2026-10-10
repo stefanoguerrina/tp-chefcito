@@ -13,7 +13,7 @@ export const donationTierFromApi = (raw) => ({
 
 // Convierte la donación de POST /api/donations/confirm.
 // Devuelve: { transactionRef, amount, currency, status, tierLabel, grantee }, donde status es
-// 'completed', 'pending' o 'rejected'.
+// 'completed', 'pending', 'rejected' o 'expired'.
 export const donationFromApi = (raw) => ({
   transactionRef: raw.transactionRef,
   amount: Number(raw.amount) || 0,

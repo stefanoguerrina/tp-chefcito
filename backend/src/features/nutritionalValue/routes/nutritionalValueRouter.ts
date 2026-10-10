@@ -13,8 +13,8 @@ import { verifyToken, verifyAdmin } from '../../../core/middleware/authMiddlewar
 import {
   validateCreateNutritionalValue,
   validateUpdateNutritionalValue,
-  handleValidationErrors,
 } from '../middleware/nutritionalValueValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const nutritionalValueRouter = Router({ mergeParams: true });
 

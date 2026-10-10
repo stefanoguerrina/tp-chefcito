@@ -40,37 +40,39 @@ function SearchBySection({ onItemClick }) {
 
   return (
     <section className="SearchBySection">
-      {/* Arranca en el mismo borde que el listado y "Buscá por" mide lo mismo de ancho que
-          su título más largo, así se lee como el primer renglón de la lista (sin número). */}
-      <header className="SearchBySection-header">
-        <p className="SearchBySection-eyebrow">Encontrá tu próxima receta</p>
-        <h2 className="SearchBySection-heading">Buscá por</h2>
-      </header>
-
-      {/* El listado y el mosaico miden lo mismo de alto y van centrados entre sí: empiezan
-          y terminan a la misma altura. */}
+      {/* Desde md: el texto (encabezado + listado) a la izquierda y el mosaico a la derecha,
+          del mismo alto que todo el texto y centrado en el espacio que sobra. */}
       <div className="SearchBySection-body">
-        <nav className="SearchBySection-menu">
-          <ul>
-            {SEARCH_BY_ITEMS.map((item, index) => (
-              <li key={item.mosaicId}>
-                <button
-                  type="button"
-                  className={`SearchBySection-item${index === activeIndex ? ' SearchBySection-item--active' : ''}`}
-                  onMouseEnter={() => handleItemActivate(index)}
-                  onFocus={() => handleItemActivate(index)}
-                  onClick={onItemClick}
-                >
-                  <span className="SearchBySection-itemLabel">
-                    {item.lines[0]}
-                    <br />
-                    {item.lines[1]}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div className="SearchBySection-text">
+          {/* Arranca en el mismo borde que el listado y "Buscá por" mide lo mismo de ancho
+              que su título más largo, así se lee como el primer renglón de la lista. */}
+          <header className="SearchBySection-header">
+            <p className="SearchBySection-eyebrow">Encontrá tu próxima receta</p>
+            <h2 className="SearchBySection-heading">Buscá por</h2>
+          </header>
+
+          <nav className="SearchBySection-menu">
+            <ul>
+              {SEARCH_BY_ITEMS.map((item, index) => (
+                <li key={item.mosaicId}>
+                  <button
+                    type="button"
+                    className={`SearchBySection-item${index === activeIndex ? ' SearchBySection-item--active' : ''}`}
+                    onMouseEnter={() => handleItemActivate(index)}
+                    onFocus={() => handleItemActivate(index)}
+                    onClick={onItemClick}
+                  >
+                    <span className="SearchBySection-itemLabel">
+                      {item.lines[0]}
+                      <br />
+                      {item.lines[1]}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
 
         <SearchByMosaic item={SEARCH_BY_ITEMS[activeIndex]} />
       </div>

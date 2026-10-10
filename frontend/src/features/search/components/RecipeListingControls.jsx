@@ -1,4 +1,4 @@
-// Controles del encabezado del listado de recetas: "Todo" / "Con mi despensa", el orden y
+// Controles del encabezado del listado de recetas: "Todo" / "Inventario", el orden y
 // la vista (cuadrícula o lista).
 import ListingModeToggle from './ListingModeToggle.jsx';
 import ListingSortSelect from './ListingSortSelect.jsx';
@@ -19,7 +19,7 @@ function RecipeListingControls({ filters, total, viewMode, onFiltersChange, onVi
           { value: true, label: 'Inventario', icon: 'kitchen', count: total },
         ]}
       />
-      {/* Con la despensa, el orden lo define cuánto de cada receta tenés. */}
+      {/* Con el inventario, el orden lo define cuánto de cada receta tenés. */}
       {!filters.pantry && (
         <ListingSortSelect
           id="recipe-listing-sort"

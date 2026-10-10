@@ -1,11 +1,12 @@
 // Modelo del formulario de ingrediente del panel admin (IngredientFormModal): las opciones
 // fijas de unidad y de nutrientes, el estado inicial (vacío o a partir de un ingrediente),
 // la validación de cada paso y el body que se manda al backend. Sin JSX ni estado.
+import { nutritionalValueFromApi, nutritionalValueToPayload } from './nutritionalValueModel.js';
 
 // Unidades de medida que se pueden elegir. Son una lista fija para que todos los
 // ingredientes usen la misma abreviatura para lo mismo (y no "g" en uno y "gr" en otro):
 // value es lo que se guarda en la BD y se muestra junto a las cantidades.
-export const UNIT_OPTIONS = [
+const UNIT_OPTIONS = [
   { value: 'ud.', label: 'Unidad (ud.)' },
   { value: 'gr', label: 'Gramos (gr)' },
   { value: 'kg', label: 'Kilogramos (kg)' },
@@ -71,7 +72,7 @@ export const getDefaultServingAmount = (unit) => (unit === 'gr' || unit === 'ml'
 // crudo del backend (con ingredientcategoryingredient[] y nutritionalvalue[]).
 // Recibe: el ingrediente o null. Devuelve: el form.
 export const createIngredientForm = (ingredient) => {
-  const nutritionalValues = ingredient?.nutritionalvalue ?? [];
+  const nutritionalValues = (ingredient?.nutritionalvalue ?? []).map(nutritionalValueFromApi);
   const unitOfMeasure = ingredient?.unitOfMeasure ?? '';
   return {
     name: ingredient?.name ?? '',
@@ -82,11 +83,11 @@ export const createIngredientForm = (ingredient) => {
     // se toma la del primero guardado, o la que corresponda a la unidad.
     servingAmount:
       nutritionalValues[0]?.servingAmount != null
-        ? String(Number(nutritionalValues[0].servingAmount))
+        ? String(nutritionalValues[0].servingAmount)
         : getDefaultServingAmount(unitOfMeasure),
     nutrients: nutritionalValues.map((item) => ({
       name: item.name,
-      value: item.value != null ? String(Number(item.value)) : '',
+      value: item.value != null ? String(item.value) : '',
     })),
   };
 };
@@ -134,10 +135,12 @@ export const toIngredientPayload = (form) => ({
   unitOfMeasure: form.unitOfMeasure,
   description: form.description.trim() || null,
   categoryIds: form.categoryIds,
-  nutritionalValues: form.nutrients.map((nutrient) => ({
-    name: nutrient.name,
-    value: Number(nutrient.value),
-    servingAmount: Number(form.servingAmount),
-    servingUnit: form.unitOfMeasure,
-  })),
+  nutritionalValues: form.nutrients.map((nutrient) =>
+    nutritionalValueToPayload({
+      name: nutrient.name,
+      value: nutrient.value,
+      servingAmount: form.servingAmount,
+      servingUnit: form.unitOfMeasure,
+    })
+  ),
 });

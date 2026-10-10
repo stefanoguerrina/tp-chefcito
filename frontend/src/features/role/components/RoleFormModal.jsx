@@ -5,6 +5,7 @@ import RequiredMark from '../../../core/components/RequiredMark.jsx';
 import RequiredFieldsNote from '../../../core/components/RequiredFieldsNote.jsx';
 import FieldError from '../../../core/components/FieldError.jsx';
 import { getFieldAriaProps, getFieldErrorId, mapApiFieldErrors } from '../../../shared/utils/fieldAria.js';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import '../styles/_role-form-modal.scss';
 
 // Recibe: initialData (null para crear, { id, name, description } para editar),
@@ -16,6 +17,7 @@ function RoleFormModal({ initialData, onSubmit, onCancel }) {
   // Error del campo "Nombre" (vacío, o el que devuelva el backend, ej. nombre repetido).
   const [nameError, setNameError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const overlayCloseProps = useOverlayClose(isSubmitting ? undefined : onCancel);
 
   const isEditing = initialData !== null;
 
@@ -41,7 +43,7 @@ function RoleFormModal({ initialData, onSubmit, onCancel }) {
   };
 
   return (
-    <div className="RoleFormModal-overlay" onClick={isSubmitting ? undefined : onCancel}>
+    <div className="RoleFormModal-overlay" {...overlayCloseProps}>
       <div
         className="RoleFormModal-card"
         role="dialog"

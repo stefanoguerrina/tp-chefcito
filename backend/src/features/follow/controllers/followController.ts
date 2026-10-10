@@ -5,6 +5,7 @@
 import { Response } from 'express';
 import * as followService from '../services/followService.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
+import type { FollowListKind } from '../models/followModel.js';
 
 // Estado de seguimiento de un perfil: { isFollowing, followersCount, followingCount }.
 // GET /api/users/:userId/follow
@@ -21,6 +22,27 @@ export const getFollowStatus = async (req: AuthRequest, res: Response): Promise<
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
+
+// Arma el handler de una de las dos listas de un perfil (seguidores o seguidos): las dos
+// responden igual, solo cambia qué lista se pide. Responde 200 con la lista ([] si está
+// vacía) o 404 si el perfil no existe.
+// GET /api/users/:userId/follow/followers y /api/users/:userId/follow/following
+const buildFollowListHandler = (kind: FollowListKind) => async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const result = await followService.getFollowList(Number(req.params.userId), kind);
+    if (!result.ok) {
+      res.status(404).json({ message: 'Usuario no encontrado.' });
+      return;
+    }
+    res.status(200).json(result.users);
+  } catch (error) {
+    console.error(`[getFollowList:${kind}] Error inesperado:`, error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+export const getFollowers = buildFollowListHandler('followers');
+export const getFollowing = buildFollowListHandler('following');
 
 // El usuario autenticado empieza a seguir al de la URL. Responde 201 con el estado nuevo.
 // POST /api/users/:userId/follow

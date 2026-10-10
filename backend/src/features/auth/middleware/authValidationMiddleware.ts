@@ -1,7 +1,6 @@
 // Middlewares de validación para las rutas de autenticación, usando express-validator.
 // Solo definen reglas. La respuesta de error la maneja handleValidationErrors al final.
-import { body, validationResult } from 'express-validator';
-import { Request, Response, NextFunction } from 'express';
+import { body } from 'express-validator';
 
 // Reglas para el registro (POST /auth/register).
 export const validateRegister = [
@@ -39,18 +38,3 @@ export const validateLogin = [
   body('password')
     .notEmpty().withMessage('La contraseña es requerida.'),
 ];
-
-// Middleware que lee los errores acumulados por express-validator y devuelve 422 si hay alguno.
-// Devuelve la lista de errores por campo para que el frontend pueda mostrarlos individualmente.
-export const handleValidationErrors = (req: Request, res: Response, next: NextFunction): void => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const errores = errors.array().map((e) => ({
-      campo: e.type === 'field' ? (e as any).path : 'general',
-      mensaje: e.msg,
-    }));
-    res.status(422).json({ errores });
-    return;
-  }
-  next();
-};

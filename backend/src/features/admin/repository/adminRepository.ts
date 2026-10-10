@@ -88,12 +88,21 @@ export const adminRepository = {
 
   countUsers: (filters: AdminUserFilters) => prisma.user.count({ where: userListWhere(filters) }),
 
-  // Promedio y cantidad de reseñas que recibieron las recetas (visibles) de un usuario.
-  // Se llama solo para los usuarios de la página actual (6 como mucho).
-  findReviewStatsByAuthor: (idUser: number) =>
-    prisma.review.aggregate({
-      where: { userrecipe: { recipe: { idUser, ...visibleRecipe } } },
-      _avg: { rating: true },
+  // Recetas (visibles) de los usuarios indicados: solo el id y su autor, para saber de quién
+  // es cada receta al sumar sus reseñas.
+  findRecipeAuthors: (idUsers: number[]) =>
+    prisma.recipe.findMany({
+      where: { idUser: { in: idUsers }, ...visibleRecipe },
+      select: { id: true, idUser: true },
+    }),
+
+  // Suma y cantidad de reseñas de cada una de las recetas indicadas, en una sola consulta
+  // agrupada (la suma, y no el promedio, permite después juntar varias recetas de un autor).
+  findReviewTotalsByRecipe: (recipeIds: number[]) =>
+    prisma.review.groupBy({
+      by: ['idRecipe'],
+      where: { idRecipe: { in: recipeIds } },
+      _sum: { rating: true },
       _count: { _all: true },
     }),
 

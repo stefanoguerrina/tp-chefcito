@@ -4,7 +4,8 @@
 import { Router } from 'express';
 import { searchStepsByRecipe, replaceStepsForRecipe } from '../controllers/stepController.js';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
-import { validateReplaceSteps, handleValidationErrors } from '../middleware/stepValidationMiddleware.js';
+import { validateReplaceSteps } from '../middleware/stepValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const stepRouter = Router({ mergeParams: true });
 

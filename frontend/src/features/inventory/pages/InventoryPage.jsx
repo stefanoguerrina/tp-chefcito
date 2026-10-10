@@ -1,15 +1,23 @@
-// Página principal de Inventario — "Mi despensa".
+// Página principal de Inventario — "Mi inventario".
 // Ensambla: header con contador, panel de agregar (colapsable), barra de búsqueda,
-// lista de cards, modales de edición y duplicado, toast de notificación, y banner de IA.
-import { useState, useMemo } from 'react';
+// lista de cards, modales de edición y duplicado, toast de notificación y el acceso a las
+// recetas que se pueden hacer con lo cargado.
+import { useState, useMemo, useRef, useEffect } from 'react';
 import useInventory from '../hooks/useInventory.js';
+import InventoryHeader from '../components/InventoryHeader.jsx';
+import InventorySearchBar from '../components/InventorySearchBar.jsx';
+import InventorySuggestionBanner from '../components/InventorySuggestionBanner.jsx';
 import AddIngredientForm from '../components/AddIngredientForm.jsx';
 import InventoryList from '../components/InventoryList.jsx';
 import EditIngredientModal from '../components/EditIngredientModal.jsx';
 import DuplicateIngredientModal from '../components/DuplicateIngredientModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
+import EmptyState from '../../../core/components/EmptyState.jsx';
 import '../styles/_inventory-page.scss';
+
+const TOAST_DURATION_MS = 2500;
 
 function InventoryPage() {
   const {
@@ -36,11 +44,17 @@ function InventoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   // Toast: { msg, visible }
   const [toast, setToast] = useState({ msg: '', visible: false });
+  const toastTimerRef = useRef(null);
 
-  // Muestra el toast por 2.5s
+  // Al salir de la página se cancela el timer pendiente del toast.
+  useEffect(() => () => clearTimeout(toastTimerRef.current), []);
+
+  // Muestra el toast por unos segundos. Si ya había uno, reinicia la cuenta: si no, el
+  // timer del anterior ocultaría el nuevo antes de tiempo.
   const showToast = (msg) => {
+    clearTimeout(toastTimerRef.current);
     setToast({ msg, visible: true });
-    setTimeout(() => setToast({ msg: '', visible: false }), 2500);
+    toastTimerRef.current = setTimeout(() => setToast({ msg: '', visible: false }), TOAST_DURATION_MS);
   };
 
   // Filtra los ítems del inventario según el texto buscado
@@ -62,7 +76,7 @@ function InventoryPage() {
   const handleRemoveWithToast = async (ingredientId) => {
     const item = items.find((it) => it.idIngredient === ingredientId);
     const ok = await handleRemove(ingredientId);
-    if (ok) showToast(`${item?.ingredientName ?? 'Ingrediente'} eliminado de la despensa.`);
+    if (ok) showToast(`${item?.ingredientName ?? 'Ingrediente'} eliminado del inventario.`);
   };
 
   // Si el ingrediente ya estaba, el hook abre el modal de duplicado y el toast se
@@ -75,51 +89,19 @@ function InventoryPage() {
     }
   };
 
-  const handleEditOpen = (item) => setEditItem(item);
-  const handleEditClose = () => setEditItem(null);
-
   return (
     <div className="InventoryPage">
-
-      {/* ---- Header ---- */}
-      <header className="InventoryPage-header">
-        <div className="InventoryPage-titleGroup">
-          <h1 className="InventoryPage-title">Ingredientes disponibles</h1>
-        </div>
-
-        <div className="InventoryPage-headerActions">
-          {/* Contador */}
-          <div className="InventoryPage-counter">
-            <div className="InventoryPage-counterIcon">
-              <span className="material-symbols-outlined">grocery</span>
-            </div>
-            <div className="InventoryPage-counterText">
-              <span className="InventoryPage-counterLabel">Total en despensa:</span>
-              <span className="InventoryPage-counterValue">
-                {isLoading ? '…' : items.length}{' '}
-                <span>{items.length === 1 ? 'ingrediente' : 'ingredientes'}</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Botón agregar */}
-          <button
-            type="button"
-            className="InventoryPage-addBtn"
-            onClick={() => setShowAddPanel((p) => !p)}
-          >
-            <span className="material-symbols-outlined">
-              {showAddPanel ? 'close' : 'add'}
-            </span>
-            {showAddPanel ? 'Cancelar' : 'Agregar ingrediente'}
-          </button>
-        </div>
-      </header>
+      <InventoryHeader
+        count={items.length}
+        isLoading={isLoading}
+        isAddPanelOpen={showAddPanel}
+        onToggleAddPanel={() => setShowAddPanel((p) => !p)}
+      />
 
       {/* ---- Aviso cuando falla una acción (agregar, editar, quitar) ---- */}
       {actionError && (
         <AlertModal
-          title="No se pudo actualizar tu despensa"
+          title="No se pudo actualizar tu inventario"
           message={actionError}
           onClose={handleCloseActionError}
         />
@@ -136,94 +118,46 @@ function InventoryPage() {
         </div>
       )}
 
-      {/* ---- Barra de búsqueda sobre el inventario ---- */}
-      <div className="InventorySearch">
-        <div className="InventorySearch-icon">
-          <span className="material-symbols-outlined">search</span>
-        </div>
-        <input
-          id="inventory-search-input"
-          type="text"
-          className="InventorySearch-input"
-          placeholder="Buscar ingredientes en tu despensa (ej: tomate, pollo, leche)…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          aria-label="Buscar en el inventario"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            className="InventorySearch-clear"
-            onClick={() => setSearchQuery('')}
-          >
-            Limpiar
-          </button>
-        )}
-      </div>
+      <InventorySearchBar value={searchQuery} onChange={setSearchQuery} />
 
       {/* ---- Contenido principal ---- */}
       {isLoading ? (
-        <p className="InventoryPage-loading">Cargando tu inventario…</p>
+        <LoadingState message="Cargando tu inventario..." />
       ) : loadError ? (
         <ErrorState message={loadError} onRetry={reload} />
       ) : (
         <>
           {/* Sin resultados de búsqueda */}
           {searchQuery && filteredItems.length === 0 && (
-            <div className="InventoryEmpty">
-              <div className="InventoryEmpty-icon">
-                <span className="material-symbols-outlined">search_off</span>
-              </div>
-              <h3 className="InventoryEmpty-title">No encontramos ingredientes</h3>
-              <p className="InventoryEmpty-text">
-                Probá buscando con otro nombre o término.
-              </p>
-            </div>
+            <EmptyState
+              icon="search_off"
+              title="No encontramos ingredientes"
+              message="Probá buscando con otro nombre o término."
+            />
           )}
 
           {/* Inventario vacío */}
           {!searchQuery && items.length === 0 && (
-            <div className="InventoryEmpty">
-              <div className="InventoryEmpty-icon">
-                <span className="material-symbols-outlined">kitchen</span>
-              </div>
-              <h3 className="InventoryEmpty-title">Tu despensa está vacía</h3>
-              <p className="InventoryEmpty-text">
-                Usá el botón "Agregar ingrediente" para empezar a cargar lo que tenés.
-              </p>
-            </div>
+            <EmptyState
+              icon="kitchen"
+              title="Tu inventario está vacío"
+              message={'Usá el botón "Agregar ingrediente" para empezar a cargar lo que tenés.'}
+            />
           )}
 
           {/* Lista de cards */}
           {filteredItems.length > 0 && (
             <InventoryList
               items={filteredItems}
-              onEdit={handleEditOpen}
+              onEdit={setEditItem}
               onRemove={handleRemoveWithToast}
             />
           )}
         </>
       )}
 
-      {/* ---- Banner de sugerencias (placeholder hasta T-5.1 IA) ---- */}
-      {!isLoading && !loadError && items.length > 0 && (
-        <div className="InventoryBanner">
-          <div className="InventoryBanner-body">
-            <div className="InventoryBanner-icon">
-              <span className="material-symbols-outlined">auto_awesome</span>
-            </div>
-            <div className="InventoryBanner-text">
-              <h4>¿Qué podés cocinar hoy con estos ingredientes?</h4>
-              <p>
-                Chefcito puede cruzar tu inventario con las recetas disponibles y sugerirte opciones.
-              </p>
-            </div>
-          </div>
-          <button type="button" className="InventoryBanner-btn" disabled>
-            Ver recetas posibles
-          </button>
-        </div>
-      )}
+      {/* ---- Acceso a las recetas que se pueden hacer con lo cargado ---- */}
+      {!isLoading && !loadError && items.length > 0 && <InventorySuggestionBanner />}
 
       {/* ---- Modal de edición completa ---- */}
       {editItem && (
@@ -231,7 +165,7 @@ function InventoryPage() {
           key={editItem.idIngredient}
           item={editItem}
           onConfirm={handleUpdateWithToast}
-          onClose={handleEditClose}
+          onClose={() => setEditItem(null)}
         />
       )}
 
@@ -249,7 +183,7 @@ function InventoryPage() {
       )}
 
       {/* ---- Toast de notificación ---- */}
-      <div className={`InventoryToast${toast.visible ? ' InventoryToast--visible' : ''}`}>
+      <div className={`InventoryToast${toast.visible ? ' InventoryToast--visible' : ''}`} role="status">
         <span className="material-symbols-outlined">check_circle</span>
         <span>{toast.msg}</span>
       </div>

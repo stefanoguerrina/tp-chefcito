@@ -10,6 +10,7 @@ import { createReviewPayload, updateReviewPayload } from '../models/reviewModel.
 import { createReview, updateReview } from '../services/reviewService.js';
 import { getRecipeImageUrl } from '../../recipe/models/recipeModel.js';
 import RequiredMark from '../../../core/components/RequiredMark.jsx';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import './_review-modal.scss';
 
 // Recibe:
@@ -25,6 +26,8 @@ function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved, review = nul
   const [comment, setComment] = useState(review?.comment ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  // Mientras se envía, tocar el fondo no cierra (el botón Cancelar también está deshabilitado).
+  const overlayCloseProps = useOverlayClose(isSubmitting ? undefined : onClose);
 
   const imageUrl = getRecipeImageUrl(recipe);
   const authorName = recipe.user?.username ?? 'Sin autor';
@@ -54,7 +57,7 @@ function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved, review = nul
   };
 
   return (
-    <div className="ReviewModal-overlay" onClick={onClose}>
+    <div className="ReviewModal-overlay" {...overlayCloseProps}>
       <div
         className="ReviewModal-card"
         role="dialog"
@@ -91,9 +94,7 @@ function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved, review = nul
               onClick={onSave}
               aria-pressed={isSaved}
             >
-              <span className="material-symbols-outlined">
-                {isSaved ? 'bookmark' : 'bookmark'}
-              </span>
+              <span className="material-symbols-outlined">bookmark</span>
               {isSaved ? 'Receta guardada' : 'Guardar receta'}
             </button>
           </div>
@@ -115,7 +116,7 @@ function ReviewModal({ recipe, onClose, onSuccess, onSave, isSaved, review = nul
           <textarea
             className="ReviewModal-textarea"
             id="review-comment"
-            placeholder="Contá tu experiencia (opcional)..."
+            placeholder="Contá tu experiencia..."
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             maxLength={1000}

@@ -12,6 +12,9 @@ import {
   getIngredientColorIndex,
   formatIngredientsCount,
 } from '../models/adminIngredientsModel.js';
+import LoadingState from '../../../core/components/LoadingState.jsx';
+import { useDeleteConfirmation } from '../../../core/hooks/useDeleteConfirmation.js';
+import AdminTablePagination from './AdminTablePagination.jsx';
 import '../styles/_admin-ingredients-table.scss';
 
 const ROWS_PER_PAGE = 6;
@@ -33,24 +36,18 @@ function AdminIngredientsTable({
   const [formTarget, setFormTarget] = useState(null);
   // Ingrediente cuyas categorías se están gestionando, o null si el modal está cerrado.
   const [categoriesTarget, setCategoriesTarget] = useState(null);
-  // Ingrediente pendiente de confirmar eliminación, o null si el modal está cerrado.
-  const [pendingDelete, setPendingDelete] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
-  // Ingrediente cuya eliminación falló (con el motivo), o null si no hay ningún aviso
-  // para mostrar. Se muestra en un modal aparte en vez de un banner que queda pegado en
-  // pantalla.
-  const [deleteFailure, setDeleteFailure] = useState(null);
+  const deletion = useDeleteConfirmation((ingredient) => onDeleteIngredient(ingredient.id));
+  const { pendingDelete, deletingId, deleteFailure } = deletion;
   // Ingrediente que se guardó pero cuya foto no se pudo subir (con el motivo), o null.
   const [imageFailure, setImageFailure] = useState(null);
 
   const filteredIngredients = filterIngredientsByQuery(ingredients, searchQuery);
 
-  // Se calcula sobre la lista ya filtrada: buscar cambia el total de páginas.
+  // Se calcula sobre la lista ya filtrada: buscar cambia el total de páginas. Si al borrar
+  // la última fila de la última página esa página deja de existir, se muestra la anterior.
   const totalPages = Math.max(Math.ceil(filteredIngredients.length / ROWS_PER_PAGE), 1);
-  const pageIngredients = filteredIngredients.slice(
-    (currentPage - 1) * ROWS_PER_PAGE,
-    currentPage * ROWS_PER_PAGE
-  );
+  const page = Math.min(currentPage, totalPages);
+  const pageIngredients = filteredIngredients.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
 
   // Al buscar se vuelve a la primera página: si no, se podía quedar en una página que ya
   // no existe para el nuevo conjunto de resultados.
@@ -58,9 +55,6 @@ function AdminIngredientsTable({
     setSearchQuery(event.target.value);
     setCurrentPage(1);
   };
-
-  const handlePreviousPage = () => setCurrentPage((page) => Math.max(page - 1, 1));
-  const handleNextPage = () => setCurrentPage((page) => Math.min(page + 1, totalPages));
 
   // Crea o edita según qué haya en formTarget. Si falla el guardado de los datos, el
   // error lo muestra el formulario (no se cierra); si solo falló la foto, el ingrediente
@@ -76,22 +70,6 @@ function AdminIngredientsTable({
   const handleSubmitCategories = async (categoryIds) => {
     await onUpdateIngredientCategories(categoriesTarget.id, categoryIds);
     setCategoriesTarget(null);
-  };
-
-  const handleConfirmDelete = async () => {
-    const target = pendingDelete;
-    setDeletingId(target.id);
-    try {
-      await onDeleteIngredient(target.id);
-      setPendingDelete(null);
-    } catch (err) {
-      // Se cierra el modal de confirmación y se muestra el motivo en un modal de aviso
-      // aparte, en vez de dejar un banner pegado arriba de la tabla.
-      setPendingDelete(null);
-      setDeleteFailure({ name: target.name, message: err.message });
-    } finally {
-      setDeletingId(null);
-    }
   };
 
   return (
@@ -122,7 +100,7 @@ function AdminIngredientsTable({
         </div>
       </header>
 
-      {isLoading && <p className="AdminIngredientsTable-status">Cargando ingredientes...</p>}
+      {isLoading && <LoadingState message="Cargando ingredientes..." />}
 
       {!isLoading && filteredIngredients.length === 0 && (
         <p className="AdminIngredientsTable-status">
@@ -154,42 +132,19 @@ function AdminIngredientsTable({
                     isDeleting={deletingId === ingredient.id}
                     onEditCategories={setCategoriesTarget}
                     onEdit={setFormTarget}
-                    onDelete={setPendingDelete}
+                    onDelete={deletion.requestDelete}
                   />
                 ))}
               </tbody>
             </table>
           </div>
 
-          <footer className="AdminIngredientsTable-footer">
-            <span>
-              Mostrando {pageIngredients.length} de {formatIngredientsCount(filteredIngredients.length)}
-            </span>
-
-            <div className="AdminIngredientsTable-pagination">
-              <button
-                type="button"
-                className="AdminIngredientsTable-pageButton"
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-                title="Página anterior"
-              >
-                <span className="material-symbols-outlined">chevron_left</span>
-              </button>
-              <span className="AdminIngredientsTable-pageIndicator">
-                Página {currentPage} de {totalPages}
-              </span>
-              <button
-                type="button"
-                className="AdminIngredientsTable-pageButton"
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                title="Página siguiente"
-              >
-                <span className="material-symbols-outlined">chevron_right</span>
-              </button>
-            </div>
-          </footer>
+          <AdminTablePagination
+            summary={`Mostrando ${pageIngredients.length} de ${formatIngredientsCount(filteredIngredients.length)}`}
+            page={page}
+            totalPages={totalPages}
+            onChangePage={setCurrentPage}
+          />
         </>
       )}
 
@@ -217,8 +172,8 @@ function AdminIngredientsTable({
           message="Esta acción no se puede deshacer (también se borran su foto y sus valores nutricionales) y va a fallar si el ingrediente se usa en alguna receta o inventario."
           confirmLabel={deletingId === pendingDelete.id ? 'Eliminando...' : 'Eliminar'}
           danger
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setPendingDelete(null)}
+          onConfirm={deletion.handleConfirmDelete}
+          onCancel={deletion.cancelDelete}
         />
       )}
 
@@ -234,7 +189,7 @@ function AdminIngredientsTable({
         <AlertModal
           title={`No se pudo eliminar "${deleteFailure.name}"`}
           message={deleteFailure.message}
-          onClose={() => setDeleteFailure(null)}
+          onClose={deletion.clearDeleteFailure}
         />
       )}
     </section>

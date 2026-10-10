@@ -1,16 +1,6 @@
 // Estilos de contenedor general de la home (features/user/pages/HomePage).
 @use '../../../styles/abstracts' as *;
 
-// #root en index.css trae un ancho fijo de 1126px + borde + texto centrado, pensado
-// para el layout angosto del scaffold original. La home necesita ancho completo (tiene
-// una sidebar fija a la izquierda): se lo pisa solo cuando el root la contiene, igual
-// que hace la landing con #root:has(.LandingPage) en _landing-page.scss.
-#root:has(.HomePage) {
-  width: 100%;
-  border-inline: none;
-  text-align: initial;
-}
-
 .HomePage {
   font-family: $font-body;
   background: $color-background;

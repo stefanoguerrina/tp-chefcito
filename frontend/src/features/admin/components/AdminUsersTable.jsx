@@ -10,17 +10,12 @@ import AlertModal from '../../../core/components/AlertModal.jsx';
 import AdminUserRolesModal from './AdminUserRolesModal.jsx';
 import AdminCreateUserModal from './AdminCreateUserModal.jsx';
 import AdminUserRow from './AdminUserRow.jsx';
+import AdminTablePagination from './AdminTablePagination.jsx';
+import AdminUsersTableHeader from './AdminUsersTableHeader.jsx';
 import { formatRecipesCount } from '../models/adminDashboardModel.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import '../styles/_admin-users-table.scss';
-
-// Filtros del control segmentado (el id es el ?status= del backend) y el título que toma
-// la tabla mientras ese filtro está activo (ej: "Usuarios Activos").
-const FILTERS = [
-  { id: 'all', label: 'Todos', title: 'Usuarios Registrados' },
-  { id: 'active', label: 'Activos', title: 'Usuarios Activos' },
-  { id: 'inactive', label: 'Inactivos', title: 'Usuarios Inactivos' },
-];
 
 // Texto del modal de baja: aclara qué pasa con las recetas del usuario, que es lo que más
 // puede preocupar (no se borran, solo se ocultan hasta que se lo reactive).
@@ -53,8 +48,6 @@ function AdminUsersTable({ users }) {
   // Acción que falló (con el motivo), o null si no hay ningún aviso para mostrar.
   const [actionFailure, setActionFailure] = useState(null);
 
-  const activeFilter = FILTERS.find((filter) => filter.id === status);
-
   // Al confirmar el modal de baja/reactivación, dispara la acción correspondiente. Si
   // falla, se cierra el modal de confirmación y se muestra el motivo en un modal de aviso.
   const handleConfirmAction = async () => {
@@ -75,49 +68,17 @@ function AdminUsersTable({ users }) {
 
   return (
     <section className="AdminUsersTable">
-      <header className="AdminUsersTable-header">
-        <h2 className="AdminUsersTable-title">{activeFilter.title}</h2>
-
-        <div className="AdminUsersTable-actions">
-          <div className="AdminUsersTable-tabs">
-            {FILTERS.map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                className={`AdminUsersTable-tab${status === filter.id ? ' AdminUsersTable-tab--active' : ''}`}
-                onClick={() => users.handleChangeStatus(filter.id)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="AdminUsersTable-search">
-            <span className="material-symbols-outlined">search</span>
-            <input
-              type="text"
-              value={searchInput}
-              onChange={users.handleSearchChange}
-              placeholder="Buscar usuario..."
-              aria-label="Buscar usuario por nombre, usuario o email"
-            />
-          </div>
-
-          <button
-            type="button"
-            className="AdminUsersTable-newButton"
-            onClick={() => setIsCreating(true)}
-            title="Nuevo usuario"
-            aria-label="Nuevo usuario"
-          >
-            <span className="material-symbols-outlined">person_add</span>
-          </button>
-        </div>
-      </header>
+      <AdminUsersTableHeader
+        status={status}
+        searchInput={searchInput}
+        onChangeStatus={users.handleChangeStatus}
+        onSearchChange={users.handleSearchChange}
+        onCreate={() => setIsCreating(true)}
+      />
 
       {/* "Cargando" solo la primera vez: al cambiar de página o de filtro se sigue viendo
           la página anterior (atenuada) hasta que llega la nueva, sin saltos. */}
-      {isLoading && rows.length === 0 && <p className="AdminUsersTable-status">Cargando usuarios...</p>}
+      {isLoading && rows.length === 0 && <LoadingState message="Cargando usuarios..." />}
 
       {!isLoading && rows.length === 0 && (
         <p className="AdminUsersTable-status">
@@ -155,35 +116,13 @@ function AdminUsersTable({ users }) {
             </table>
           </div>
 
-          <footer className="AdminUsersTable-footer">
-            <span>
-              Mostrando {rows.length} de {total} usuarios
-            </span>
-
-            <div className="AdminUsersTable-pagination">
-              <button
-                type="button"
-                className="AdminUsersTable-pageButton"
-                onClick={() => users.handleChangePage(page - 1)}
-                disabled={page === 1 || isLoading}
-                title="Página anterior"
-              >
-                <span className="material-symbols-outlined">chevron_left</span>
-              </button>
-              <span className="AdminUsersTable-pageIndicator">
-                Página {page} de {totalPages}
-              </span>
-              <button
-                type="button"
-                className="AdminUsersTable-pageButton"
-                onClick={() => users.handleChangePage(page + 1)}
-                disabled={page === totalPages || isLoading}
-                title="Página siguiente"
-              >
-                <span className="material-symbols-outlined">chevron_right</span>
-              </button>
-            </div>
-          </footer>
+          <AdminTablePagination
+            summary={`Mostrando ${rows.length} de ${total} usuarios`}
+            page={page}
+            totalPages={totalPages}
+            onChangePage={users.handleChangePage}
+            isDisabled={isLoading}
+          />
         </>
       )}
 
@@ -194,6 +133,7 @@ function AdminUsersTable({ users }) {
       {editingUser && (
         <EditProfileModal
           user={editingUser}
+          canChangePassword={editingUser.id === currentAdminId}
           onClose={() => setEditingUser(null)}
           onSaved={(updatedUser) => {
             users.handleUserUpdated(updatedUser);

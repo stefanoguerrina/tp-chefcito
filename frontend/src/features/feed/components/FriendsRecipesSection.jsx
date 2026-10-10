@@ -3,6 +3,7 @@
 // derecha (en mobile, una debajo de la otra).
 import { useNavigate } from 'react-router-dom';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import FeedSectionHeader from './FeedSectionHeader.jsx';
 import FeedEmptyState from './FeedEmptyState.jsx';
 import FriendRecipeHighlight from './FriendRecipeHighlight.jsx';
@@ -28,7 +29,7 @@ function FriendsRecipesSection({ savedRecipeIds, onToggleSave }) {
   // Contenido según el estado de la carga: cargando, error, vacío o las recetas.
   let content;
   if (isLoading) {
-    content = <p className="FeedSection-status">Cargando las recetas de tus amigos...</p>;
+    content = <LoadingState message="Cargando las recetas de tus amigos..." />;
   } else if (error) {
     content = <ErrorState message={error} onRetry={retry} />;
   } else if (data.items.length === 0) {

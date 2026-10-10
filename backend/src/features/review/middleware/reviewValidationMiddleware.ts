@@ -1,7 +1,6 @@
 // Middlewares de validación para las rutas de review, usando express-validator.
 // Se ejecutan antes del controller para rechazar datos inválidos con mensajes claros.
-import { body, validationResult } from 'express-validator';
-import { Request, Response, NextFunction } from 'express';
+import { body } from 'express-validator';
 import { RATING_MIN, RATING_MAX } from '../models/reviewModel.js';
 
 // Reglas de validación para crear una review (POST /).
@@ -54,17 +53,3 @@ export const validateUpdateReview = [
       return true;
     }),
 ];
-
-// Middleware que lee los errores de express-validator y responde 422 si los hay.
-// Se debe usar después de las reglas de validación en el router.
-export const handleValidationErrors = (req: Request, res: Response, next: NextFunction): void => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación. Revisá los campos enviados.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-  next();
-};

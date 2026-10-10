@@ -120,36 +120,25 @@
     white-space: nowrap;
   }
 
+  // DropdownSelect ocupa el 100% de su contenedor: acá mide lo que su texto, y la lista
+  // puede ser más ancha que el botón (las opciones de orden son más largas que la elegida).
   &-field {
-    position: relative;
-
-    select {
-      appearance: none;
-      padding: $spacing-sm ($spacing-xl) $spacing-sm $spacing-md;
-      border: 1px solid $color-outline-variant;
-      border-radius: $radius-md;
-      background: $color-surface-container-lowest;
-      color: $color-on-surface;
-      font-family: $font-body;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-
-      &:focus-visible {
-        outline: none;
-        border-color: $color-primary;
-        box-shadow: 0 0 0 3px with-opacity($color-primary, 0.15);
-      }
+    .DropdownSelect {
+      width: auto;
     }
 
-    .material-symbols-outlined {
-      position: absolute;
-      top: 50%;
-      right: $spacing-sm;
-      transform: translateY(-50%);
-      font-size: 18px;
+    .DropdownSelect-trigger {
+      min-height: 0;
       color: $color-on-surface;
-      pointer-events: none;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .DropdownSelect-list {
+      right: auto;
+      min-width: 100%;
+      width: max-content;
+      max-width: 80vw;
     }
   }
 }

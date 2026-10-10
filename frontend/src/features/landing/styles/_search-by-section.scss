@@ -9,22 +9,17 @@ $search-by-item-max: 43px;
 // Separación entre un título y el siguiente.
 $search-by-menu-gap: $spacing-lg;
 
-// Alto del listado completo: 3 títulos × 2 renglones + los 2 espacios entre ellos. Es
-// también el alto del mosaico, que así empieza y termina a la misma altura que los títulos.
-$search-by-list-height-md: calc(6 * 34px + 2 * #{$search-by-menu-gap});
-$search-by-list-height-lg: calc(
-  6 * clamp(#{$search-by-item-min}, #{$search-by-item-preferred}, #{$search-by-item-max}) +
-    2 * #{$search-by-menu-gap}
-);
-
 // Cuánto más grande va "Buscá por" para terminar tan ancho como el título más largo del
 // menú ("INGREDIENTES"). Sale de medir las dos palabras al mismo tamaño: 729 / 575.
 $search-by-heading-scale: 1.268;
 
-// Proporción de la caja del mosaico: la del mosaico más ancho (el de capas, ver MOSAICS en
-// SearchByMosaic). La usan los tres, así el ancho no salta al cambiar de opción; los que
-// son cuadrados se dibujan centrados y del alto completo.
+// Proporción del mosaico más ancho (el de capas, ver MOSAICS en SearchByMosaic). Da la
+// forma de la caja en mobile y la del resplandor; los mosaicos cuadrados se dibujan
+// centrados y del alto completo.
 $search-by-mosaic-ratio: 1.39;
+// Desde md, cuánto sobresale el mosaico arriba y abajo del texto (lo mismo de cada lado,
+// así sigue centrado): del alto justo del texto quedaba chico al lado de títulos tan grandes.
+$search-by-mosaic-overflow: 14%;
 
 // Ciclo de una tesela del mosaico: aparece, "respira" y se va. Al terminar queda en
 // scale(0) un instante (la pausa entre vueltas) y vuelve a empezar.
@@ -58,6 +53,9 @@ $search-by-mosaic-ratio: 1.39;
   margin-inline: auto;
   padding: $spacing-xl $spacing-gutter-mobile;
   box-sizing: border-box;
+  // El resplandor del mosaico es más ancho que la pantalla en mobile: se recorta para que no
+  // aparezca scroll horizontal (clip, a diferencia de hidden, no vuelve scrolleable la sección).
+  overflow-x: clip;
 
   @include respond-to(lg) {
     padding: $spacing-xl $spacing-gutter-desktop;
@@ -117,22 +115,27 @@ $search-by-mosaic-ratio: 1.39;
     align-items: center;
     gap: $spacing-xl;
 
+    // Desde md, dos columnas: el texto ocupa lo que mide y el mosaico todo lo que sobra.
+    // La fila mide lo que el texto (el mosaico no le suma alto, ver .SearchByMosaic) y el
+    // mosaico se estira a ese alto: así queda centrado respecto de todo el texto.
     @include respond-to(md) {
-      flex-direction: row;
-      justify-content: space-between;
-      gap: $spacing-lg;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: stretch;
+      gap: $spacing-xl;
     }
+
+    @include respond-to(lg) {
+      gap: $spacing-xl * 2;
+    }
+  }
+
+  &-text {
+    width: 100%;
   }
 
   &-menu {
     width: 100%;
-
-    @include respond-to(md) {
-      // El mosaico tiene ancho propio; el menú se queda con lo que sobra.
-      flex: 1;
-      min-width: 0;
-      width: auto;
-    }
 
     ul {
       list-style: none;
@@ -202,53 +205,51 @@ $search-by-mosaic-ratio: 1.39;
 
 .SearchByMosaic {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 100%;
-  max-width: 320px;
+  max-width: 420px;
+  aspect-ratio: $search-by-mosaic-ratio;
 
-  // Desde md mide exactamente lo mismo de alto que el listado de al lado, así la foto
-  // empieza y termina a la misma altura que los títulos. El ancho sale de ese alto y de la
-  // proporción del mosaico más ancho.
+  // Desde md la caja es la columna derecha entera, estirada al alto del texto (ver
+  // -body). El SVG va en posición absoluta, así no le suma alto a la fila.
   @include respond-to(md) {
-    flex: 0 0 auto;
-    height: $search-by-list-height-md;
-    width: calc(#{$search-by-list-height-md} * #{$search-by-mosaic-ratio});
-    // Pisa el tope de la regla mobile, que si no dejaría la caja alta pero angosta.
     max-width: none;
+    aspect-ratio: auto;
     // Se corre del borde derecho para no quedar pegado a él (ni encima del botón flotante
-    // del asistente), como en la referencia del diseño.
+    // del asistente).
     margin-inline-end: $spacing-xl;
   }
 
-  @include respond-to(lg) {
-    height: $search-by-list-height-lg;
-    width: calc(#{$search-by-list-height-lg} * #{$search-by-mosaic-ratio});
-    margin-inline-end: 7%;
-  }
-
-  // Resplandor difuso detrás del mosaico, para que la foto no quede flotando sobre el fondo.
+  // Resplandor difuso detrás del mosaico, para que la foto no quede flotando sobre el
+  // fondo. Centrado y con la forma del mosaico (no la de la columna, que es más ancha).
   &-glow {
     position: absolute;
-    inset: -10%;
+    top: 50%;
+    left: 50%;
+    height: 120%;
+    max-width: 120%;
+
+    @include respond-to(md) {
+      height: 120% + 2 * $search-by-mosaic-overflow;
+    }
+    aspect-ratio: $search-by-mosaic-ratio;
+    transform: translate(-50%, -50%);
     background: with-opacity($color-primary, 0.18);
     border-radius: $radius-full;
     filter: blur(90px);
   }
 
+  // Ocupa toda la caja y el viewBox se dibuja entero y centrado (preserveAspectRatio por
+  // defecto): el mosaico de capas va de arriba abajo del texto y se centra a lo ancho de
+  // la columna; los cuadrados, del mismo alto.
   &-svg {
-    position: relative;
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: auto;
+    height: 100%;
 
-    // Desde md el SVG llena el ANCHO de la caja y su alto sale de la proporción de cada
-    // mosaico: el de capas (el más ancho) queda justo del alto del listado, y los otros dos
-    // (cuadrados) se pasan un poco. Como la caja los centra, lo que sobresale arriba y
-    // abajo es lo mismo.
     @include respond-to(md) {
-      width: 100%;
-      height: auto;
+      top: -$search-by-mosaic-overflow;
+      height: 100% + 2 * $search-by-mosaic-overflow;
     }
   }
 

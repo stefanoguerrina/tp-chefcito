@@ -12,6 +12,9 @@ import RecipeCard from '../../../core/components/RecipeCard.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
+import EmptyState from '../../../core/components/EmptyState.jsx';
+import { useDeleteConfirmation } from '../../../core/hooks/useDeleteConfirmation.js';
 import '../styles/_recipe-page.scss';
 
 function RecipePage() {
@@ -21,14 +24,18 @@ function RecipePage() {
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
-  // Receta que se está por borrar (null = no hay ningún modal de confirmación abierto).
-  const [recipePendingDelete, setRecipePendingDelete] = useState(null);
-
-  const [actionError, setActionError] = useState('');
   // Texto de búsqueda sobre las recetas propias ya cargadas (mismo patrón que InventoryPage).
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Carga las recetas propias (un 404 = todavía no creó ninguna).
+  // Al confirmar el borrado, se elimina la receta y se la saca de la lista local (sin volver
+  // a pedirla). Si falla, el hook deja el motivo para el modal de aviso.
+  const deletion = useDeleteConfirmation(async (recipe) => {
+    await deleteRecipe(recipe.id);
+    setRecipes((prev) => prev.filter((item) => item.id !== recipe.id));
+  });
+  const { pendingDelete: recipePendingDelete, deleteFailure } = deletion;
+
+  // Carga las recetas propias (lista vacía = todavía no creó ninguna).
   // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
   // llamar desde el useEffect sin renders en cascada.
   const loadData = () =>
@@ -57,17 +64,6 @@ function RecipePage() {
     if (!q) return recipes;
     return recipes.filter((recipe) => recipe.name.toLowerCase().includes(q));
   }, [recipes, searchQuery]);
-
-  const handleConfirmDelete = async () => {
-    const recipe = recipePendingDelete;
-    setRecipePendingDelete(null);
-    try {
-      await deleteRecipe(recipe.id);
-      await loadData();
-    } catch (err) {
-      setActionError(err.message);
-    }
-  };
 
   return (
     <div className="RecipePage">
@@ -101,11 +97,11 @@ function RecipePage() {
         </div>
       </header>
 
-      {actionError && (
+      {deleteFailure && (
         <AlertModal
-          title="No se pudo eliminar la receta"
-          message={actionError}
-          onClose={() => setActionError('')}
+          title={`No se pudo eliminar "${deleteFailure.name}"`}
+          message={deleteFailure.message}
+          onClose={deletion.clearDeleteFailure}
         />
       )}
 
@@ -133,36 +129,26 @@ function RecipePage() {
         )}
       </div>
 
-      {isLoading && <p className="RecipePage-loading">Cargando recetas...</p>}
+      {isLoading && <LoadingState message="Cargando recetas..." />}
       {fetchError && <ErrorState message={fetchError} onRetry={handleRetry} />}
 
       {!isLoading && !fetchError && (
         <>
           {/* Sin resultados de búsqueda */}
           {searchQuery && filteredRecipes.length === 0 && (
-            <div className="RecipeEmpty">
-              <div className="RecipeEmpty-icon">
-                <span className="material-symbols-outlined">search_off</span>
-              </div>
-              <h3 className="RecipeEmpty-title">No encontramos recetas</h3>
-              <p className="RecipeEmpty-text">Probá buscando con otro nombre.</p>
-            </div>
+            <EmptyState icon="search_off" title="No encontramos recetas" message="Probá buscando con otro nombre." />
           )}
 
           {/* Sin recetas creadas todavía */}
           {!searchQuery && recipes.length === 0 && (
-            <div className="RecipeEmpty">
-              <div className="RecipeEmpty-icon">
-                <span className="material-symbols-outlined">menu_book</span>
-              </div>
-              <h3 className="RecipeEmpty-title">No tenés recetas creadas</h3>
-              <p className="RecipeEmpty-text">
-                Usá el botón "Nueva receta" para publicar tu primera receta.
-              </p>
-            </div>
+            <EmptyState
+              icon="menu_book"
+              title="No tenés recetas creadas"
+              message={'Usá el botón "Nueva receta" para publicar tu primera receta.'}
+            />
           )}
 
-          {/* Grilla de cards, igual que antes */}
+          {/* Grilla de cards */}
           {filteredRecipes.length > 0 && (
             <div className="RecipePage-grid">
               {filteredRecipes.map((recipe) => (
@@ -177,7 +163,7 @@ function RecipePage() {
                   showRating={false}
                   onClick={() => navigate(`/recetas/${recipe.id}`)}
                   onEdit={() => navigate(`/mis-recetas/${recipe.id}/editar`)}
-                  onDelete={() => setRecipePendingDelete(recipe)}
+                  onDelete={() => deletion.requestDelete(recipe)}
                 />
               ))}
             </div>
@@ -191,8 +177,8 @@ function RecipePage() {
           message={`¿Eliminar la receta "${recipePendingDelete.name}"? Esta acción no se puede deshacer.`}
           confirmLabel="Eliminar"
           danger
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setRecipePendingDelete(null)}
+          onConfirm={deletion.handleConfirmDelete}
+          onCancel={deletion.cancelDelete}
         />
       )}
     </div>

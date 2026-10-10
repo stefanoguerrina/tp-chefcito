@@ -6,7 +6,8 @@ import { Response } from 'express';
 import * as userRecipeService from '../services/userRecipeService.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
-// Devuelve las recetas guardadas por un usuario. Solo el propio usuario o un admin.
+// Devuelve las recetas guardadas por un usuario. Que sea el propio usuario o un admin lo
+// controla verifyOwnerOrAdminOf en la ruta.
 // GET /api/saved-recipes/:idUser
 export const listSavedRecipesByUser = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -14,11 +15,6 @@ export const listSavedRecipesByUser = async (req: AuthRequest, res: Response): P
 
     if (isNaN(idUser) || idUser <= 0) {
       res.status(400).json({ message: 'El ID de usuario no es válido.' });
-      return;
-    }
-
-    if (req.user!.id !== idUser && !req.user!.isAdmin) {
-      res.status(403).json({ message: 'Acceso denegado. Solo podés ver tus propias recetas guardadas.' });
       return;
     }
 

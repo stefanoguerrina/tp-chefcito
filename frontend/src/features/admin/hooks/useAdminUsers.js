@@ -74,6 +74,13 @@ export const useAdminUsers = ({ onUsersChanged } = {}) => {
     setReloadCount((count) => count + 1);
   };
 
+  // Vuelve a pedir la página que se ve sin atenuar la tabla (al volver al dashboard desde
+  // otra sección). Solo cambia el estado cuando llega la respuesta.
+  const refreshPage = () =>
+    getAdminUsers({ status, query, page })
+      .then((result) => setPageData(result))
+      .catch(() => {});
+
   const handleChangeStatus = (nextStatus) => {
     if (nextStatus === status) return;
     setIsLoading(true);
@@ -144,5 +151,6 @@ export const useAdminUsers = ({ onUsersChanged } = {}) => {
     handleUserUpdated,
     // Al cerrar el modal de roles, se vuelve a pedir la página: trae los roles al día.
     handleUserRolesChanged: reloadPage,
+    refreshPage,
   };
 };

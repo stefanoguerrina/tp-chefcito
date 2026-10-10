@@ -42,12 +42,13 @@ Así la confirmación no depende de volver desde Mercado Pago (en local no apare
 "Volver al sitio"). Si el usuario sí vuelve (o en el deploy con https, que vuelve solo), la
 página `/donaciones/resultado?payment_id=...` confirma con `POST /api/donations/confirm`.
 En todos los casos el estado del pago **nunca** se toma de la URL (se puede editar a mano):
-el backend siempre se lo consulta a Mercado Pago.
+el backend siempre se lo consulta a Mercado Pago. Una donación que ya está `completed` no
+cambia más, aunque se confirme después con el `payment_id` de un intento rechazado.
 
 ### Donaciones pendientes que vencen
 
 El link de pago de Mercado Pago vence a los **30 minutos** (`DONATION_PAYMENT_WINDOW_MINUTES`).
-Al arrancar y cada 10 minutos, el backend (`expireStaleDonations`, programado en `app.ts`)
+Al arrancar y cada 10 minutos, el backend (`expireStaleDonations`, programado en `server.ts`)
 revisa las donaciones `pending` con más de 30 minutos y busca su pago en Mercado Pago por
 `external_reference`:
 
@@ -87,6 +88,11 @@ Todos requieren token (el que dona es el usuario del token).
 
 Sin `MERCADOPAGO_ACCESS_TOKEN` el resto de la app funciona igual; al donar se muestra
 "falta configurar Mercado Pago".
+
+**Datos de ejemplo:** la sección 10 de [demo-seed.sql](demo-seed.sql) carga donaciones
+inventadas (`transactionRef` `demo-...`) entre los usuarios de prueba, para que la página
+`/donaciones` no arranque vacía. `juanperez` tiene recibidas de 4 personas y realizadas
+completadas, rechazada y vencida. Se puede volver a correr sola: borra y recarga solo las de demo.
 
 ## Limitaciones conocidas
 
