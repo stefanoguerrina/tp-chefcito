@@ -34,8 +34,8 @@ Criterios:
 
 > La última fila la completan ustedes. Los temas comunes los tienen que saber los 4, pero cada
 > uno tiene una parte responsable de explicarlos en profundidad si el profesor pregunta.
-> ⚠️ El **CRUD Rol** no figura en la propuesta: agregarlo como alcance adicional (ya lo recomienda
-> [analisis-estado-proyecto.md §4.1](analisis-estado-proyecto.md#41-propuesta-proposalmd-)).
+> El **CRUD Rol** figura en la [propuesta](proposal.md) como alcance implementado además de lo
+> propuesto.
 
 ### 0.1 Todos los CRUD del proyecto
 
@@ -48,7 +48,7 @@ Son **16**: 12 completos y 4 parciales. (La asignación de roles es la tabla int
 | 2 | Rol | Simple | Completo | A |
 | 3 | Asignación de roles (`userrole`) | Dependiente (Usuario + Rol) | Asignar, consultar, quitar *(parcial: no hay nada que editar)* | A |
 | 4 | Donación | Dependiente (Usuario donante + creador) | Crear, consultar una y el historial propio (`/donaciones`); el estado lo actualiza Mercado Pago *(parcial: no se borra)* | A |
-| 5 | Receta | Simple en la propuesta (depende de Usuario y Categoría) | Completo | B |
+| 5 | Receta | Simple | Completo | B |
 | 6 | Pasos de receta | Dependiente (Receta) | Leer + reemplazar la lista con `PUT` *(parcial)* | B |
 | 7 | Ingredientes de receta | Dependiente (Receta + Ingrediente) | Leer + reemplazar la lista con `PUT` *(parcial)* | B |
 | 8 | Imagen de receta | Dependiente (Receta) | Completo | B |
@@ -439,7 +439,7 @@ baja/reactivar).
 
 ### 2.6 El CU: "Donaciones a creadores" (Mercado Pago)
 
-Detalle completo y diagrama en [donaciones.md](donaciones.md).
+Endpoints y diagrama del flujo en [api.md](api.md#donaciones).
 - Botón **Donar** en el detalle de receta y en un perfil ajeno → se elige un **monto fijo**
   ("Un cafecito" $1.000 … "Un asado" $10.000). **Los montos viven en el backend**
   ([donationModel.ts](../backend/src/features/donation/models/donationModel.ts)): el front solo
@@ -591,8 +591,9 @@ usuario**: es la suma del tiempo de cada paso.
 
 ### 3.5 Preguntas probables (Parte B)
 
-- **¿Por qué la receta es dependiente si en la propuesta figura como simple?** Depende de
-  Usuario (creador) y Categoría: conviene decirlo así (la propuesta hay que corregirla).
+- **¿Por qué Receta es un CRUD simple si tiene un creador?** Su PK es su propio `id`. Como
+  Usuario → Receta es una relación 1 a N, la PK del usuario pasa a Receta como clave foránea
+  (`idUser`), y las categorías se asignan en la tabla intermedia `recipecategory`.
 - **¿Quién puede editar una receta?** Su dueño o un admin.
 - **¿Qué pasa con las fotos al borrar una receta?** Las filas se van por `Cascade` y los archivos
   los borra el service del disco.
@@ -735,7 +736,7 @@ ingredientes tenés).
 
 ### 4.6 Chefcito Bot (IA)
 
-Detalle completo en [asistente-ia.md](asistente-ia.md). Es la otra forma de responder "¿qué puedo
+Endpoint en [api.md](api.md#chefcito-bot). Es la otra forma de responder "¿qué puedo
 cocinar con lo que tengo?".
 - `POST /api/assistant/chat` (token). El front manda la conversación; **el backend arma el
   inventario a partir del token** (nadie puede usar la heladera de otro) y **la API key nunca
@@ -910,7 +911,7 @@ Donde dos partes se tocan; los dos involucrados tienen que poder contestar lo b�
 4. **Juntos (día 4):** simulacro: cada uno explica su CU en 3–5 minutos y los otros le preguntan
    cosas de la [sección 6](#6-fronteras-entre-partes).
 5. **Pendiente para AD que también se defiende:** cada uno su test (ver
-   [analisis §4.4](analisis-estado-proyecto.md#44-tests-)). Candidatos naturales por parte:
+   [analisis §3.2](analisis-estado-proyecto.md#32-tests-)). Candidatos naturales por parte:
    A → `statusFromPayments`/`createCheckout` de donaciones o `authService.login`;
    B → `recipeService.updateRecipe` (403 si no es dueño) o las reglas de pasos/ingredientes;
    C → `pantryMatchService` o `recipeNutritionService`;

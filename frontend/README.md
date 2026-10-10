@@ -15,7 +15,8 @@ cd frontend
 npm install
 ```
 
-Crear un archivo `.env` en `frontend/` con la URL de la API del backend:
+Copiar [`.env.example`](.env.example) como `.env` en `frontend/`. Ya trae la URL de la API del
+backend en local:
 
 ```env
 VITE_API_BASE_URL=http://localhost:3000/api
