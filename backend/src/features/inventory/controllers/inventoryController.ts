@@ -5,7 +5,7 @@ import * as inventoryService from '../services/inventoryService.js';
 
 // Devuelve todos los ítems del inventario de un usuario.
 // GET /api/users/:userId/inventory
-export const getInventory = async (req: Request, res: Response): Promise<void> => {
+export const handleGetInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const idUser = Number(req.params.userId);
 
@@ -17,7 +17,7 @@ export const getInventory = async (req: Request, res: Response): Promise<void> =
     const items = await inventoryService.getUserInventory(idUser);
     res.status(200).json(items);
   } catch (error) {
-    console.error('[getInventory] Error inesperado:', error);
+    console.error('[handleGetInventory] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -26,7 +26,7 @@ export const getInventory = async (req: Request, res: Response): Promise<void> =
 // Si el ingrediente ya está en el inventario devuelve 409 con los datos actuales,
 // para que el frontend los use para pre-llenar el modal de edición de cantidad.
 // POST /api/users/:userId/inventory
-export const addToInventory = async (req: Request, res: Response): Promise<void> => {
+export const handleAddToInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const idUser = Number(req.params.userId);
     const { idIngredient, availableQuantity, unitOfMeasure } = req.body;
@@ -53,14 +53,14 @@ export const addToInventory = async (req: Request, res: Response): Promise<void>
 
     res.status(201).json(result.item);
   } catch (error) {
-    console.error('[addToInventory] Error inesperado:', error);
+    console.error('[handleAddToInventory] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Actualiza la cantidad y/o unidad de un ítem del inventario existente.
 // PATCH /api/users/:userId/inventory/:ingredientId
-export const updateInventoryItem = async (req: Request, res: Response): Promise<void> => {
+export const handleUpdateInventoryItem = async (req: Request, res: Response): Promise<void> => {
   try {
     const idUser = Number(req.params.userId);
     const idIngredient = Number(req.params.ingredientId);
@@ -78,14 +78,14 @@ export const updateInventoryItem = async (req: Request, res: Response): Promise<
 
     res.status(200).json(result.item);
   } catch (error) {
-    console.error('[updateInventoryItem] Error inesperado:', error);
+    console.error('[handleUpdateInventoryItem] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Elimina un ingrediente del inventario del usuario.
 // DELETE /api/users/:userId/inventory/:ingredientId
-export const removeFromInventory = async (req: Request, res: Response): Promise<void> => {
+export const handleRemoveFromInventory = async (req: Request, res: Response): Promise<void> => {
   try {
     const idUser = Number(req.params.userId);
     const idIngredient = Number(req.params.ingredientId);
@@ -99,7 +99,7 @@ export const removeFromInventory = async (req: Request, res: Response): Promise<
 
     res.status(200).json({ message: 'Ingrediente eliminado del inventario correctamente.' });
   } catch (error) {
-    console.error('[removeFromInventory] Error inesperado:', error);
+    console.error('[handleRemoveFromInventory] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

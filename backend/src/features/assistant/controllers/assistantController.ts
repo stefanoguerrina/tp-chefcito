@@ -7,7 +7,7 @@ import type { ChatMessage } from '../models/assistantModel.js';
 
 // Recibe la conversación y devuelve la respuesta de Chefcito Bot: { reply }.
 // POST /api/assistant/chat
-export const chat = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleChat = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idUser = req.user!.id;
     const messages: ChatMessage[] = req.body.messages.map((message: ChatMessage) => ({

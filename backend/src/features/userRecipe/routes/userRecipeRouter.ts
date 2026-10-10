@@ -4,10 +4,10 @@
 // Todas las operaciones requieren estar autenticado: el idUser siempre sale del token.
 import { Router } from 'express';
 import {
-  getUserRecipe,
-  createUserRecipe,
-  updateUserRecipe,
-  deleteUserRecipe,
+  handleGetUserRecipe,
+  handleCreateUserRecipe,
+  handleUpdateUserRecipe,
+  handleDeleteUserRecipe,
 } from '../controllers/userRecipeController.js';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import {
@@ -20,7 +20,7 @@ import {
 const userRecipeRouter = Router({ mergeParams: true });
 
 // GET /api/recipes/:idRecipe/save — devuelve el estado de guardado del usuario autenticado
-userRecipeRouter.get('/', verifyToken, getUserRecipe);
+userRecipeRouter.get('/', verifyToken, handleGetUserRecipe);
 
 // POST /api/recipes/:idRecipe/save — guarda la receta para el usuario autenticado
 userRecipeRouter.post(
@@ -28,7 +28,7 @@ userRecipeRouter.post(
   verifyToken,
   validateCreateUserRecipe,
   handleValidationErrors,
-  createUserRecipe
+  handleCreateUserRecipe
 );
 
 // PATCH /api/recipes/:idRecipe/save — actualiza el estado de guardado (isSaved)
@@ -37,10 +37,10 @@ userRecipeRouter.patch(
   verifyToken,
   validateUpdateUserRecipe,
   handleValidationErrors,
-  updateUserRecipe
+  handleUpdateUserRecipe
 );
 
 // DELETE /api/recipes/:idRecipe/save — elimina por completo el registro de guardado
-userRecipeRouter.delete('/', verifyToken, deleteUserRecipe);
+userRecipeRouter.delete('/', verifyToken, handleDeleteUserRecipe);
 
 export { userRecipeRouter };

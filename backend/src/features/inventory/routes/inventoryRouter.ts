@@ -5,10 +5,10 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 import {
-  getInventory,
-  addToInventory,
-  updateInventoryItem,
-  removeFromInventory,
+  handleGetInventory,
+  handleAddToInventory,
+  handleUpdateInventoryItem,
+  handleRemoveFromInventory,
 } from '../controllers/inventoryController.js';
 import {
   validateAddInventory,
@@ -39,7 +39,7 @@ const verifyInventoryOwnerOrAdmin = (req: Request, res: Response, next: NextFunc
 };
 
 // GET /api/users/:userId/inventory — obtiene el inventario completo del usuario
-inventoryRouter.get('/', verifyToken, verifyInventoryOwnerOrAdmin, getInventory);
+inventoryRouter.get('/', verifyToken, verifyInventoryOwnerOrAdmin, handleGetInventory);
 
 // POST /api/users/:userId/inventory — agrega un ingrediente al inventario
 // Devuelve 409 si el ingrediente ya está en el inventario (con datos actuales para el modal)
@@ -49,7 +49,7 @@ inventoryRouter.post(
   verifyInventoryOwnerOrAdmin,
   validateAddInventory,
   handleValidationErrors,
-  addToInventory
+  handleAddToInventory
 );
 
 // PATCH /api/users/:userId/inventory/:ingredientId — actualiza cantidad/unidad de un ítem
@@ -59,7 +59,7 @@ inventoryRouter.patch(
   verifyInventoryOwnerOrAdmin,
   validateUpdateInventory,
   handleValidationErrors,
-  updateInventoryItem
+  handleUpdateInventoryItem
 );
 
 // DELETE /api/users/:userId/inventory/:ingredientId — elimina un ítem del inventario
@@ -67,7 +67,7 @@ inventoryRouter.delete(
   '/:ingredientId',
   verifyToken,
   verifyInventoryOwnerOrAdmin,
-  removeFromInventory
+  handleRemoveFromInventory
 );
 
 export { inventoryRouter };

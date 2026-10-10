@@ -4,7 +4,7 @@ import pool from '../../../database.js';
 
 
 // Health check endpoint — also tests the database connection
-export const health = async (req: Request, res: Response) => {
+export const handleHealth = async (req: Request, res: Response) => {
   try {
     await pool.query('SELECT 1');
     res.json({ status: 'OK', database: 'connected' });

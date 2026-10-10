@@ -16,13 +16,13 @@ const pageNumber = (value: unknown) => optionalNumber(value) ?? 1;
 // coincidencias: una búsqueda sin resultados no es un 404). El texto ya viene validado
 // por validateQuickSearch.
 // GET /api/search?q=texto
-export const quickSearch = async (req: Request, res: Response): Promise<void> => {
+export const handleQuickSearch = async (req: Request, res: Response): Promise<void> => {
   try {
     const term = String(req.query.q).trim();
     const results = await searchService.quickSearch(term);
     res.status(200).json(results);
   } catch (error) {
-    console.error('[quickSearch] Error inesperado:', error);
+    console.error('[handleQuickSearch] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -36,7 +36,7 @@ export const quickSearch = async (req: Request, res: Response): Promise<void> =>
 // popular | rating | time | recent | saved) y page.
 // Responde 200 con una página de resultados (vacía si no hay coincidencias).
 // GET /api/search/recipes
-export const listRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleListRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { q, categoryId, authorId, maxTime, minTime, minRating, ingredientIds, nutrition, pantry, savedOnly, sort, page } = req.query;
     const results = await searchService.listRecipes(
@@ -61,7 +61,7 @@ export const listRecipes = async (req: AuthRequest, res: Response): Promise<void
     );
     res.status(200).json(results);
   } catch (error) {
-    console.error('[listRecipes] Error inesperado:', error);
+    console.error('[handleListRecipes] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -77,12 +77,12 @@ const readNameOrRecipesFilters = (req: Request) => ({
 // Listado de categorías de receta. Query params opcionales: q, onlyWithRecipes
 // ("true" = solo las que tienen recetas), sort (name | recipes) y page.
 // GET /api/search/categories
-export const listCategories = async (req: Request, res: Response): Promise<void> => {
+export const handleListCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const results = await searchService.listCategories(readNameOrRecipesFilters(req));
     res.status(200).json(results);
   } catch (error) {
-    console.error('[listCategories] Error inesperado:', error);
+    console.error('[handleListCategories] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -90,12 +90,12 @@ export const listCategories = async (req: Request, res: Response): Promise<void>
 // Listado de usuarios activos. Query params opcionales: q, onlyWithRecipes ("true" =
 // solo los que publicaron recetas), sort (name | recipes) y page.
 // GET /api/search/users
-export const listUsers = async (req: Request, res: Response): Promise<void> => {
+export const handleListUsers = async (req: Request, res: Response): Promise<void> => {
   try {
     const results = await searchService.listUsers(readNameOrRecipesFilters(req));
     res.status(200).json(results);
   } catch (error) {
-    console.error('[listUsers] Error inesperado:', error);
+    console.error('[handleListUsers] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

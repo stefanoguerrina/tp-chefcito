@@ -12,7 +12,7 @@ import { USER_IMAGES_FOLDER } from '../middleware/userImageUploadMiddleware.js';
 // Cualquier usuario autenticado puede consultar los activos.
 // Con ?inactive=true devuelve usuarios dados de baja (solo admins).
 // GET /api/users
-export const searchUsers = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleSearchUsers = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const showInactive = req.query.inactive === 'true';
 
@@ -28,7 +28,7 @@ export const searchUsers = async (req: AuthRequest, res: Response): Promise<void
 
     res.status(200).json(users);
   } catch (error) {
-    console.error('[searchUsers] Error inesperado:', error);
+    console.error('[handleSearchUsers] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -39,7 +39,7 @@ export const searchUsers = async (req: AuthRequest, res: Response): Promise<void
 // perfil de solo lectura) — pero solo ve los campos públicos (toPublicProfile).
 // El propio usuario o un admin ven además los campos privados (email, phone, birthDate).
 // GET /api/users/:id
-export const getUserById = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleGetUserById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = Number(req.params.id);
 
@@ -57,7 +57,7 @@ export const getUserById = async (req: AuthRequest, res: Response): Promise<void
     const isOwnerOrAdmin = req.user?.id === userId || req.user?.isAdmin === true;
     res.status(200).json(isOwnerOrAdmin ? user : toPublicProfile(user));
   } catch (error) {
-    console.error('[getUserById] Error inesperado:', error);
+    console.error('[handleGetUserById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -65,7 +65,7 @@ export const getUserById = async (req: AuthRequest, res: Response): Promise<void
 // Crea un nuevo usuario desde el panel de administración.
 // Permite opcionalmente asignarle el rol admin (makeAdmin=true).
 // POST /api/users
-export const createUser = async (req: Request, res: Response): Promise<void> => {
+export const handleCreateUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password, name, lastName, email, phone, birthDate, makeAdmin } = req.body;
 
@@ -97,7 +97,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
 
     res.status(201).json(result.ok ? result.user : {});
   } catch (error) {
-    console.error('[createUser] Error inesperado:', error);
+    console.error('[handleCreateUser] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -106,7 +106,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
 // Recibe el ID como parámetro en la URL.
 // Devuelve 200 con los datos del usuario dado de baja, 404 si no existe, 400 si el ID es inválido.
 // DELETE /api/users/:id
-export const deleteUserById = async (req: Request, res: Response): Promise<void> => {
+export const handleDeleteUserById = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = Number(req.params.id);
 
@@ -123,7 +123,7 @@ export const deleteUserById = async (req: Request, res: Response): Promise<void>
 
     res.status(200).json(deletedUser);
   } catch (error) {
-    console.error('[deleteUserById] Error inesperado:', error);
+    console.error('[handleDeleteUserById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -132,7 +132,7 @@ export const deleteUserById = async (req: Request, res: Response): Promise<void>
 // Solo el propio usuario o un admin puede realizar esta acción (controlado por verifyOwnerOrAdmin).
 // Devuelve 200 con los datos actualizados, 404 si no existe, 422 si los datos son inválidos.
 // PATCH /api/users/:id
-export const updateUserById = async (req: Request, res: Response): Promise<void> => {
+export const handleUpdateUserById = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = Number(req.params.id);
     const { name, lastName, phone, avatarUrl, bio, specialty, location, birthDate } = req.body;
@@ -154,7 +154,7 @@ export const updateUserById = async (req: Request, res: Response): Promise<void>
 
     res.status(200).json(updated);
   } catch (error) {
-    console.error('[updateUserById] Error inesperado:', error);
+    console.error('[handleUpdateUserById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -163,7 +163,7 @@ export const updateUserById = async (req: Request, res: Response): Promise<void>
 // una para el avatar y otra para la portada, que funcionan exactamente igual.
 // Recibe: field ('avatarUrl' | 'coverUrl'). Body: multipart con el archivo en "image".
 // PATCH /api/users/:id/avatar  y  PATCH /api/users/:id/cover
-export const uploadUserImageHandler = (field: UserImageField) =>
+export const handleUploadUserImage = (field: UserImageField) =>
   async (req: Request, res: Response): Promise<void> => {
     if (!req.file) {
       res.status(422).json({
@@ -193,7 +193,7 @@ export const uploadUserImageHandler = (field: UserImageField) =>
 // Arma el handler que quita una foto del perfil (deja el avatar o la portada vacíos).
 // Recibe: field ('avatarUrl' | 'coverUrl').
 // DELETE /api/users/:id/avatar  y  DELETE /api/users/:id/cover
-export const deleteUserImageHandler = (field: UserImageField) =>
+export const handleDeleteUserImage = (field: UserImageField) =>
   async (req: Request, res: Response): Promise<void> => {
     try {
       const result = await userService.removeUserImage(Number(req.params.id), field);
@@ -212,7 +212,7 @@ export const deleteUserImageHandler = (field: UserImageField) =>
 // Solo el propio usuario o un admin puede realizar esta acción (controlado por verifyOwnerOrAdmin).
 // Body: { currentPassword, newPassword }
 // PATCH /api/users/:id/password
-export const changeUserPassword = async (req: Request, res: Response): Promise<void> => {
+export const handleChangeUserPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = Number(req.params.id);
     const { currentPassword, newPassword } = req.body;
@@ -231,7 +231,7 @@ export const changeUserPassword = async (req: Request, res: Response): Promise<v
 
     res.status(200).json({ message: 'Contraseña actualizada correctamente.' });
   } catch (error) {
-    console.error('[changeUserPassword] Error inesperado:', error);
+    console.error('[handleChangeUserPassword] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -240,7 +240,7 @@ export const changeUserPassword = async (req: Request, res: Response): Promise<v
 // Solo un administrador puede realizar esta acción.
 // Devuelve 200 con los datos del usuario reactivado, 404 si no existía como inactivo.
 // PATCH /api/users/:id/restore
-export const restoreUserById = async (req: Request, res: Response): Promise<void> => {
+export const handleRestoreUserById = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = Number(req.params.id);
 
@@ -257,7 +257,7 @@ export const restoreUserById = async (req: Request, res: Response): Promise<void
 
     res.status(200).json(restoredUser);
   } catch (error) {
-    console.error('[restoreUserById] Error inesperado:', error);
+    console.error('[handleRestoreUserById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

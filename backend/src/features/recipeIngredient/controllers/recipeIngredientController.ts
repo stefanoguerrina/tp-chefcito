@@ -8,7 +8,7 @@ import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
 // Devuelve los ingredientes de una receta, con nombre y unidad de medida incluidos.
 // GET /api/recipes/:idRecipe/ingredients
-export const searchRecipeIngredientsByRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleSearchRecipeIngredientsByRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
 
@@ -25,7 +25,7 @@ export const searchRecipeIngredientsByRecipe = async (req: AuthRequest, res: Res
 
     res.status(200).json(items);
   } catch (error) {
-    console.error('[searchRecipeIngredientsByRecipe] Error inesperado:', error);
+    console.error('[handleSearchRecipeIngredientsByRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -33,7 +33,7 @@ export const searchRecipeIngredientsByRecipe = async (req: AuthRequest, res: Res
 // Reemplaza por completo los ingredientes de una receta (solo su dueño o un admin).
 // Body: { ingredients: [{ idIngredient, requiredQuantity? }, ...] }.
 // PUT /api/recipes/:idRecipe/ingredients
-export const replaceRecipeIngredientsForRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleReplaceRecipeIngredientsForRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     const { ingredients } = req.body;
@@ -68,7 +68,7 @@ export const replaceRecipeIngredientsForRecipe = async (req: AuthRequest, res: R
 
     res.status(200).json(result.recipeIngredients);
   } catch (error) {
-    console.error('[replaceRecipeIngredientsForRecipe] Error inesperado:', error);
+    console.error('[handleReplaceRecipeIngredientsForRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

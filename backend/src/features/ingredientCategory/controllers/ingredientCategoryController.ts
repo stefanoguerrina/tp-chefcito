@@ -6,19 +6,19 @@ import * as ingredientCategoryService from '../services/ingredientCategoryServic
 
 // Devuelve la lista de todas las categorías de ingrediente.
 // GET /api/ingredient-categories
-export const searchIngredientCategories = async (req: Request, res: Response): Promise<void> => {
+export const handleSearchIngredientCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const categories = await ingredientCategoryService.getAllIngredientCategories();
     res.status(200).json(categories);
   } catch (error) {
-    console.error('[searchIngredientCategories] Error inesperado:', error);
+    console.error('[handleSearchIngredientCategories] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Devuelve una categoría de ingrediente por ID.
 // GET /api/ingredient-categories/:id
-export const getIngredientCategoryById = async (req: Request, res: Response): Promise<void> => {
+export const handleGetIngredientCategoryById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -35,14 +35,14 @@ export const getIngredientCategoryById = async (req: Request, res: Response): Pr
 
     res.status(200).json(category);
   } catch (error) {
-    console.error('[getIngredientCategoryById] Error inesperado:', error);
+    console.error('[handleGetIngredientCategoryById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Crea una nueva categoría de ingrediente.
 // POST /api/ingredient-categories
-export const createIngredientCategory = async (req: Request, res: Response): Promise<void> => {
+export const handleCreateIngredientCategory = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description } = req.body;
     const result = await ingredientCategoryService.createIngredientCategory({ name, description });
@@ -54,14 +54,14 @@ export const createIngredientCategory = async (req: Request, res: Response): Pro
 
     res.status(201).json(result.category);
   } catch (error) {
-    console.error('[createIngredientCategory] Error inesperado:', error);
+    console.error('[handleCreateIngredientCategory] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Actualiza una categoría de ingrediente existente.
 // PATCH /api/ingredient-categories/:id
-export const updateIngredientCategoryById = async (req: Request, res: Response): Promise<void> => {
+export const handleUpdateIngredientCategoryById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
     const { name, description } = req.body;
@@ -74,14 +74,14 @@ export const updateIngredientCategoryById = async (req: Request, res: Response):
 
     res.status(200).json(updated);
   } catch (error) {
-    console.error('[updateIngredientCategoryById] Error inesperado:', error);
+    console.error('[handleUpdateIngredientCategoryById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Elimina una categoría de ingrediente por ID.
 // DELETE /api/ingredient-categories/:id
-export const deleteIngredientCategoryById = async (req: Request, res: Response): Promise<void> => {
+export const handleDeleteIngredientCategoryById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -103,7 +103,7 @@ export const deleteIngredientCategoryById = async (req: Request, res: Response):
 
     res.status(200).json({ message: 'Categoría de ingrediente eliminada correctamente.' });
   } catch (error) {
-    console.error('[deleteIngredientCategoryById] Error inesperado:', error);
+    console.error('[handleDeleteIngredientCategoryById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

@@ -3,7 +3,7 @@
 // API ya piden token (GET /api/users y GET /api/categories), y "Con mi despensa" necesita
 // saber de quién es la despensa.
 import { Router } from 'express';
-import { quickSearch, listRecipes, listCategories, listUsers } from '../controllers/searchController.js';
+import { handleQuickSearch, handleListRecipes, handleListCategories, handleListUsers } from '../controllers/searchController.js';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import {
   validateQuickSearch,
@@ -15,15 +15,15 @@ import {
 const searchRouter = Router();
 
 // GET /api/search?q=texto — primeras coincidencias en categorías, recetas y usuarios
-searchRouter.get('/', verifyToken, validateQuickSearch, handleValidationErrors, quickSearch);
+searchRouter.get('/', verifyToken, validateQuickSearch, handleValidationErrors, handleQuickSearch);
 
 // GET /api/search/recipes — listado de recetas con filtros, orden, despensa y paginación
-searchRouter.get('/recipes', verifyToken, validateRecipeListing, handleValidationErrors, listRecipes);
+searchRouter.get('/recipes', verifyToken, validateRecipeListing, handleValidationErrors, handleListRecipes);
 
 // GET /api/search/categories — listado de categorías de receta con filtros y paginación
-searchRouter.get('/categories', verifyToken, validateNameOrRecipesListing, handleValidationErrors, listCategories);
+searchRouter.get('/categories', verifyToken, validateNameOrRecipesListing, handleValidationErrors, handleListCategories);
 
 // GET /api/search/users — listado de usuarios con filtros y paginación
-searchRouter.get('/users', verifyToken, validateNameOrRecipesListing, handleValidationErrors, listUsers);
+searchRouter.get('/users', verifyToken, validateNameOrRecipesListing, handleValidationErrors, handleListUsers);
 
 export { searchRouter };

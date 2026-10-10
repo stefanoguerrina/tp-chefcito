@@ -1,10 +1,10 @@
 // Router for user endpoints.
 import { Router } from 'express';
-import { health } from '../controllers/databaseControllers.js';
+import { handleHealth } from '../controllers/databaseControllers.js';
 
 const databaseRouter = Router();
 
 // GET /api/health — returns database status
-databaseRouter.get('/health', health);
+databaseRouter.get('/health', handleHealth);
 
 export { databaseRouter };

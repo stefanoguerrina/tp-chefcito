@@ -8,7 +8,7 @@ import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
 // Devuelve todas las reviews de una receta con el promedio de rating.
 // GET /api/recipes/:idRecipe/reviews
-export const listReviewsByRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleListReviewsByRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
 
@@ -20,14 +20,14 @@ export const listReviewsByRecipe = async (req: AuthRequest, res: Response): Prom
     const result = await reviewService.getReviewsByRecipe(idRecipe);
     res.status(200).json(result);
   } catch (error) {
-    console.error('[listReviewsByRecipe] Error inesperado:', error);
+    console.error('[handleListReviewsByRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Crea una nueva review para el usuario autenticado en la receta indicada.
 // POST /api/recipes/:idRecipe/reviews
-export const createReview = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleCreateReview = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     const { rating, comment } = req.body;
@@ -55,14 +55,14 @@ export const createReview = async (req: AuthRequest, res: Response): Promise<voi
 
     res.status(201).json(result.review);
   } catch (error) {
-    console.error('[createReview] Error inesperado:', error);
+    console.error('[handleCreateReview] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Actualiza una review existente (rating y/o comment). Solo el dueño o un admin.
 // PATCH /api/recipes/:idRecipe/reviews/:idReview
-export const updateReview = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleUpdateReview = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     const idReview = Number(req.params.idReview);
@@ -96,14 +96,14 @@ export const updateReview = async (req: AuthRequest, res: Response): Promise<voi
 
     res.status(200).json(result.review);
   } catch (error) {
-    console.error('[updateReview] Error inesperado:', error);
+    console.error('[handleUpdateReview] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Elimina una review. Solo el dueño o un admin.
 // DELETE /api/recipes/:idRecipe/reviews/:idReview
-export const deleteReview = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleDeleteReview = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     const idReview = Number(req.params.idReview);
@@ -130,7 +130,7 @@ export const deleteReview = async (req: AuthRequest, res: Response): Promise<voi
 
     res.status(200).json({ message: 'Reseña eliminada correctamente.' });
   } catch (error) {
-    console.error('[deleteReview] Error inesperado:', error);
+    console.error('[handleDeleteReview] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

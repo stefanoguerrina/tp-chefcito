@@ -4,10 +4,10 @@
 // Lecturas son públicas; crear, editar y eliminar requieren autenticación.
 import { Router } from 'express';
 import {
-  listReviewsByRecipe,
-  createReview,
-  updateReview,
-  deleteReview,
+  handleListReviewsByRecipe,
+  handleCreateReview,
+  handleUpdateReview,
+  handleDeleteReview,
 } from '../controllers/reviewController.js';
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import {
@@ -20,7 +20,7 @@ import {
 const reviewRouter = Router({ mergeParams: true });
 
 // GET /api/recipes/:idRecipe/reviews — lista reviews con promedio (público)
-reviewRouter.get('/', listReviewsByRecipe);
+reviewRouter.get('/', handleListReviewsByRecipe);
 
 // POST /api/recipes/:idRecipe/reviews — crea una review (autenticado)
 reviewRouter.post(
@@ -28,7 +28,7 @@ reviewRouter.post(
   verifyToken,
   validateCreateReview,
   handleValidationErrors,
-  createReview
+  handleCreateReview
 );
 
 // PATCH /api/recipes/:idRecipe/reviews/:idReview — edita una review (dueño o admin)
@@ -37,10 +37,10 @@ reviewRouter.patch(
   verifyToken,
   validateUpdateReview,
   handleValidationErrors,
-  updateReview
+  handleUpdateReview
 );
 
 // DELETE /api/recipes/:idRecipe/reviews/:idReview — elimina una review (dueño o admin)
-reviewRouter.delete('/:idReview', verifyToken, deleteReview);
+reviewRouter.delete('/:idReview', verifyToken, handleDeleteReview);
 
 export { reviewRouter };

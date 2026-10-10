@@ -8,7 +8,7 @@ import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
 // Devuelve las recetas guardadas por un usuario. Solo el propio usuario o un admin.
 // GET /api/saved-recipes/:idUser
-export const listSavedRecipesByUser = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleListSavedRecipesByUser = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idUser = Number(req.params.idUser);
 
@@ -25,14 +25,14 @@ export const listSavedRecipesByUser = async (req: AuthRequest, res: Response): P
     const savedRecipes = await userRecipeService.getSavedRecipesByUser(idUser);
     res.status(200).json(savedRecipes);
   } catch (error) {
-    console.error('[listSavedRecipesByUser] Error inesperado:', error);
+    console.error('[handleListSavedRecipesByUser] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Devuelve el estado de guardado del usuario autenticado para una receta.
 // GET /api/recipes/:idRecipe/save
-export const getUserRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleGetUserRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
 
@@ -50,14 +50,14 @@ export const getUserRecipe = async (req: AuthRequest, res: Response): Promise<vo
 
     res.status(200).json(result.userRecipe);
   } catch (error) {
-    console.error('[getUserRecipe] Error inesperado:', error);
+    console.error('[handleGetUserRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Guarda una receta para el usuario autenticado.
 // POST /api/recipes/:idRecipe/save
-export const createUserRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleCreateUserRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     // El body es opcional: "guardar receta" no requiere enviar ningún campo.
@@ -82,14 +82,14 @@ export const createUserRecipe = async (req: AuthRequest, res: Response): Promise
 
     res.status(201).json(result.userRecipe);
   } catch (error) {
-    console.error('[createUserRecipe] Error inesperado:', error);
+    console.error('[handleCreateUserRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Actualiza el estado de guardado (isSaved) para el usuario autenticado.
 // PATCH /api/recipes/:idRecipe/save
-export const updateUserRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleUpdateUserRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     const { isSaved } = req.body;
@@ -108,14 +108,14 @@ export const updateUserRecipe = async (req: AuthRequest, res: Response): Promise
 
     res.status(200).json(result.userRecipe);
   } catch (error) {
-    console.error('[updateUserRecipe] Error inesperado:', error);
+    console.error('[handleUpdateUserRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Elimina por completo el guardado de una receta para el usuario autenticado.
 // DELETE /api/recipes/:idRecipe/save
-export const deleteUserRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleDeleteUserRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
 
@@ -133,7 +133,7 @@ export const deleteUserRecipe = async (req: AuthRequest, res: Response): Promise
 
     res.status(200).json({ message: 'Receta eliminada de guardados correctamente.' });
   } catch (error) {
-    console.error('[deleteUserRecipe] Error inesperado:', error);
+    console.error('[handleDeleteUserRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

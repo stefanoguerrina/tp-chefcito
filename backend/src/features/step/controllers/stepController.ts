@@ -7,7 +7,7 @@ import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
 // Devuelve los pasos de una receta, ordenados.
 // GET /api/recipes/:idRecipe/steps
-export const searchStepsByRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleSearchStepsByRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
 
@@ -24,7 +24,7 @@ export const searchStepsByRecipe = async (req: AuthRequest, res: Response): Prom
 
     res.status(200).json(steps);
   } catch (error) {
-    console.error('[searchStepsByRecipe] Error inesperado:', error);
+    console.error('[handleSearchStepsByRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -32,7 +32,7 @@ export const searchStepsByRecipe = async (req: AuthRequest, res: Response): Prom
 // Reemplaza por completo los pasos de una receta (solo su dueño o un admin).
 // Body: { steps: [{ instruction, estimatedTime? }, ...] }, en el orden final deseado.
 // PUT /api/recipes/:idRecipe/steps
-export const replaceStepsForRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleReplaceStepsForRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const idRecipe = Number(req.params.idRecipe);
     const { steps } = req.body;
@@ -54,7 +54,7 @@ export const replaceStepsForRecipe = async (req: AuthRequest, res: Response): Pr
 
     res.status(200).json(result.steps);
   } catch (error) {
-    console.error('[replaceStepsForRecipe] Error inesperado:', error);
+    console.error('[handleReplaceStepsForRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

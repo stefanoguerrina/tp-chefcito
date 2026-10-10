@@ -28,19 +28,19 @@ const parseNutritionalValues = (raw: unknown): CreateNutritionalValueData[] | un
 
 // Devuelve la lista de todos los ingredientes con sus categorías.
 // GET /api/ingredients
-export const searchIngredients = async (req: Request, res: Response): Promise<void> => {
+export const handleSearchIngredients = async (req: Request, res: Response): Promise<void> => {
   try {
     const ingredients = await ingredientService.getAllIngredients();
     res.status(200).json(ingredients);
   } catch (error) {
-    console.error('[searchIngredients] Error inesperado:', error);
+    console.error('[handleSearchIngredients] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Devuelve un ingrediente por ID.
 // GET /api/ingredients/:id
-export const getIngredientById = async (req: Request, res: Response): Promise<void> => {
+export const handleGetIngredientById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -57,7 +57,7 @@ export const getIngredientById = async (req: Request, res: Response): Promise<vo
 
     res.status(200).json(ingredient);
   } catch (error) {
-    console.error('[getIngredientById] Error inesperado:', error);
+    console.error('[handleGetIngredientById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -66,7 +66,7 @@ export const getIngredientById = async (req: Request, res: Response): Promise<vo
 // (ej. { "categoryIds": [1, 3], "name": "Tomate" }) y, opcionalmente, nutritionalValues
 // ([{ name, servingAmount, servingUnit, value }]). La foto se sube aparte (PATCH /:id/image).
 // POST /api/ingredients
-export const createIngredient = async (req: Request, res: Response): Promise<void> => {
+export const handleCreateIngredient = async (req: Request, res: Response): Promise<void> => {
   try {
     const { categoryIds, name, description, unitOfMeasure, imagePath, nutritionalValues } = req.body;
     const result = await ingredientService.createIngredient({
@@ -89,7 +89,7 @@ export const createIngredient = async (req: Request, res: Response): Promise<voi
 
     res.status(201).json(result.ingredient);
   } catch (error) {
-    console.error('[createIngredient] Error inesperado:', error);
+    console.error('[handleCreateIngredient] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -97,7 +97,7 @@ export const createIngredient = async (req: Request, res: Response): Promise<voi
 // Actualiza un ingrediente existente. Si se envía categoryIds o nutritionalValues,
 // reemplaza por completo ese set.
 // PATCH /api/ingredients/:id
-export const updateIngredientById = async (req: Request, res: Response): Promise<void> => {
+export const handleUpdateIngredientById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
     const { categoryIds, name, description, unitOfMeasure, imagePath, nutritionalValues } = req.body;
@@ -126,14 +126,14 @@ export const updateIngredientById = async (req: Request, res: Response): Promise
 
     res.status(200).json(result.ingredient);
   } catch (error) {
-    console.error('[updateIngredientById] Error inesperado:', error);
+    console.error('[handleUpdateIngredientById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Elimina un ingrediente por ID.
 // DELETE /api/ingredients/:id
-export const deleteIngredientById = async (req: Request, res: Response): Promise<void> => {
+export const handleDeleteIngredientById = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -155,7 +155,7 @@ export const deleteIngredientById = async (req: Request, res: Response): Promise
 
     res.status(200).json({ message: 'Ingrediente eliminado correctamente.' });
   } catch (error) {
-    console.error('[deleteIngredientById] Error inesperado:', error);
+    console.error('[handleDeleteIngredientById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -163,7 +163,7 @@ export const deleteIngredientById = async (req: Request, res: Response): Promise
 // Sube (o reemplaza) la foto de un ingrediente. Body: multipart con el archivo en "image"
 // (ya guardado en disco por uploadIngredientImage).
 // PATCH /api/ingredients/:id/image
-export const uploadIngredientImageHandler = async (req: Request, res: Response): Promise<void> => {
+export const handleUploadIngredientImage = async (req: Request, res: Response): Promise<void> => {
   if (!req.file) {
     res.status(422).json({
       message: 'Error de validación. Revisá los campos enviados.',
@@ -191,7 +191,7 @@ export const uploadIngredientImageHandler = async (req: Request, res: Response):
 
 // Quita la foto de un ingrediente (vuelve al ícono genérico).
 // DELETE /api/ingredients/:id/image
-export const deleteIngredientImageHandler = async (req: Request, res: Response): Promise<void> => {
+export const handleDeleteIngredientImage = async (req: Request, res: Response): Promise<void> => {
   try {
     const result = await ingredientService.removeIngredientImage(Number(req.params.id));
     if (!result.ok) {

@@ -8,7 +8,7 @@ import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 // Devuelve la lista de recetas con sus categorías, creador e imágenes.
 // Con ?userId=N devuelve solo las recetas de ese usuario.
 // GET /api/recipes
-export const searchRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleSearchRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userIdParam = req.query.userId;
     const idUser = userIdParam !== undefined ? Number(userIdParam) : undefined;
@@ -24,7 +24,7 @@ export const searchRecipes = async (req: AuthRequest, res: Response): Promise<vo
 
     res.status(200).json(recipes);
   } catch (error) {
-    console.error('[searchRecipes] Error inesperado:', error);
+    console.error('[handleSearchRecipes] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -33,7 +33,7 @@ export const searchRecipes = async (req: AuthRequest, res: Response): Promise<vo
 // (`nutrition`) y, si hay sesión, `viewer` = { isSaved, pantryIngredientIds } del usuario
 // logueado (sin sesión, viewer es null: la ruta es pública).
 // GET /api/recipes/:id
-export const getRecipeById = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleGetRecipeById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -50,7 +50,7 @@ export const getRecipeById = async (req: AuthRequest, res: Response): Promise<vo
 
     res.status(200).json(recipe);
   } catch (error) {
-    console.error('[getRecipeById] Error inesperado:', error);
+    console.error('[handleGetRecipeById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -59,7 +59,7 @@ export const getRecipeById = async (req: AuthRequest, res: Response): Promise<vo
 // siempre del token, nunca del body. El body espera categoryIds como array
 // opcional de IDs (ej. { "name": "Milanesa", "categoryIds": [1, 3] }).
 // POST /api/recipes
-export const createRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleCreateRecipe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { name, description, preparationTime, servings, difficulty, categoryIds } = req.body;
     const result = await recipeService.createRecipe(req.user!.id, {
@@ -78,7 +78,7 @@ export const createRecipe = async (req: AuthRequest, res: Response): Promise<voi
 
     res.status(201).json(result.recipe);
   } catch (error) {
-    console.error('[createRecipe] Error inesperado:', error);
+    console.error('[handleCreateRecipe] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -86,7 +86,7 @@ export const createRecipe = async (req: AuthRequest, res: Response): Promise<voi
 // Actualiza una receta existente. Solo su dueño o un admin pueden hacerlo.
 // Si se envía categoryIds, reemplaza por completo el set de categorías actuales.
 // PATCH /api/recipes/:id
-export const updateRecipeById = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleUpdateRecipeById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
     const { name, description, preparationTime, servings, difficulty, categoryIds } = req.body;
@@ -115,14 +115,14 @@ export const updateRecipeById = async (req: AuthRequest, res: Response): Promise
 
     res.status(200).json(result.recipe);
   } catch (error) {
-    console.error('[updateRecipeById] Error inesperado:', error);
+    console.error('[handleUpdateRecipeById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Elimina una receta por ID. Solo su dueño o un admin pueden hacerlo.
 // DELETE /api/recipes/:id
-export const deleteRecipeById = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleDeleteRecipeById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
@@ -144,7 +144,7 @@ export const deleteRecipeById = async (req: AuthRequest, res: Response): Promise
 
     res.status(200).json({ message: 'Receta eliminada correctamente.' });
   } catch (error) {
-    console.error('[deleteRecipeById] Error inesperado:', error);
+    console.error('[handleDeleteRecipeById] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

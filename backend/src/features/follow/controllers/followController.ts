@@ -8,7 +8,7 @@ import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
 
 // Estado de seguimiento de un perfil: { isFollowing, followersCount, followingCount }.
 // GET /api/users/:userId/follow
-export const getFollowStatus = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleGetFollowStatus = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const result = await followService.getFollowStatus(req.user!.id, Number(req.params.userId));
     if (!result.ok) {
@@ -17,14 +17,14 @@ export const getFollowStatus = async (req: AuthRequest, res: Response): Promise<
     }
     res.status(200).json(result.status);
   } catch (error) {
-    console.error('[getFollowStatus] Error inesperado:', error);
+    console.error('[handleGetFollowStatus] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // El usuario autenticado empieza a seguir al de la URL. Responde 201 con el estado nuevo.
 // POST /api/users/:userId/follow
-export const followUser = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleFollowUser = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const result = await followService.followUser(req.user!.id, Number(req.params.userId));
     if (!result.ok) {
@@ -42,14 +42,14 @@ export const followUser = async (req: AuthRequest, res: Response): Promise<void>
     }
     res.status(201).json(result.status);
   } catch (error) {
-    console.error('[followUser] Error inesperado:', error);
+    console.error('[handleFollowUser] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // El usuario autenticado deja de seguir al de la URL. Responde 200 con el estado nuevo.
 // DELETE /api/users/:userId/follow
-export const unfollowUser = async (req: AuthRequest, res: Response): Promise<void> => {
+export const handleUnfollowUser = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const result = await followService.unfollowUser(req.user!.id, Number(req.params.userId));
     if (!result.ok) {
@@ -58,7 +58,7 @@ export const unfollowUser = async (req: AuthRequest, res: Response): Promise<voi
     }
     res.status(200).json(result.status);
   } catch (error) {
-    console.error('[unfollowUser] Error inesperado:', error);
+    console.error('[handleUnfollowUser] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

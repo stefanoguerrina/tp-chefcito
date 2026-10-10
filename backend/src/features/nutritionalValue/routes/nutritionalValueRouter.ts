@@ -3,11 +3,11 @@
 // mergeParams: true permite leer :idIngredient, definido en el router padre.
 import { Router } from 'express';
 import {
-  searchNutritionalValuesByIngredient,
-  getNutritionalValue,
-  createNutritionalValue,
-  updateNutritionalValueByNum,
-  deleteNutritionalValueByNum,
+  handleSearchNutritionalValuesByIngredient,
+  handleGetNutritionalValue,
+  handleCreateNutritionalValue,
+  handleUpdateNutritionalValueByNum,
+  handleDeleteNutritionalValueByNum,
 } from '../controllers/nutritionalValueController.js';
 import { verifyToken, verifyAdmin } from '../../../core/middleware/authMiddleware.js';
 import {
@@ -19,10 +19,10 @@ import {
 const nutritionalValueRouter = Router({ mergeParams: true });
 
 // GET /api/ingredients/:idIngredient/nutritional-values
-nutritionalValueRouter.get('/', searchNutritionalValuesByIngredient);
+nutritionalValueRouter.get('/', handleSearchNutritionalValuesByIngredient);
 
 // GET /api/ingredients/:idIngredient/nutritional-values/:num
-nutritionalValueRouter.get('/:num', getNutritionalValue);
+nutritionalValueRouter.get('/:num', handleGetNutritionalValue);
 
 // POST /api/ingredients/:idIngredient/nutritional-values (solo admin)
 nutritionalValueRouter.post(
@@ -31,7 +31,7 @@ nutritionalValueRouter.post(
   verifyAdmin,
   validateCreateNutritionalValue,
   handleValidationErrors,
-  createNutritionalValue
+  handleCreateNutritionalValue
 );
 
 // PATCH /api/ingredients/:idIngredient/nutritional-values/:num (solo admin)
@@ -41,10 +41,10 @@ nutritionalValueRouter.patch(
   verifyAdmin,
   validateUpdateNutritionalValue,
   handleValidationErrors,
-  updateNutritionalValueByNum
+  handleUpdateNutritionalValueByNum
 );
 
 // DELETE /api/ingredients/:idIngredient/nutritional-values/:num (solo admin)
-nutritionalValueRouter.delete('/:num', verifyToken, verifyAdmin, deleteNutritionalValueByNum);
+nutritionalValueRouter.delete('/:num', verifyToken, verifyAdmin, handleDeleteNutritionalValueByNum);
 
 export { nutritionalValueRouter };

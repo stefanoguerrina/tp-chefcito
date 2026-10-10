@@ -7,7 +7,7 @@ import * as nutritionalValueService from '../services/nutritionalValueService.js
 
 // Devuelve todos los valores nutricionales de un ingrediente.
 // GET /api/ingredients/:idIngredient/nutritional-values
-export const searchNutritionalValuesByIngredient = async (req: Request, res: Response): Promise<void> => {
+export const handleSearchNutritionalValuesByIngredient = async (req: Request, res: Response): Promise<void> => {
   try {
     const idIngredient = Number(req.params.idIngredient);
 
@@ -23,14 +23,14 @@ export const searchNutritionalValuesByIngredient = async (req: Request, res: Res
     }
     res.status(200).json(result);
   } catch (error) {
-    console.error('[searchNutritionalValuesByIngredient] Error inesperado:', error);
+    console.error('[handleSearchNutritionalValuesByIngredient] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Devuelve un valor nutricional puntual por su número de secuencia.
 // GET /api/ingredients/:idIngredient/nutritional-values/:num
-export const getNutritionalValue = async (req: Request, res: Response): Promise<void> => {
+export const handleGetNutritionalValue = async (req: Request, res: Response): Promise<void> => {
   try {
     const idIngredient = Number(req.params.idIngredient);
     const num = Number(req.params.num);
@@ -48,7 +48,7 @@ export const getNutritionalValue = async (req: Request, res: Response): Promise<
 
     res.status(200).json(nutritionalValue);
   } catch (error) {
-    console.error('[getNutritionalValue] Error inesperado:', error);
+    console.error('[handleGetNutritionalValue] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -56,7 +56,7 @@ export const getNutritionalValue = async (req: Request, res: Response): Promise<
 // Crea un nuevo valor nutricional para un ingrediente. El número de secuencia (num)
 // se asigna automáticamente en el service/repository.
 // POST /api/ingredients/:idIngredient/nutritional-values
-export const createNutritionalValue = async (req: Request, res: Response): Promise<void> => {
+export const handleCreateNutritionalValue = async (req: Request, res: Response): Promise<void> => {
   try {
     const idIngredient = Number(req.params.idIngredient);
     const { name, servingAmount, servingUnit, value } = req.body;
@@ -69,14 +69,14 @@ export const createNutritionalValue = async (req: Request, res: Response): Promi
 
     res.status(201).json(result.nutritionalValue);
   } catch (error) {
-    console.error('[createNutritionalValue] Error inesperado:', error);
+    console.error('[handleCreateNutritionalValue] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Actualiza un valor nutricional existente.
 // PATCH /api/ingredients/:idIngredient/nutritional-values/:num
-export const updateNutritionalValueByNum = async (req: Request, res: Response): Promise<void> => {
+export const handleUpdateNutritionalValueByNum = async (req: Request, res: Response): Promise<void> => {
   try {
     const idIngredient = Number(req.params.idIngredient);
     const num = Number(req.params.num);
@@ -90,14 +90,14 @@ export const updateNutritionalValueByNum = async (req: Request, res: Response): 
 
     res.status(200).json(updated);
   } catch (error) {
-    console.error('[updateNutritionalValueByNum] Error inesperado:', error);
+    console.error('[handleUpdateNutritionalValueByNum] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Elimina un valor nutricional por su número de secuencia.
 // DELETE /api/ingredients/:idIngredient/nutritional-values/:num
-export const deleteNutritionalValueByNum = async (req: Request, res: Response): Promise<void> => {
+export const handleDeleteNutritionalValueByNum = async (req: Request, res: Response): Promise<void> => {
   try {
     const idIngredient = Number(req.params.idIngredient);
     const num = Number(req.params.num);
@@ -115,7 +115,7 @@ export const deleteNutritionalValueByNum = async (req: Request, res: Response): 
 
     res.status(200).json(deleted);
   } catch (error) {
-    console.error('[deleteNutritionalValueByNum] Error inesperado:', error);
+    console.error('[handleDeleteNutritionalValueByNum] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

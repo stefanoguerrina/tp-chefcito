@@ -5,7 +5,7 @@ import * as authService from '../services/authService.js';
 
 // Registra un nuevo usuario.
 // POST /api/auth/register
-export const register = async (req: Request, res: Response): Promise<void> => {
+export const handleRegister = async (req: Request, res: Response): Promise<void> => {
   const { username, password, name, lastName, email, phone, birthDate } = req.body;
 
   try {
@@ -34,14 +34,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       res.status(409).json({ message: 'El nombre de usuario o email ya están en uso.' });
       return;
     }
-    console.error('[register] Error inesperado:', error);
+    console.error('[handleRegister] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
 // Autentica a un usuario con email o username y contraseña.
 // POST /api/auth/login
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const handleLogin = async (req: Request, res: Response): Promise<void> => {
   const { email, username, password } = req.body;
   // Acepta tanto email como username como identificador.
   const identifier = (email || username || '').trim();
@@ -66,7 +66,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({ token: result.token, isAdmin: result.isAdmin });
   } catch (error) {
-    console.error('[login] Error inesperado:', error);
+    console.error('[handleLogin] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };

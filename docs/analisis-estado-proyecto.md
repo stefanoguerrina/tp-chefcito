@@ -285,9 +285,10 @@ Si se mueven los archivos de la consigna, actualizar las rutas que los mencionan
   `{ message, errors }`, ver B2); ejemplos con `.tsx` y "React en TypeScript y JavaScript" (el
   front es solo JS/JSX); la referencia al "IDE Antigravity".
 - [backend/README.md](../backend/README.md): el ejemplo de `handleValidationErrors` no coincide
-  con el real; dice que los handlers llevan prefijo `handle` (los controllers se llaman
-  `createX`, `getXById`, …); la tabla de features no nombra `donation/` ni `admin/`; tildar la
-  checklist de AD a medida que avancen los tests.
+  con el real; la tabla de features no nombra `donation/` ni `admin/`; tildar la checklist de
+  AD a medida que avancen los tests.
+- ✅ (10/10) Todos los controllers del backend llevan el prefijo `handle` que pide el README
+  (`handleCreateRecipe`, `handleGetUserById`, …).
 
 ---
 
