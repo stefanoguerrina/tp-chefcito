@@ -31,21 +31,16 @@ npm start     # Levanta el build de producción (node ./dist/server.js)
 
 ## 2. Variables de entorno (`.env`)
 
-El archivo `.env` debe existir en `backend/` y **nunca se commitea**.
-Variables requeridas:
+El archivo `.env` debe existir en `backend/` y **nunca se commitea**. Se crea copiando
+[`.env.example`](.env.example), que lista todas las variables:
 
-```env
-DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DBNAME"
-
-# JWT
-JWT_SECRET=tu_clave_secreta_aqui
-
-# Opcionales
-# GEMINI_API_KEY=...          # Chefcito Bot (sin esto, /api/assistant/chat responde 503)
-# PORT=3000                   # Puerto del servidor (por defecto 3000)
-# CORS_ORIGINS=https://mi-front.vercel.app,http://localhost:5173
-#                             # Orígenes permitidos, separados por comas (por defecto los de Vite en local)
-```
+| Variable | Obligatoria | Para qué |
+|---|:-:|---|
+| `DATABASE_URL` | Sí | Conexión a MySQL que usa Prisma (`mysql://USER:PASSWORD@HOST:PORT/DBNAME`) |
+| `JWT_SECRET` | Sí | Clave para firmar los JWT |
+| `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_FALLBACK_MODEL` | No | Chefcito Bot (sin la clave, `/api/assistant/chat` responde 503) |
+| `MERCADOPAGO_ACCESS_TOKEN` | No | Donaciones (sin él, `/api/donations/checkout` responde 503) |
+| `PORT`, `CORS_ORIGINS`, `FRONTEND_URL` | No | Deploy: puerto, orígenes permitidos y URL pública del front |
 
 > ⚠️ Nunca hardcodear URLs ni credenciales en el código. Siempre usar `process.env`.
 

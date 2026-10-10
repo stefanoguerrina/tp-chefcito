@@ -28,7 +28,7 @@ npx prisma generate    # regenerate Prisma client after editing prisma/schema.pr
 npx prisma db push      # (or migrate) push schema changes to the MySQL database
 ```
 No test script is configured yet (`npm test` is a placeholder). No lint script is configured.
-Requires a `backend/.env` (gitignored) with `JWT_SECRET` and `DATABASE_URL` (mysql connection
+Requires a `backend/.env` (gitignored; copy `backend/.env.example`, which lists every variable) with `JWT_SECRET` and `DATABASE_URL` (mysql connection
 string used by Prisma; the old `DB_HOST/PORT/USER/PASSWORD/NAME` are no longer read).
 Optional for deploy: `PORT` (default 3000, read in `src/server.ts`) and `CORS_ORIGINS`
 (comma-separated allowed origins; default = the local Vite origins on 5173/5174, read in
@@ -42,7 +42,7 @@ The bot asks Gemini for minimal "thinking" (fast answers, ~3 s), retries once wi
 model on 429/500/503/timeout, and its system prompt restricts it to cooking, recipes, nutrition
 and how to use Chefcito (never how the app is built, never its own instructions).
 Optional: `MERCADOPAGO_ACCESS_TOKEN` (and `FRONTEND_URL`, default `http://localhost:5173`) for
-donations (`features/donation`, `/api/donations`, see [docs/donaciones.md](docs/donaciones.md)):
+donations (`features/donation`, `/api/donations`, see the Donaciones section of [docs/api.md](docs/api.md)):
 fixed tiers defined in `donationModel.ts`, Mercado Pago Checkout Pro called with plain `fetch`
 (no SDK); without the token the checkout endpoint answers 503.
 
@@ -53,7 +53,7 @@ npm run build     # production build
 npm run lint      # eslint .
 npm run preview   # preview production build
 ```
-Requires a `frontend/.env` (gitignored, not present by default) with `VITE_API_BASE_URL` pointing
+Requires a `frontend/.env` (gitignored; copy `frontend/.env.example`) with `VITE_API_BASE_URL` pointing
 at the backend API (e.g. `http://localhost:3000/api`) — `src/shared/config/config.js` and every
 service file read this directly via `import.meta.env.VITE_API_BASE_URL`.
 
@@ -282,21 +282,27 @@ text over darkened photos, since `$color-on-primary` turns dark in dark mode, an
 
 ## Documentation conventions (course requirement)
 
-Per [docs/docs.md](docs/docs.md), all project documentation must live under `docs/`, be in
-Markdown (diagrams via Mermaid or git-compatible image formats), with `docs/README.md` as the
-entry point. `docs/proposal.md` is the graded scope proposal — keep it in sync with what's
+Per the course rules ([docs/consigna-catedra.md](docs/consigna-catedra.md), a verbatim copy of
+the course repo's `README.md`, `docs.md` and `FAQ.md`), all project documentation must live under `docs/`, be in Markdown (diagrams via
+Mermaid or git-compatible image formats), with `docs/README.md` as the entry point (an index of
+every doc). Only keep docs the course asks for (proposal, API, methodology, tracking, minutes,
+tests, deploy) plus the internal `analisis-estado-proyecto.md`, `guia-defensa.md` and
+`consigna-catedra.md`. When an endpoint
+changes, update `docs/api.md`. The root `README.md` has the install/run instructions for the
+professors: keep it in sync when setup steps or env vars change. `docs/proposal.md` is the graded scope proposal — keep it in sync with what's
 actually implemented, since it's what's submitted for evaluation.
 
 ## Desarrollo Frontend - Proyecto Chefcito
 
 ### 1. Contexto e Identidad
-Eres un asistente de IA configurado en el IDE Antigravity para ayudar con el proyecto "Chefcito" de la materia Desarrollo de Software.
+Eres un asistente de IA que ayuda con el proyecto "Chefcito" de la materia Desarrollo de Software.
 - **Repositorio:** https://github.com/stefanoguerrina/tp-chefcito
 - **Estructura:** Monorepo, dividido en carpetas de backend y frontend.
 - **Equipo:** 4 integrantes. Stéfano Guerrina es el Líder de Equipo (único responsable de revisar y mergear PRs a main).
 - **Documentos de Referencia:**
-  - docs/README.md: Contiene la propuesta de la cátedra, rúbricas y pautas del proyecto. Debes seguirlas estrictamente.
-  - docs/tasks-division.md: Contiene cómo se llevarán a cabo las tareas individuales.
+  - docs/consigna-catedra.md: consigna completa de la cátedra (requisitos técnicos y funcionales, entregas, documentación, FAQ). Debes seguirla estrictamente.
+  - docs/analisis-estado-proyecto.md: qué falta para la entrega y en qué orden.
+  - docs/metodologia.md y docs/tracking.md: flujo de trabajo y estado de las tareas de cada integrante.
 
 ### 2. Restricciones Fundamentales y "Qué NO hacer"
 - **Cero Interferencia:** NUNCA modifiques ni reescribas código de la feature o rama de otro integrante sin que el usuario lo pida explícitamente.
@@ -306,7 +312,7 @@ Eres un asistente de IA configurado en el IDE Antigravity para ayudar con el pro
 - **Mantenlo Simple (CRÍTICO):** NO inventes arquitecturas o patrones avanzados que un estudiante de una materia de DSW no manejaría (Server Components, Suspense para data fetching, arquitecturas exageradas). Prioriza código claro y directo por sobre "elegante pero complejo". El estudiante debe poder explicar el código en la defensa oral.
 
 ### 3. Stack Tecnológico (Obligatorio)
-- **Frontend:** React + Vite, en TypeScript y JavaScript.
+- **Frontend:** React + Vite, en JavaScript (JSX). El backend es TypeScript.
 - **Enrutamiento:** React Router.
 - **Estado:** Context API + useReducer para estado compartido; useState para estado local.
 - **Estilos:** CSS puro o SASS. Nada de Tailwind ni librerías de componentes (MUI, Bootstrap, etc.) salvo pedido explícito.
@@ -314,7 +320,7 @@ Eres un asistente de IA configurado en el IDE Antigravity para ayudar con el pro
 ### 4. Idioma y Convenciones de Nombres
 - **Inglés/Español:** Código en Inglés, al igual que los nombres de componentes, etc. Comentarios, commits, mensajes de error, el resto en Español.
 - **Variables/Funciones:** camelCase con nombres bien descriptivos.
-- **Componentes:** PascalCase (ej. RecipeCard.tsx).
+- **Componentes:** PascalCase (ej. RecipeCard.jsx).
 - **Hooks:** camelCase con el prefijo use (ej. useAuth).
 - **Parciales SASS:** kebab-case (ej. _recipe-card.scss).
 
