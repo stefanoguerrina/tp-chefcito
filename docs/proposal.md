@@ -16,9 +16,9 @@ Aplicación web orientada a facilitar la planificación y elección de comidas a
 
 
 ### Modelo
-<img width="1706" height="812" alt="Chefcito-DER" src="https://github.com/user-attachments/assets/9045a749-be70-447d-a3d2-36d4eaae5932" />
+<img width="1706" height="717" alt="DER-FINAL" src="https://github.com/user-attachments/assets/38e459da-5f03-4d0c-af43-a00ab6856d7c" />
 
-<br>https://drive.google.com/file/d/1P_Q0JbjfzBXEMVRQG9LSGlv6ouKcrPgv/view?usp=sharing
+<br>https://drive.google.com/file/d/1h8rXkTWX_Fp8QzK-eL0guhFhasrMoLgt/view?usp=sharing
 
 ## Alcance Funcional 
 
