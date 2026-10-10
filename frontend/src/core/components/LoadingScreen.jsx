@@ -4,9 +4,18 @@
 // desde el primer instante, antes de que cargue React; si se cambia uno, cambiar el otro.
 // Sus estilos (_loading-screen.scss) no se importan acá: llegan desde index.html a través
 // de styles/critical.scss, para estar listos antes que el JS.
+// Mientras está en pantalla, el loader global (RequestIndicator) no aparece: ya hay uno.
+import { useEffect } from 'react';
 import SwirlingLoader from './SwirlingLoader.jsx';
+import { sectionLoaderShown, sectionLoaderHidden } from '../../shared/utils/requestTracker.js';
 
 function LoadingScreen() {
+  // Igual que LoadingState: avisa que ya se está mostrando que algo carga.
+  useEffect(() => {
+    sectionLoaderShown();
+    return sectionLoaderHidden;
+  }, []);
+
   return (
     <div className="LoadingScreen" role="status" aria-label="Cargando Chefcito">
       <SwirlingLoader className="LoadingScreen-spinner" width="64" height="64" />

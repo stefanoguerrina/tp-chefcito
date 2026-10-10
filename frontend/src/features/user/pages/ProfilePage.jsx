@@ -15,10 +15,12 @@ import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useProfileData } from '../hooks/useProfileData.js';
 import { useFollow } from '../../follow/hooks/useFollow.js';
+import { useProfileRecipeActions } from '../hooks/useProfileRecipeActions.js';
 import { useHasBeenVisible } from '../../../core/hooks/useHasBeenVisible.js';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import ScrollReveal from '../../../core/components/ScrollReveal.jsx';
 import EditProfileModal from '../components/EditProfileModal.jsx';
 import ProfileCard from '../components/ProfileCard.jsx';
@@ -28,24 +30,12 @@ import ProfileMetrics from '../components/ProfileMetrics.jsx';
 import ProfileScrollHint from '../components/ProfileScrollHint.jsx';
 import DonationModal from '../../donation/components/DonationModal.jsx';
 import { buildProfileMetrics } from '../models/profileMetricsModel.js';
+import { getFeaturedRecipes, getRecipeCategories } from '../models/profileRecipesModel.js';
 import '../styles/_profile-page.scss';
 
 // ids de las secciones 2 y 3, para bajar hasta ellas con los avisos con flecha.
 const FEATURED_SECTION_ID = 'perfil-destacadas';
 const RECIPES_SECTION_ID = 'perfil-recetas';
-
-// Recibe: una lista de recetas crudas. Devuelve sus categorías sin repetir ([{ id, name }]),
-// ordenadas por nombre: son las opciones del filtro de la galería (solo las que usa el autor).
-const getRecipeCategories = (recipes) =>
-  Array.from(
-    new Map(
-      recipes
-        .flatMap((recipe) => recipe.recipecategory ?? [])
-        .map(({ category }) => category)
-        .filter(Boolean)
-        .map((category) => [category.id, { id: category.id, name: category.name }])
-    ).values()
-  ).sort((a, b) => a.name.localeCompare(b.name, 'es'));
 
 // Rutas: /perfil (perfil propio) y /usuarios/:userId (perfil de otro usuario).
 function ProfilePage() {
@@ -58,24 +48,8 @@ function ProfilePage() {
   // vez de "Editar perfil", y las recetas solo se ven (sin el botón "Editar receta").
   const isOwnProfile = userId === currentUserId;
 
-  // Tocar una receta abre su detalle (el mismo que ven los demás).
-  const handleRecipeCardClick = (recipeId) => navigate(`/recetas/${recipeId}`);
-
-  // En el perfil propio, al pasar el mouse por una receta aparecen dos botones: "Ver
-  // receta" (el detalle) y "Editar receta" (el editor, que al terminar vuelve acá). En uno
-  // ajeno queda el "Ver receta" de siempre (undefined = sin botones propios).
-  // Recibe: el id de la receta. Devuelve: las acciones para RecipeCard (hoverActions).
-  const getRecipeHoverActions = isOwnProfile
-    ? (recipeId) => [
-      { label: 'Ver receta', icon: 'visibility', onClick: () => handleRecipeCardClick(recipeId) },
-      {
-        label: 'Editar receta',
-        icon: 'edit',
-        variant: 'secondary',
-        onClick: () => navigate(`/mis-recetas/${recipeId}/editar`, { state: { from: '/perfil' } }),
-      },
-    ]
-    : undefined;
+  // Abrir el detalle de una receta y, en el perfil propio, "Ver" / "Editar" al pasar el mouse.
+  const { handleRecipeClick: handleRecipeCardClick, getRecipeHoverActions } = useProfileRecipeActions(isOwnProfile);
 
   // Vuelve a la pantalla anterior; si se entró directo por link (sin historial), a la home.
   const handleBack = () => (location.key !== 'default' ? navigate(-1) : navigate('/'));
@@ -93,14 +67,11 @@ function ProfilePage() {
   // Abre el modal para donarle al dueño del perfil (solo en perfiles ajenos).
   const [isDonating, setIsDonating] = useState(false);
 
-  // Recetas Destacadas: las 3 propias con mejor valoración promedio (0 si todavía
-  // no tienen reseñas, así igual se completan los 3 huecos si hay pocas reseñas).
-  const featuredRecipes = [...recipes]
-    .sort((a, b) => (recipeReviewStats[b.id]?.averageRating ?? 0) - (recipeReviewStats[a.id]?.averageRating ?? 0))
-    .slice(0, 3);
+  // Recetas Destacadas: las 3 con mejor valoración promedio.
+  const featuredRecipes = getFeaturedRecipes(recipes, recipeReviewStats);
 
   if (isLoading) {
-    return <p className="ProfilePage-status">Cargando perfil...</p>;
+    return <LoadingState message="Cargando perfil..." />;
   }
 
   if (fetchError) {
@@ -146,6 +117,7 @@ function ProfilePage() {
 
           {/* Las métricas se ven siempre (también sin recetas): ahí están los seguidores. */}
           <ProfileMetrics
+            userId={userId}
             metrics={buildProfileMetrics(recipes, recipeReviewStats)}
             followStatus={followStatus}
           />
@@ -204,6 +176,7 @@ function ProfilePage() {
       {isOwnProfile && isEditingProfile && (
         <EditProfileModal
           user={user}
+          canChangePassword
           onClose={() => setIsEditingProfile(false)}
           onSaved={(updatedUser) => {
             // En el perfil propio, setUser actualiza el usuario compartido

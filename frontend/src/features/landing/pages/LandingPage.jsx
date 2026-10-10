@@ -1,7 +1,7 @@
 // Landing pública de Chefcito: se muestra cuando el usuario no inició sesión.
 // Son 4 "pantallas" que ocupan el alto completo de la ventana (ver _landing-page.scss):
 //   1. presentación (Hero);
-//   2. las 5 recetas mejor valoradas del momento;
+//   2. las 5 recetas mejor valoradas del momento (del backend, ver useLandingTopRecipes);
 //   3. "Buscá por": las tres formas de buscar en Chefcito;
 //   4. la invitación a registrarse.
 // Desde md se pasa de una a otra de a una por vez (scroll-snap del navegador, igual que en
@@ -15,7 +15,7 @@ import SignupCtaSection from '../components/SignupCtaSection.jsx';
 import Footer from '../components/Footer.jsx';
 import FloatingAssistantButton from '../components/FloatingAssistantButton.jsx';
 import ScrollReveal from '../../../core/components/ScrollReveal.jsx';
-import { momentRecipes } from '../models/landingMockData.js';
+import { useLandingTopRecipes } from '../hooks/useLandingTopRecipes.js';
 import '../styles/_landing-page.scss';
 
 // id de la 2ª pantalla: el CTA del hero baja hasta ella.
@@ -26,6 +26,8 @@ const TOP_RECIPES_SCREEN_ID = 'recetas-del-momento';
 // CTA ("Ver receta", buscar, etc.) usan onRequireAuth: como el visitante no eligió login o
 // registro explícitamente, primero se le pregunta cuál de los dos quiere.
 function LandingPage({ onLoginClick, onRegisterClick, onRequireAuth }) {
+  const topRecipes = useLandingTopRecipes();
+
   // Baja del hero a la pantalla siguiente. La animación del viaje la hace el navegador
   // (scroll-behavior: smooth en la landing, ver _landing-page.scss).
   const handleExploreClick = () => {
@@ -47,7 +49,13 @@ function LandingPage({ onLoginClick, onRegisterClick, onRequireAuth }) {
 
         <div className="LandingPage-screen" id={TOP_RECIPES_SCREEN_ID}>
           <ScrollReveal className="LandingPage-reveal">
-            <TopRecipesSection recipes={momentRecipes} onRecipeClick={onRequireAuth} />
+            <TopRecipesSection
+              recipes={topRecipes.recipes}
+              isLoading={topRecipes.isLoading}
+              error={topRecipes.error}
+              onRetry={topRecipes.handleRetry}
+              onRecipeClick={onRequireAuth}
+            />
           </ScrollReveal>
         </div>
 

@@ -12,8 +12,8 @@ import { verifyToken, verifyAdmin } from '../../../core/middleware/authMiddlewar
 import {
   validateCreateIngredientCategory,
   validateUpdateIngredientCategory,
-  handleValidationErrors,
 } from '../middleware/ingredientCategoryValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const ingredientCategoryRouter = Router();
 

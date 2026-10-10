@@ -2,6 +2,7 @@
 // que ya está en su inventario. Le muestra la cantidad actual y le permite
 // actualizarla con un stepper o cancelar la operación.
 import { useState } from 'react';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import { normalizeDecimalInput, isValidQuantity, stepQuantity } from '../../../shared/utils/decimalInput.js';
 import '../styles/_duplicate-ingredient-modal.scss';
 
@@ -42,9 +43,7 @@ function DuplicateIngredientModal({ modal, onConfirm, onClose }) {
     });
   };
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) onClose();
-  };
+  const overlayCloseProps = useOverlayClose(onClose);
 
   return (
     <div
@@ -52,7 +51,7 @@ function DuplicateIngredientModal({ modal, onConfirm, onClose }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="dup-modal-title"
-      onClick={handleOverlayClick}
+      {...overlayCloseProps}
     >
       <div className="DuplicateModal">
         {/* Botón cerrar X */}
@@ -76,7 +75,7 @@ function DuplicateIngredientModal({ modal, onConfirm, onClose }) {
           <strong>
             {modal.current?.availableQuantity ?? '—'} {unit}
           </strong>{' '}
-          de <strong>{modal.ingredientName}</strong> en tu despensa. ¿Querés actualizar la cantidad?
+          de <strong>{modal.ingredientName}</strong> en tu inventario. ¿Querés actualizar la cantidad?
         </p>
 
         <form className="DuplicateModal-form" onSubmit={handleConfirm}>

@@ -55,13 +55,6 @@
     }
   }
 
-  &-status {
-    margin: $spacing-xl 0;
-    text-align: center;
-    font-size: 15px;
-    color: $color-on-surface-variant;
-  }
-
   &-empty {
     display: flex;
     flex-direction: column;

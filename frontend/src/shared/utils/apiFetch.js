@@ -3,6 +3,7 @@
 // falla se lanza como ApiError con un mensaje listo para mostrarle al usuario.
 import { ApiError } from './ApiError.js';
 import { API_BASE_URL } from '../config/config.js';
+import { requestStarted, requestFinished } from './requestTracker.js';
 
 // Evento global que se dispara cuando el backend rechaza el token (vencido o inválido).
 // AuthContext lo escucha para cerrar la sesión sin que cada pantalla tenga que hacerlo.
@@ -20,7 +21,7 @@ const DEFAULT_MESSAGES = {
 };
 
 // Arma el mensaje para el usuario a partir del body de error del backend.
-// El backend responde { message, errors: [{ campo, mensaje }] } (o { errores } en auth):
+// El backend responde { message, errors: [{ campo, mensaje }] } (mismo formato en todas las rutas):
 // si hay errores por campo, se muestran esos (son más específicos que el "Error de validación").
 const buildErrorMessage = (status, data, fieldErrors) => {
   if (fieldErrors.length > 0) return fieldErrors.map((e) => e.mensaje).join(' ');
@@ -33,17 +34,33 @@ const buildErrorMessage = (status, data, fieldErrors) => {
 //   - options: opciones de fetch (method, body, etc.). El token se agrega automáticamente;
 //     el Content-Type JSON también, salvo que el body sea un FormData (subida de archivos),
 //     donde el navegador tiene que poner su propio Content-Type con el boundary.
+//     Además acepta background: true para los pedidos que el usuario no tiene que esperar
+//     (ej. el chequeo periódico de un pago): esos no muestran el loader global.
 // Devuelve el JSON de la respuesta (o null si vino vacía). Lanza ApiError si falla.
-export const apiFetch = async (endpoint, options = {}) => {
+export const apiFetch = async (endpoint, { background = false, ...options } = {}) => {
+  if (!background) requestStarted();
+  try {
+    return await sendRequest(endpoint, options);
+  } finally {
+    // En el finally para que el loader se apague también cuando el pedido falla.
+    if (!background) requestFinished();
+  }
+};
+
+// Hace el pedido en sí (ver apiFetch). Devuelve el JSON o lanza ApiError.
+const sendRequest = async (endpoint, options) => {
   const token = localStorage.getItem('token');
-  const isFormData = options.body instanceof FormData;
+  // Content-Type JSON solo si se manda un body JSON: un GET no lo necesita, y con él el
+  // navegador hace un pedido previo (preflight CORS) que se podría evitar. Con FormData lo
+  // pone el navegador, con el boundary.
+  const hasJsonBody = options.body !== undefined && !(options.body instanceof FormData);
 
   let response;
   try {
     response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
-        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+        ...(hasJsonBody ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(options.headers || {}),
       },
@@ -64,7 +81,7 @@ export const apiFetch = async (endpoint, options = {}) => {
 
   if (!response.ok) {
     const errorData = data || {};
-    const fieldErrors = errorData.errors || errorData.errores || [];
+    const fieldErrors = errorData.errors || [];
 
     // Solo se cierra la sesión si se había mandado un token: un 401 sin token es, por
     // ejemplo, un login con credenciales incorrectas, y ahí hay que mostrar el mensaje.
@@ -78,9 +95,9 @@ export const apiFetch = async (endpoint, options = {}) => {
   return data;
 };
 
-// Ejecuta un pedido de listado y devuelve [] si el backend responde 404. Varios listados
-// del backend responden 404 ("No se encontraron ...") cuando todavía no hay registros, y
-// para la interfaz eso no es un error sino una lista vacía.
+// Ejecuta un pedido de listado y devuelve [] si el backend responde 404. Los listados del
+// backend ya responden 200 [] cuando están vacíos (no 404); esto queda como red de
+// seguridad: para la interfaz una lista inexistente no es un error sino una lista vacía.
 // Recibe: fetchList, una función que devuelve la promesa del listado.
 export const fetchListOrEmpty = async (fetchList) => {
   try {

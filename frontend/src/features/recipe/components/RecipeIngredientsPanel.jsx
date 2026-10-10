@@ -1,5 +1,5 @@
 // Ingredientes del detalle de receta: lista donde el usuario puede ir tildando lo que ya
-// tiene listo, con la cantidad de cada uno y la etiqueta "Despensa" en los que ya tiene en
+// tiene listo, con la cantidad de cada uno y la etiqueta "Lo tenés" en los que ya tiene en
 // su inventario. Lo tildado no se guarda: es una ayuda para cocinar, se reinicia al salir.
 import { useState } from 'react';
 import '../styles/_recipe-ingredients-panel.scss';
@@ -60,7 +60,7 @@ function RecipeIngredientsPanel({ ingredients, pantryIngredientIds }) {
                   )}
                   {pantryIngredientIds.has(item.idIngredient) && (
                     <span className="RecipeIngredientsPanel-pantry" title="Lo tenés en tu inventario">
-                      Despensa
+                      Lo tenés
                     </span>
                   )}
                 </span>

@@ -3,18 +3,15 @@
 // una lista completa (agregar/quitar en el mismo formulario), por eso la única
 // escritura disponible es "reemplazar todo el set" (PUT).
 import { apiFetch } from '../../../shared/utils/apiFetch.js';
-
-// Trae los ingredientes de una receta, con nombre y unidad de medida incluidos
-// (lectura pública).
-export const getRecipeIngredientsByRecipe = async (idRecipe) => {
-  return await apiFetch(`/recipes/${idRecipe}/ingredients`);
-};
+import { recipeIngredientFromApi } from '../models/recipeIngredientModel.js';
 
 // Reemplaza por completo los ingredientes de una receta (requiere ser el dueño o admin).
 // Recibe: idRecipe, ingredients: [{ idIngredient, requiredQuantity? }, ...].
+// Devuelve: la lista guardada (mapeada con recipeIngredientFromApi).
 export const replaceRecipeIngredients = async (idRecipe, ingredients) => {
-  return await apiFetch(`/recipes/${idRecipe}/ingredients`, {
+  const items = await apiFetch(`/recipes/${idRecipe}/ingredients`, {
     method: 'PUT',
     body: JSON.stringify({ ingredients }),
   });
+  return items.map(recipeIngredientFromApi);
 };

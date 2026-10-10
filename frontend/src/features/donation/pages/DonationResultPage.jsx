@@ -9,6 +9,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { confirmDonation, getDonation } from '../services/donationService.js';
 import { formatDonationAmount } from '../models/donationModel.js';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import '../styles/_donation-result-page.scss';
 
 // Texto e ícono de cada resultado posible.
@@ -72,7 +73,7 @@ function DonationResultPage() {
   };
 
   if (isLoading) {
-    return <p className="DonationResultPage-status">Confirmando tu donación...</p>;
+    return <LoadingState message="Confirmando tu donación..." />;
   }
 
   if (fetchError) {

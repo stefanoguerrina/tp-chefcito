@@ -163,7 +163,6 @@ model recipe {
   servings         Int?
   difficulty       String?            @db.VarChar(20)
   createdAt        DateTime?          @default(now()) @db.DateTime(0)
-  saveCount        Int?               @default(0)
   image            image[]
   user             User               @relation(fields: [idUser], references: [id], onDelete: Cascade, map: "fk_recipe_user")
   recipecategory   recipecategory[]

@@ -1,6 +1,6 @@
 // Hook useInventory: centraliza el estado y las operaciones del inventario del usuario.
 // Maneja los estados de loading y error (de carga y de acciones) y el flujo del modal
-// que aparece al intentar agregar un ingrediente que ya estaba en la despensa.
+// que aparece al intentar agregar un ingrediente que ya estaba en el inventario.
 import { useState, useEffect } from 'react';
 import { useAuthContext } from '../../../app/AuthContext.jsx';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
@@ -31,7 +31,7 @@ function useInventory() {
   // { ingredientName, idIngredient, current: { availableQuantity, unitOfMeasure } }
   const [duplicateModal, setDuplicateModal] = useState(null);
 
-  // Carga el inventario del usuario autenticado (un 404 = despensa vacía).
+  // Carga el inventario del usuario autenticado (el backend responde [] si está vacío).
   // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
   // llamar desde el useEffect sin renders en cascada.
   const loadInventory = () =>

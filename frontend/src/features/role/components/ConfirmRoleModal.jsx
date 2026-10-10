@@ -2,6 +2,7 @@
 // Se muestra antes de tocar la tabla intermedia userrole, para que el admin confirme
 // la acción exacta que va a realizar (evita asignaciones o remociones accidentales).
 import { useState } from 'react';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import '../styles/_confirm-role-modal.scss';
 
 // Recibe: role ({ id, name }), action ('assign' | 'remove'), username (para el mensaje),
@@ -9,6 +10,7 @@ import '../styles/_confirm-role-modal.scss';
 function ConfirmRoleModal({ role, action, username, onConfirm, onCancel }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const overlayCloseProps = useOverlayClose(isSubmitting ? undefined : onCancel);
 
   const isRemove = action === 'remove';
 
@@ -25,7 +27,7 @@ function ConfirmRoleModal({ role, action, username, onConfirm, onCancel }) {
   };
 
   return (
-    <div className="RoleConfirmModal-overlay" onClick={isSubmitting ? undefined : onCancel}>
+    <div className="RoleConfirmModal-overlay" {...overlayCloseProps}>
       <div
         className="RoleConfirmModal-card"
         role="dialog"

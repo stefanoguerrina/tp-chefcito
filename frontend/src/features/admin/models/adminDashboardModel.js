@@ -9,7 +9,7 @@ const WEEKDAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 // Suma total de una serie como la de toDashboardMetrics. Recibe: [{ value }].
 // Devuelve: el total del período.
-export const sumSeries = (series) => series.reduce((total, item) => total + item.value, 0);
+const sumSeries = (series) => series.reduce((total, item) => total + item.value, 0);
 
 // Arma las cifras que usan las tarjetas del dashboard a partir del resumen del backend.
 // El gráfico semanal llega como [{ date: 'YYYY-MM-DD', count }] (de hace 6 días a hoy):
@@ -44,7 +44,7 @@ export const getPersonInitials = ({ name, lastName, username } = {}) => {
 // Arma la etiqueta de rol que se muestra en la tabla a partir de los roles asignados a
 // un usuario (tabla intermedia userrole). Un usuario puede tener más de un rol.
 // Recibe: array de roles ([{ name }]). Devuelve: string listo para mostrar.
-export const buildRoleLabel = (roles) => {
+const buildRoleLabel = (roles) => {
   if (!roles || roles.length === 0) return 'Sin rol asignado';
   return roles.map((role) => role.name).join(', ');
 };

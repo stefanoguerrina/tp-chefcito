@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { getAllRoles, getRolesByUser, assignRoleToUser, removeRoleFromUser } from '../services/roleService.js';
 import ConfirmRoleModal from './ConfirmRoleModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 import '../styles/_user-roles-panel.scss';
 
@@ -19,7 +20,7 @@ function UserRolesPanel({ userId, username }) {
   // Rol sobre el que se pidió confirmación: { role, action: 'assign' | 'remove' } o null.
   const [pendingAction, setPendingAction] = useState(null);
 
-  // Pide todos los roles (un 404 = todavía no hay roles creados) y los del usuario.
+  // Pide todos los roles (lista vacía = todavía no hay roles creados) y los del usuario.
   // El estado se actualiza solo dentro de los callbacks de la promesa, así se puede
   // llamar desde el useEffect sin renders en cascada.
   const loadData = () =>
@@ -66,7 +67,7 @@ function UserRolesPanel({ userId, username }) {
     <div className="UserRolesPanel">
       <h4 className="UserRolesPanel-title">Roles del usuario</h4>
 
-      {isLoading && <p className="UserRolesPanel-status">Cargando roles...</p>}
+      {isLoading && <LoadingState message="Cargando roles..." />}
 
       {error && <ErrorState title="No pudimos cargar los roles" message={error} onRetry={handleRetry} />}
 

@@ -42,18 +42,6 @@
   color: $color-on-surface-variant;
 }
 
-.DonationsPage-loading {
-  display: flex;
-  justify-content: center;
-  padding: $spacing-xl 0;
-  color: $color-primary;
-}
-
-.DonationsPage-spinner {
-  width: 48px;
-  height: 48px;
-}
-
 // ---- Grilla de tarjetas ----
 .DonationsPage-grid {
   display: grid;

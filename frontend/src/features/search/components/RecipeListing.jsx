@@ -1,5 +1,5 @@
 // Listado completo de recetas con filtros (incluidas las necesidades nutricionales), "Con
-// mi despensa", orden, vista y paginación.
+// mi inventario", orden, vista y paginación.
 // Lo usan dos páginas: /buscar/recetas (todas las recetas) y /guardadas (solo las que
 // guardó el usuario, con filters.savedOnly). No guarda los filtros: los recibe (vienen de
 // la URL) y avisa cuando cambian.
@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import SearchListingHeader from './SearchListingHeader.jsx';
 import RecipeListingControls from './RecipeListingControls.jsx';
@@ -46,7 +47,7 @@ function RecipeListing({ filters, onFiltersChange }) {
   // Si se llegó desde una categoría (sin texto buscado), el título usa su nombre.
   const categoryName = categories.find((category) => category.id === filters.categoryId)?.name;
   const highlight = savedOnly ? null : filters.term || categoryName;
-  // Con la despensa vacía no hay nada que listar: lo explica PantryNotice, no hace falta
+  // Con el inventario vacío no hay nada que listar: lo explica PantryNotice, no hace falta
   // además el "no encontramos recetas".
   const isPantryEmpty = filters.pantry && data?.pantry?.inventoryCount === 0;
 
@@ -106,7 +107,7 @@ function RecipeListing({ filters, onFiltersChange }) {
 
         <section className={`SearchListing-results${isLoading && data ? ' SearchListing-results--loading' : ''}`} aria-busy={isLoading}>
           {error && <ErrorState title="No pudimos cargar las recetas" message={error} onRetry={retry} />}
-          {!error && !data && <p className="SearchListing-status">Buscando recetas...</p>}
+          {!error && !data && <LoadingState message="Buscando recetas..." />}
 
           {!error && data && (
             <>
@@ -165,7 +166,7 @@ function RecipeListing({ filters, onFiltersChange }) {
       {!savedOnly && (
         <AssistantBanner
           title={highlight ? `¿Buscás una receta de «${highlight}» en particular?` : '¿No encontrás lo que buscás?'}
-          description="Pedile una idea a Chefcito Bot con los ingredientes que tengas en tu despensa."
+          description="Pedile una idea a Chefcito Bot con los ingredientes que tengas en tu inventario."
         />
       )}
 

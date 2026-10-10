@@ -10,6 +10,7 @@ import StarRating from '../../../core/components/StarRating.jsx';
 import ConfirmModal from '../../../core/components/ConfirmModal.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import ReviewModal from './ReviewModal.jsx';
 import ReviewItem from './ReviewItem.jsx';
 import './_review-list.scss';
@@ -110,7 +111,7 @@ function ReviewList({ recipe, isLoggedIn, onSaveRecipe, isSaved }) {
         )}
       </div>
 
-      {isLoading && <p className="ReviewList-status">Cargando reseñas...</p>}
+      {isLoading && <LoadingState message="Cargando reseñas..." />}
       {fetchError && <ErrorState title="No pudimos cargar las reseñas" message={fetchError} onRetry={handleRetry} />}
 
       {!isLoading && !fetchError && reviews.length === 0 && (

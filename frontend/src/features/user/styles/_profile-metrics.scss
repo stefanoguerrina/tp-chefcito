@@ -36,6 +36,31 @@
     background: $color-surface-container-low;
   }
 
+  // Seguidores y seguidos: la misma tarjeta, pero es un botón que abre la lista.
+  &-card--button {
+    width: 100%;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    .ProfileMetrics-label,
+    .ProfileMetrics-value {
+      display: block;
+    }
+
+    &:hover {
+      background: $color-surface-container;
+      border-color: $color-outline-variant;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
+  }
+
   // Texto chico en mayúsculas ("Recetas", "Categorías"...).
   &-label {
     font-size: 11px;

@@ -4,10 +4,6 @@
 // del frontend.
 import { resolveImageUrl } from '../../../shared/utils/imageUrl.js';
 
-// Dificultades aceptadas por el backend (deben coincidir con RECIPE_DIFFICULTIES
-// de backend/src/features/recipe/models/recipeModel.ts).
-export const RECIPE_DIFFICULTIES = ['Fácil', 'Media', 'Avanzada'];
-
 // Ícono (Material Symbols) con el que se muestra la dificultad en el detalle de receta.
 export const RECIPE_DIFFICULTY_ICON = 'signal_cellular_alt';
 
@@ -18,7 +14,7 @@ export const RECIPE_NAME_MAX_LENGTH = 150;
 export const RECIPE_DESCRIPTION_MAX_LENGTH = 2000;
 
 // Porciones que acepta el backend (RECIPE_SERVINGS_MIN/MAX en recipeModel.ts).
-export const RECIPE_SERVINGS_MIN = 1;
+const RECIPE_SERVINGS_MIN = 1;
 export const RECIPE_SERVINGS_MAX = 50;
 
 // Imagen de reemplazo para recetas sin foto de portada todavía.
@@ -103,39 +99,6 @@ export const computePreparationTimeFromSteps = (steps) => {
   return total > 0 ? total : null;
 };
 
-// Convierte los pasos crudos del backend (step[]) al estado que espera
-// RecipeStepsEditorStage: solo instruction y estimatedTime como string editable.
-export const stepsToDraft = (steps) =>
-  (steps ?? []).map((step) => ({
-    instruction: step.instruction ?? '',
-    estimatedTime: step.estimatedTime != null ? String(step.estimatedTime) : '',
-  }));
-
-// Convierte los ingredientes crudos del backend (recipeingredient[], con su
-// ingredient anidado) al estado que espera RecipeIngredientsStage.
-export const recipeIngredientsToDraft = (recipeIngredients) =>
-  (recipeIngredients ?? []).map((item) => ({
-    idIngredient: String(item.idIngredient),
-    quantity: item.requiredQuantity != null ? String(item.requiredQuantity) : '',
-  }));
-
-// Convierte las imágenes crudas de una receta (image[]) al estado que administra
-// useRecipePhotos: una "foto" por elemento, con su id real (para poder actualizarla o
-// borrarla) y originalIsMain (para no mandar un PATCH de más si no cambió nada).
-// La principal queda primero, así es la que se ve al abrir el editor.
-export const recipeImagesToDraft = (images) =>
-  (images ?? [])
-    .slice()
-    .sort((a, b) => Number(b.isMain) - Number(a.isMain) || a.id - b.id)
-    .map((image) => ({
-      key: `existing-${image.id}`,
-      existingImageId: image.id,
-      file: null,
-      previewUrl: resolveImageUrl(image.imageUrl),
-      isMain: Boolean(image.isMain),
-      originalIsMain: Boolean(image.isMain),
-    }));
-
 // Arma el body para POST/PATCH /api/recipes a partir del estado del formulario.
 // preparationTime no viene del draft: RecipeEditorPage lo suma con
 // computePreparationTimeFromSteps y lo agrega antes de mandar el pedido.
@@ -146,21 +109,6 @@ export const draftToRecipePayload = (draft) => ({
   categoryIds: draft.categoryIds.map(Number),
   servings: draft.servings ? Number(draft.servings) : null,
 });
-
-// Arma el array de pasos para PUT /api/recipes/:id/steps a partir del estado del formulario.
-export const stepsToPayload = (steps) =>
-  steps.map((step) => ({
-    instruction: step.instruction.trim(),
-    estimatedTime: step.estimatedTime ? Number(step.estimatedTime) : undefined,
-  }));
-
-// Arma el array de ingredientes para PUT /api/recipes/:id/ingredients a partir
-// del estado del formulario.
-export const recipeIngredientsToPayload = (ingredients) =>
-  ingredients.map((item) => ({
-    idIngredient: Number(item.idIngredient),
-    requiredQuantity: item.quantity ? Number(item.quantity) : undefined,
-  }));
 
 // Errores del editor sin nada marcado (ver validateRecipeDraft).
 export const NO_RECIPE_ERRORS = { name: '', servings: '', ingredients: '', invalidStepIndexes: [] };

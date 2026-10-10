@@ -30,8 +30,10 @@ export const createDonationCheckout = async (granteeId, tierId) => {
 
 // Estado actual de una donación propia. Si sigue pendiente, el backend busca antes el pago en
 // Mercado Pago, así que sirve para esperar el pago. Devuelve: ver donationFromApi.
-export const getDonation = async (transactionRef) => {
-  const raw = await apiFetch(`/donations/${transactionRef}`);
+// Recibe además { background }: true en el chequeo periódico mientras se espera el pago,
+// para que el loader global no aparezca cada pocos segundos.
+export const getDonation = async (transactionRef, { background = false } = {}) => {
+  const raw = await apiFetch(`/donations/${transactionRef}`, { background });
   return donationFromApi(raw);
 };
 

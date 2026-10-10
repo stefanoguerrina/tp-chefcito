@@ -9,3 +9,15 @@ export interface FollowStatus {
   followersCount: number;
   followingCount: number;
 }
+
+// Qué lista de un perfil se pide: quiénes lo siguen o a quiénes sigue.
+export type FollowListKind = 'followers' | 'following';
+
+// Datos públicos de cada persona de esas listas (nunca email, teléfono ni fecha de nacimiento).
+export interface FollowListUser {
+  id: number;
+  username: string;
+  name: string;
+  lastName: string;
+  avatarUrl: string | null;
+}

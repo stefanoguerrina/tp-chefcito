@@ -8,11 +8,6 @@ export const getAllIngredients = async () => {
   return await apiFetch(`/ingredients`);
 };
 
-// Obtiene un ingrediente por ID (lectura pública).
-export const getIngredientById = async (id) => {
-  return await apiFetch(`/ingredients/${id}`);
-};
-
 // Crea un nuevo ingrediente (requiere token de admin).
 // Recibe: { name, unitOfMeasure, description?, categoryIds: number[], nutritionalValues? }
 // Devuelve: el ingrediente creado.

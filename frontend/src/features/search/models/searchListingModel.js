@@ -10,7 +10,7 @@ import { SEARCH_MIN_LENGTH, toCategoryResult, toRecipeResult, toUserResult } fro
 // value = cómo se escribe en la URL; apiValue / api = cómo se le pide al backend.
 // La primera opción de cada lista es la de por defecto.
 
-export const RECIPE_SORT_OPTIONS = [
+const RECIPE_SORT_OPTIONS = [
   { value: 'relevantes', apiValue: 'relevance', label: 'Más relevantes' },
   { value: 'populares', apiValue: 'popular', label: 'Más populares' },
   { value: 'mejor-puntuadas', apiValue: 'rating', label: 'Mejor puntuadas' },
@@ -19,14 +19,14 @@ export const RECIPE_SORT_OPTIONS = [
 ];
 
 // En "Recetas guardadas" se suma (y queda por defecto) el orden en que se guardaron.
-export const SAVED_RECIPE_SORT_OPTIONS = [
+const SAVED_RECIPE_SORT_OPTIONS = [
   { value: 'guardadas-recientes', apiValue: 'saved', label: 'Guardadas recientemente' },
   ...RECIPE_SORT_OPTIONS,
 ];
 
 // En la galería del perfil no hay un texto buscado que haga "relevante" a una receta:
 // arranca por las más recientes.
-export const PROFILE_RECIPE_SORT_OPTIONS = [
+const PROFILE_RECIPE_SORT_OPTIONS = [
   { value: 'recientes', apiValue: 'recent', label: 'Más recientes' },
   { value: 'mejor-puntuadas', apiValue: 'rating', label: 'Mejor puntuadas' },
   { value: 'populares', apiValue: 'popular', label: 'Más populares' },
@@ -105,7 +105,7 @@ export const parseRecipeFilters = (params, { savedOnly = false, authorId = null 
   nutritionGoals: (params.get('nutricion') ?? '')
     .split(',')
     .filter((value) => NUTRITION_FILTER_OPTIONS.some((option) => option.value === value)),
-  pantry: params.get('despensa') === '1',
+  pantry: params.get('inventario') === '1',
   sort: readOption(params, 'orden', getRecipeSortOptions({ savedOnly, authorId })),
   page: readPage(params),
 });
@@ -143,7 +143,7 @@ export const recipeFiltersToParams = (filters) =>
     valoracion: filters.rating,
     ingredientes: filters.ingredientIds.join(','),
     nutricion: filters.nutritionGoals.join(','),
-    despensa: filters.pantry ? '1' : '',
+    inventario: filters.pantry ? '1' : '',
     orden: optionForUrl(filters.sort, getRecipeSortOptions(filters)),
     pagina: pageForUrl(filters.page),
   });
@@ -205,7 +205,7 @@ const toPageInfo = (raw) => ({
   totalPages: raw?.totalPages ?? 1,
 });
 
-// Coincidencia de una receta con la despensa, separando lo que no tiene de lo que le
+// Coincidencia de una receta con el inventario, separando lo que no tiene de lo que le
 // falta cantidad (se muestran distinto en la card).
 const toPantryMatch = (raw) => ({
   availableCount: raw.availableCount,

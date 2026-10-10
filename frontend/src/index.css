@@ -4,15 +4,12 @@
   --text: var(--color-on-surface-variant);
   --text-h: var(--color-on-surface);
   --bg: var(--color-background);
-  --border: var(--color-outline-variant);
-  --code-bg: var(--color-surface-container);
 
   /* Misma familia tipográfica que $font-body/$font-headline en styles/abstracts/_variables.scss
      (Inter, cargada en index.html): estas variables son el fallback para cualquier elemento
      sin estilo propio. */
   --sans: 'Inter', system-ui, sans-serif;
   --heading: 'Inter', system-ui, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
 
   font: 16px/145% var(--sans);
   letter-spacing: 0.18px;
@@ -66,24 +63,8 @@ textarea {
     'opsz' 24;
 }
 
-/* Utilidad compartida por useScrollReveal: revela una sección al hacer scroll. */
-.scroll-animate {
-  opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-}
-
-.scroll-animate.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
+/* Cada layout (landing, usuario, admin) ocupa todo el ancho y arma su propia estructura. */
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -117,21 +98,6 @@ h2 {
 }
 p {
   margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
 }
 
 /* Autocompletado del navegador (usuario/contraseña guardados, etc.): por defecto Chrome

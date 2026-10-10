@@ -12,8 +12,8 @@ import {
   validateCreateCategory,
   validateUpdateCategory,
   validateCategoryId,
-  handleValidationErrors,
 } from '../middleware/categoryValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const categoryRouter = Router();
 

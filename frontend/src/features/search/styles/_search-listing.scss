@@ -41,13 +41,6 @@
     }
   }
 
-  &-status {
-    margin: $spacing-xl 0;
-    text-align: center;
-    font-size: 15px;
-    color: $color-on-surface-variant;
-  }
-
   // auto-fill arma tantas columnas como entren (mínimo 240px cada una), así la grilla se
   // acomoda sola al ancho disponible con o sin la columna de filtros. min(…, 100%) evita
   // que en un celular muy angosto la columna mínima se salga de la pantalla.

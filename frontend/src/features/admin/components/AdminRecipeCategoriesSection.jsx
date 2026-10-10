@@ -1,18 +1,29 @@
 // Sección "Categorías de Recetas" del panel: tarjetas de distribución y top, y la tabla
 // de gestión. Sus datos se piden recién cuando se abre esta sección.
-// Recibe: header ({ title, subtitle }).
+// Recibe: header ({ title, subtitle }), isActive (si se está viendo: al volver a ella se
+// actualizan sus datos en silencio) y recipesCount (total de recetas, del resumen que pide
+// AdminPage).
 import AdminSectionLayout from './AdminSectionLayout.jsx';
 import AdminMetricCard from './AdminMetricCard.jsx';
 import AdminCategoryDistribution from './AdminCategoryDistribution.jsx';
 import AdminTopIngredientsGrid from './AdminTopIngredientsGrid.jsx';
-import AdminRecipeCategoriesTable from './AdminRecipeCategoriesTable.jsx';
+import AdminCategoriesTable from './AdminCategoriesTable.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import { useAdminRecipeCategories } from '../hooks/useAdminRecipeCategories.js';
+import { formatCategoryCode } from '../models/adminRecipeCategoriesModel.js';
+import { useRefreshOnReturn } from '../../../core/hooks/useRefreshOnReturn.js';
 
-function AdminRecipeCategoriesSection({ header }) {
+const COUNT_LABELS = { header: 'Recetas asociadas', singular: 'receta', plural: 'recetas' };
+const FORM_TEXTS = {
+  idPrefix: 'recipe-category-form',
+  namePlaceholder: 'Ej: Postres',
+  descriptionPlaceholder: 'Para qué recetas se usa esta categoría',
+};
+
+function AdminRecipeCategoriesSection({ header, isActive, recipesCount }) {
   const {
     categories,
-    recipesCount,
     recipeCountByCategory,
     topCategories,
     categoriesDistribution,
@@ -22,13 +33,15 @@ function AdminRecipeCategoriesSection({ header }) {
     handleCreateCategory,
     handleUpdateCategory,
     handleDeleteCategory,
+    refresh,
   } = useAdminRecipeCategories();
+  useRefreshOnReturn(isActive, refresh);
 
   return (
     <AdminSectionLayout header={header}>
       {error && <ErrorState message={error} onRetry={handleRetry} />}
       {isLoading && categories.length === 0 && (
-        <p className="AdminPage-status">Cargando categorías...</p>
+        <LoadingState message="Cargando categorías..." />
       )}
 
       <section className="AdminPage-metricsGrid">
@@ -53,9 +66,14 @@ function AdminRecipeCategoriesSection({ header }) {
         </AdminMetricCard>
       </section>
 
-      <AdminRecipeCategoriesTable
+      <AdminCategoriesTable
+        title="Categorías de Recetas"
         categories={categories}
-        recipeCountByCategory={recipeCountByCategory}
+        countByCategory={recipeCountByCategory}
+        countLabels={COUNT_LABELS}
+        formatCode={formatCategoryCode}
+        deleteMessage="Esta acción no se puede deshacer. Las recetas que tengan asignada esta categoría van a perderla, pero no se eliminan."
+        formTexts={FORM_TEXTS}
         isLoading={isLoading}
         onCreateCategory={handleCreateCategory}
         onUpdateCategory={handleUpdateCategory}

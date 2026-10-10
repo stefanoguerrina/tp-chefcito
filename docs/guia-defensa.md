@@ -35,7 +35,7 @@ Criterios:
 > La última fila la completan ustedes. Los temas comunes los tienen que saber los 4, pero cada
 > uno tiene una parte responsable de explicarlos en profundidad si el profesor pregunta.
 > ⚠️ El **CRUD Rol** no figura en la propuesta: agregarlo como alcance adicional (ya lo recomienda
-> [analisis-estado-proyecto.md §2.1](analisis-estado-proyecto.md#21-propuesta-vs-implementado)).
+> [analisis-estado-proyecto.md §4.1](analisis-estado-proyecto.md#41-propuesta-proposalmd-)).
 
 ### 0.1 Todos los CRUD del proyecto
 
@@ -47,7 +47,7 @@ Son **16**: 12 completos y 4 parciales. (La asignación de roles es la tabla int
 | 1 | Usuario | Simple | Alta (registro o admin), consulta, edición, baja lógica + reactivar | A |
 | 2 | Rol | Simple | Completo | A |
 | 3 | Asignación de roles (`userrole`) | Dependiente (Usuario + Rol) | Asignar, consultar, quitar *(parcial: no hay nada que editar)* | A |
-| 4 | Donación | Dependiente (Usuario donante + creador) | Crear y consultar; el estado lo actualiza Mercado Pago *(parcial: no se borra, falta el listado)* | A |
+| 4 | Donación | Dependiente (Usuario donante + creador) | Crear, consultar una y el historial propio (`/donaciones`); el estado lo actualiza Mercado Pago *(parcial: no se borra)* | A |
 | 5 | Receta | Simple en la propuesta (depende de Usuario y Categoría) | Completo | B |
 | 6 | Pasos de receta | Dependiente (Receta) | Leer + reemplazar la lista con `PUT` *(parcial)* | B |
 | 7 | Ingredientes de receta | Dependiente (Receta + Ingrediente) | Leer + reemplazar la lista con `PUT` *(parcial)* | B |
@@ -74,7 +74,7 @@ completos, porque C además tiene el buscador, que es lo más grande.
 | `features/recipe`, `step`, `recipeIngredient`, `image`, `core/fileStorage.ts` | B |
 | `features/ingredientCategory`, `ingredient`, `nutritionalValue`, `inventory`, `search`, `assistant`, `core/middleware/decimalSanitizer.ts`, `recipe/services/recipeNutritionService.ts` | C |
 | `features/category`, `review`, `userRecipe`, `follow`, `feed` | D |
-| `app.ts`, `routes/apiRouter.ts`, `core/prismaClient.ts`, `core/middleware/validationMiddleware.ts`, `database.ts`, `features/database`, `prisma/schema.prisma` | D (tema común) |
+| `app.ts`, `server.ts`, `routes/apiRouter.ts`, `core/prismaClient.ts`, `core/middleware/validationMiddleware.ts`, `core/middleware/errorMiddleware.ts`, `features/database`, `prisma/schema.prisma` | D (tema común) |
 
 **Frontend** (`frontend/src/`)
 
@@ -111,7 +111,7 @@ seguir cocineros, donarles y consultar a un chatbot con IA.
 **Monorepo:** `backend/` y `frontend/` son independientes ("agnósticos") y solo se hablan por la
 API REST. Cada uno tiene su `package.json` y su `.env`.
 
-**Cómo se levanta** (detalle en [guia-profesor.md](guia-profesor.md)): MySQL corriendo →
+**Cómo se levanta:** MySQL corriendo →
 `backend/.env` (`DATABASE_URL`, `JWT_SECRET`, …) → `npx prisma db push` → cargar
 [demo-seed.sql](demo-seed.sql) → `npm run dev` en `backend/` y en `frontend/` (este con
 `VITE_API_BASE_URL=http://localhost:3000/api`).
@@ -165,8 +165,15 @@ Ejemplo real: [recipeService.ts](../backend/src/features/recipe/services/recipeS
 
 **Archivos centrales:**
 - [app.ts](../backend/src/app.ts): crea Express, `cors` (orígenes de `CORS_ORIGINS`),
-  `express.json` (1 MB), sirve `/uploads` como estático, monta `/api` y arranca el `listen`
-  (además programa la revisión de donaciones vencidas cada 10 min).
+  `express.json` (1 MB), sirve `/uploads` como estático, monta `/api` y al final los dos
+  middlewares de [errorMiddleware.ts](../backend/src/core/middleware/errorMiddleware.ts) (ruta
+  inexistente → 404 JSON; error sin atrapar → 500 JSON sin detalles internos). **Exporta** la app
+  sin levantarla, para que los tests la usen con Supertest.
+- [server.ts](../backend/src/server.ts): el punto de entrada (`npm run dev` / `npm start`): hace
+  el `listen` y programa la revisión de donaciones vencidas cada 10 min.
+- [validationMiddleware.ts](../backend/src/core/middleware/validationMiddleware.ts): el **único**
+  `handleValidationErrors`; todas las rutas lo usan después de sus reglas, así todos los 422
+  tienen el mismo formato.
 - [apiRouter.ts](../backend/src/routes/apiRouter.ts): monta un router por feature. Hay routers
   **anidados** con `Router({ mergeParams: true })` para leer el `:id` del padre, ej.
   `/recipes/:idRecipe/steps`, `/users/:userId/inventory`, `/ingredients/:idIngredient/nutritional-values`.
@@ -185,7 +192,7 @@ Ejemplo real: [recipeService.ts](../backend/src/features/recipe/services/recipeS
 | Login | JWT firmado con `JWT_SECRET`, **expira en 8 h**, payload mínimo `{ id, username, isAdmin }`. `isAdmin` = el usuario tiene el rol con id 1. |
 | `verifyToken` | Lee `Authorization: Bearer <token>`, lo verifica y deja el payload en `req.user`. Sin token o inválido → **401**. |
 | `verifyAdmin` | `req.user.isAdmin` o **403**. |
-| `verifyOwnerOrAdmin` | El `:id` de la ruta es el del usuario logueado, o es admin; si no **403**. |
+| `verifyOwnerOrAdmin` | El `:id` de la ruta es el del usuario logueado, o es admin; si no **403**. Si el parámetro tiene otro nombre (`:userId` en inventario, `:idUser` en recetas guardadas) se usa `verifyOwnerOrAdminOf('userId')`, que arma el mismo chequeo para ese nombre. |
 | `readOptionalToken` | Rutas públicas que muestran algo más con sesión (detalle de receta). |
 | Dueño de recursos | Cuando el `:id` es de una receta (no de un usuario), el chequeo "dueño o admin" lo hace el **service** (`reason: 'forbidden'`). |
 | Identidad | El usuario que actúa **siempre sale del token**, nunca del body: nadie puede reseñar, donar o guardar "en nombre de otro". |
@@ -235,9 +242,8 @@ Cosas que conviene saber explicar:
   `recipeingredient` e `inventory` → `ingredient` son **`Restrict`**: no se puede borrar un
   ingrediente que una receta o una heladera usan (el service responde "en uso").
 - Decimales (`Decimal`) para cantidades, ratings (`Decimal(3,1)` → medias estrellas) y montos.
-- El health check `GET /api/database/health` usa un pool `mysql2` aparte
-  ([database.ts](../backend/src/database.ts)): es un resto de la primera versión; todo lo demás
-  va por Prisma.
+- Todo el acceso a la base va por Prisma, incluso el health check `GET /api/database/health`
+  (un `SELECT 1` desde su repository).
 
 ### 1.5 Arquitectura del frontend
 
@@ -256,7 +262,9 @@ Misma idea de features: `frontend/src/features/<feature>/` con `pages/`, `compon
 | [apiFetch.js](../frontend/src/shared/utils/apiFetch.js) | **Único helper HTTP**: agrega el token, manda JSON o `FormData`, y si falla lanza un [ApiError](../frontend/src/shared/utils/ApiError.js) con mensaje amigable, `status` y errores por campo. Un 401 con token dispara el evento de sesión vencida. |
 | `services/` | Una función por endpoint, todas sobre `apiFetch`. |
 | `models/` | *Factory functions* que mapean la respuesta cruda del backend a lo que usa la UI (y validan formularios). |
-| `core/components/` | Componentes reutilizables: `RecipeCard`, `ConfirmModal`, `AlertModal`, `ErrorState`, `StarRating`, `UserAvatar`, `FieldError`, `RequiredMark`… |
+| `core/components/` | Componentes reutilizables: `RecipeCard`, `ConfirmModal`, `AlertModal`, `ErrorState`, `LoadingState`, `EmptyState`, `RequestIndicator`, `StarRating`, `UserAvatar`, `FieldError`, `RequiredMark`, `DropdownSelect`, `CategoryFormModal`… |
+| `core/hooks/` | Hooks reutilizables: `useOverlayClose` (todos los modales: solo cierran si el clic empieza y termina en el fondo), `useDeleteConfirmation` (confirmar un borrado y avisar si falla), `useHasBeenVisible`, `useImagePicker`, `useDragScroll`. |
+| [requestTracker.js](../frontend/src/shared/utils/requestTracker.js) + [RequestIndicator](../frontend/src/core/components/RequestIndicator.jsx) | **Loader global:** `apiFetch` cuenta cada pedido en curso y `RequestIndicator` (una sola vez, en `App.jsx`) muestra un spinner flotante si un pedido tarda más de 400 ms. No aparece si la sección ya muestra su `LoadingState` ni en los pedidos `background` (chequeo del pago, búsqueda rápida, chat). Así toda acción (guardar, borrar, seguir, cambiar de página) da feedback sin código extra en cada pantalla. |
 
 **Convención de estados y errores** (la piden en "UX" y "manejo de errores"): toda carga tiene
 *cargando / error con "Reintentar" (`ErrorState`) / vacío*; una acción que falla → `AlertModal`;
@@ -282,7 +290,7 @@ algo destructivo → `ConfirmModal`; error de un campo → debajo del campo (`Fi
 | **Chain of Responsibility** | Middlewares de Express: cada uno corta (401/403/422) o llama a `next()`. |
 | **Arquitectura en capas / MVC** | routes → controller → service → repository. |
 | **Herencia / clase de error propia** | `ApiError extends Error` (front), `GeminiHttpError`, `MercadoPagoHttpError` (back). |
-| **Observer** | Evento `SESSION_EXPIRED_EVENT` (`apiFetch` lo emite, `AuthContext` lo escucha); `IntersectionObserver` para cargar pantallas al llegar a ellas. |
+| **Observer** | Evento `SESSION_EXPIRED_EVENT` (`apiFetch` lo emite, `AuthContext` lo escucha); `requestTracker` (avisa a `RequestIndicator` cada vez que empieza o termina un pedido); `IntersectionObserver` para cargar pantallas al llegar a ellas. |
 | **Factory** | Modelos del front (`recipeToCardProps`, `createLoginFormState`, `createChatMessage`…). |
 | **Provider (Context)** | `AuthProvider`, `CurrentUserProvider`, `ThemeProvider`. |
 | **Reducer / State** | `useReducer` con acciones con nombre en los contextos. |
@@ -298,6 +306,14 @@ algo destructivo → `ConfirmModal`; error de un campo → debajo del campo (`Fi
 - **Consultas en paralelo:** `Promise.all` cuando son independientes (búsqueda rápida, detalle).
 - **Carga por pantalla:** la home y el perfil cargan las secciones de abajo recién cuando el
   usuario llega (`useHasBeenVisible`); el panel admin monta solo la sección abierta.
+- **Carga por página:** cada página es un archivo aparte (`lazyPage`, en
+  [pageLoaders.js](../frontend/src/app/pageLoaders.js)); al entrar, las del usuario se
+  **precargan en segundo plano** (`preloadPages` en `UserLayout`), así navegar no espera
+  descargas, y si una descarga tarda aparece el loader global.
+- **Panel admin:** cada sección es un archivo aparte (al entrar se baja solo el dashboard y
+  las demás se precargan); una sección ya abierta queda montada pero oculta, así al volver se
+  ve al instante y se actualiza en silencio (`useRefreshOnReturn`); el resumen de cifras se pide
+  una sola vez en `AdminPage` y lo comparten el dashboard y las categorías.
 - **Paginación:** listados de a 12; tabla de usuarios del admin de a 6.
 - **Imágenes:** se comprimen en el navegador (WebP, 1280 px) antes de subirse.
 
@@ -373,14 +389,17 @@ alguien manipule el `localStorage`, la API rechaza sin un token válido firmado)
 | `GET /api/users/:id` | Token | Perfil. El dueño o un admin ven todo (`toPublic`); los demás solo datos públicos (`toPublicProfile`: sin email, teléfono ni fecha de nacimiento) |
 | `POST /api/users` | Admin | Alta por un admin (con `makeAdmin` opcional) |
 | `PATCH /api/users/:id` | Dueño/Admin | Editar datos del perfil |
-| `PATCH /api/users/:id/password` | Dueño/Admin | Cambiar contraseña (verifica la actual con `bcrypt.compare`) |
+| `PATCH /api/users/:id/password` | Dueño/Admin | Cambiar contraseña (verifica la actual con `bcrypt.compare`; si no coincide, 400 con el error en `currentPassword`, no 401: un 401 haría que el front cierre la sesión) |
 | `DELETE /api/users/:id` | Dueño/Admin | **Baja lógica** (`deletedAt = now`) |
 | `PATCH /api/users/:id/restore` | Admin | Reactivar (`deletedAt = null`) |
 | `PATCH`/`DELETE /api/users/:id/avatar\|cover` | Dueño/Admin | Foto de perfil / portada (multer → `uploads/users/`); reemplazar o quitar **borra el archivo viejo** |
 
-En el front, la edición del perfil (`EditProfileModal` + `EditProfileImages`) llama a estos
-endpoints y después a `updateCurrentUser` para que las sidebars se actualicen sin volver a
-pedir. La pantalla del perfil la explica la [Parte D](#55-perfil).
+En el front, la edición del perfil (`EditProfileModal` + `EditProfileImages`, con el estado en
+`useEditProfileForm`) llama a estos endpoints y después a `updateCurrentUser` para que las
+sidebars se actualicen sin volver a pedir. Desde ahí, en la cuenta propia, "Cambiar contraseña"
+abre `ChangePasswordModal` (actual, nueva y confirmación). Los datos del usuario se mapean con
+`userFromApi` ([userModel.js](../frontend/src/features/user/models/userModel.js)). La pantalla
+del perfil la explica la [Parte D](#55-perfil).
 
 ### 2.4 Roles (CRUD + tabla intermedia `userrole`)
 
@@ -462,14 +481,10 @@ Detalle completo y diagrama en [donaciones.md](donaciones.md).
 
 ### 2.8 Puntos débiles conocidos (no prometer lo contrario)
 
-- **No hay listado de donaciones** (enviadas, recibidas ni para el admin): es lo más flojo para
-  "CRUD de todas las clases" de la AD ([analisis §3.2](analisis-estado-proyecto.md#32-qué-falta-o-se-puede-mejorar)).
-- `confirmPayment` podría pisar una donación ya `completed` con un pago rechazado viejo.
-- Auth usa su propio `handleValidationErrors` con otro formato (`{ errores }` en vez de
-  `{ message, errors }`); el front acepta los dos.
-- `changePassword` existe en el back pero no tiene pantalla.
-- `listUsers` del admin hace una consulta de reseñas por usuario de la página (6 como mucho:
-  acotado, pero es un N+1 chico).
+- El usuario ve sus donaciones en `/donaciones`, pero **el admin no ve ninguna** (ni en el
+  panel ni en el resumen): decidido así, cada usuario ve solo las suyas.
+- El admin no puede cambiarle la contraseña a otro usuario desde la app (el endpoint pide la
+  actual, que el admin no conoce).
 
 ---
 
@@ -547,7 +562,9 @@ comunes) · landing · estructura del panel admin.
 
 [LandingPage](../frontend/src/features/landing/pages/LandingPage.jsx): 4 pantallas (hero, recetas
 del momento, "Buscá por", invitación a registrarse) con *scroll snap* y `ScrollReveal`. Los
-botones de login/registro abren los modales de la Parte A.
+botones de login/registro abren los modales de la Parte A. **Las recetas del momento son
+reales**: las 5 mejor valoradas de los últimos 30 días, del mismo endpoint que el Top 10 de la
+home (`GET /api/feed/top-recipes`, público), con su servicio, modelo y hook en `features/landing`.
 
 ### 3.4 El CU: "Crear y publicar recetas"
 
@@ -588,13 +605,7 @@ usuario**: es la suma del tiempo de cada paso.
 - **Publicar no es atómico**: son varios pedidos seguidos (receta → ingredientes → pasos →
   fotos). Si falla uno del medio, la receta queda creada a medias (se ve el error y se puede
   volver a editar). La mejora sería un endpoint que haga todo en una transacción.
-- El botón "Guardar como borrador" está deshabilitado (no existe ese estado en el backend).
-- **La landing muestra recetas de ejemplo**
-  ([landingMockData.js](../frontend/src/features/landing/models/landingMockData.js)), no datos
-  reales del backend. La mejora es un endpoint público con el top.
-- Columna `recipe.saveCount` sin uso (los "populares" cuentan los guardados reales).
-- Varios componentes (el editor, tablas del admin) superan las 200 líneas que pide la guía del
-  equipo.
+- No hay borradores: una receta se publica o no se guarda.
 
 ---
 
@@ -632,8 +643,10 @@ Reglas ([ingredientService.ts](../backend/src/features/ingredient/services/ingre
 
 **Frontend** (panel admin): `AdminIngredientsSection`/`AdminIngredientsTable`/`AdminIngredientRow`,
 [IngredientFormModal](../frontend/src/features/ingredient/components/IngredientFormModal.jsx) en
-**dos pasos** (datos → valores nutricionales) con `useIngredientForm` e `ingredientFormModel`;
-`AdminIngredientCategoriesSection` y su `CategoryFormModal`.
+**dos pasos** (datos → valores nutricionales) con `useIngredientForm` e `ingredientFormModel`
+(los valores se mapean con `nutritionalValueModel.js`); `AdminIngredientCategoriesSection`, que
+usa la tabla y el modal de categorías compartidos con la Parte D (`AdminCategoriesTable` y
+`core/components/CategoryFormModal`).
 
 ### 4.2 Cálculo nutricional por porción
 
@@ -655,7 +668,7 @@ Reglas ([ingredientService.ts](../backend/src/features/ingredient/services/ingre
 `/api/users/:userId/inventory`.
 - PK compuesta `(idUser, idIngredient)`: un ingrediente aparece una sola vez por usuario.
 - `GET` / `POST` / `PATCH /:ingredientId` / `DELETE /:ingredientId`, todos "dueño o admin" con
-  un middleware local (el compartido `verifyOwnerOrAdmin` lee `:id`, acá el parámetro es `:userId`).
+  `verifyOwnerOrAdminOf('userId')` (el `verifyOwnerOrAdmin` común lee `:id`, acá el parámetro es `:userId`).
 - **Agregar uno que ya tenés → 409 `already_exists` con la cantidad actual**: el front abre
   `DuplicateIngredientModal` para sumar/editar en vez de mostrar un error.
 
@@ -679,7 +692,7 @@ errores de carga vs. de acción, flujo del duplicado), `AddIngredientForm`, `Ing
    guardadas) y trae solo datos mínimos de **todas** las candidatas.
 2. En paralelo pide promedios de reseñas (`groupBy`), cantidad de guardados, el inventario (si
    `pantry`) y tablas nutricionales (si se filtra por necesidades). Filtra en memoria lo que
-   Prisma no puede hacer en un `WHERE` (promedio mínimo, despensa, nutrientes por porción),
+   Prisma no puede hacer en un `WHERE` (promedio mínimo, inventario, nutrientes por porción),
    **ordena**, pagina de a **12** y recién ahí pide las *cards completas* solo de esa página.
 
 Órdenes: relevancia (primero las que tienen el texto en el **nombre**), populares (guardados),
@@ -711,7 +724,7 @@ están más cerca, con qué le falta.
 Lógica en [pantryMatchService.ts](../backend/src/features/search/services/pantryMatchService.ts)
 (**funciones puras**, sin BD → ideales para el test unitario):
 - `buildPantryMap(inventory)` → `Map idIngredient → cantidad`.
-- `computePantryMatch(ingredientesDeLaReceta, despensa)`: un ingrediente "lo tenés" si está con
+- `computePantryMatch(ingredientesDeLaReceta, inventario)`: un ingrediente "lo tenés" si está con
   cantidad > 0 y, si ambas cantidades están cargadas, alcanza; si no, va a `missing` con
   `reason: 'missing' | 'not_enough'`. Devuelve `{ availableCount, totalCount, missing, isComplete }`.
 - `comparePantryMatches`: ordena completas primero → mayor porcentaje → menos faltantes.
@@ -756,10 +769,8 @@ cocinar con lo que tengo?".
 
 ### 4.8 Puntos débiles conocidos
 
-- [inventoryService.ts](../backend/src/features/inventory/services/inventoryService.ts) consulta
-  `prisma.ingredient` directo: **es la única excepción** a "solo el repository usa Prisma". Si lo
-  preguntan, admitirlo y decir que va en `inventoryRepository`.
-- Los textos del filtro "Inventario" todavía dicen "despensa" en algunos lugares.
+- Las conversiones de unidades no existen: un valor nutricional solo suma si su unidad es la
+  del ingrediente (ver 4.2).
 
 ---
 
@@ -777,8 +788,10 @@ cocinar con lo que tengo?".
 [features/category/](../backend/src/features/category/): lectura con token, alta/edición/baja
 **solo admin**; nombre sin duplicar (409). Borrar una categoría saca sus vínculos con recetas
 (`Cascade` en `recipecategory`), no las recetas. Front: sección "Cat. de recetas" del panel
-(`AdminRecipeCategoriesSection`/`Table` + `CategoryFormModal`); se usa en el editor
-(`RecipeCategoryPicker`) y en el listado `/buscar/categorias`.
+(`AdminRecipeCategoriesSection` + `AdminCategoriesTable` y `core/components/CategoryFormModal`,
+compartidos con las categorías de ingrediente: cambian los textos por props); se usa en el
+editor (`RecipeCategoryPicker`) y en el listado `/buscar/categorias`. Los datos se mapean con
+`categoryFromApi`, y después de crear o editar se actualiza la lista local (sin volver a pedirla).
 
 ### 5.2 Reseñas (CRUD dependiente) y el CU "Reseñar recetas"
 
@@ -823,6 +836,9 @@ puntuadas", el filtro por valoración y el **Top 10 semanal**.
 (idFollower, idFollowed)`: la PK compuesta impide seguir dos veces; no te podés seguir a vos
 mismo; solo usuarios activos. Cada acción devuelve el estado nuevo (el botón y los contadores
 se actualizan sin otro pedido). Front: [useFollow](../frontend/src/features/follow/hooks/useFollow.js).
+Las listas se piden aparte (`GET /api/users/:userId/follow/followers` y `/following`, solo
+usuarios activos y datos públicos) y se ven en `FollowListModal`, que se abre tocando
+"Seguidores" o "Seguidos" en las métricas del perfil.
 
 **Home** (`/`, [HomePage](../frontend/src/features/user/pages/HomePage.jsx)) —
 [features/feed/](../backend/src/features/feed/), "amigos" = a quienes seguís:
@@ -830,7 +846,8 @@ se actualizan sin otro pedido). Front: [useFollow](../frontend/src/features/foll
    también `followingCount` para distinguir "no seguís a nadie" de "no publicaron nada".
 2. **Top 10 de la semana** (`/api/feed/top-recipes?days=7&limit=10`): promedio **solo con las
    reseñas de los últimos 7 días**; desempata por cantidad de reseñas; si una receta es de un
-   usuario dado de baja, se saltea y el top se completa con la siguiente.
+   usuario dado de baja, se saltea y el top se completa con la siguiente. Es el único endpoint
+   del feed **público**: no usa datos del usuario y la landing lo usa con `days=30&limit=5`.
 3. **Reseñas de amigos** (`/api/feed/friends/reviews`).
 
 Las pantallas 2 y 3 se cargan recién al llegar a ellas (`useHasBeenVisible` con
@@ -858,9 +875,7 @@ propio) y `/usuarios/:userId` (otro). 3 pantallas con *scroll snap*: tarjeta del
 
 ### 5.7 Puntos débiles conocidos
 
-- Solo hay contadores de seguidores y seguidos, no la lista.
-- La consulta "promedio y cantidad de reseñas por receta" está repetida en search, feed y recipe.
-- `CategoryFormModal` existe dos veces casi igual (categorías de receta y de ingrediente).
+- Las listas de seguidores y seguidos no se paginan (con el volumen de un TP no hace falta).
 
 ---
 
@@ -876,6 +891,7 @@ Donde dos partes se tocan; los dos involucrados tienen que poder contestar lo b�
 | Recetas guardadas | D: `userrecipe` y el guardado optimista. C: el listado que reutiliza (`savedOnly`). |
 | `userrecipe` ↔ `review` | D: es la misma fila; una reseña la crea sin marcarla guardada. |
 | Listado por categoría | D: el CRUD de categorías. C: el filtro del listado. |
+| Tabla y modal de categorías del admin | C y D: los dos usan `AdminCategoriesTable` y `CategoryFormModal` (core), con sus propios textos. |
 | Editor de recetas | B: el editor. C: el catálogo de ingredientes que se elige. D: las categorías. |
 | Panel admin | B: estructura y sidebar. Cada sección, la parte dueña de la entidad (ver [tabla 0](#0-el-reparto-en-una-tabla)). |
 | `apiFetch` / `ApiError` | Todos lo usan; A lo explica junto con la sesión vencida. |
@@ -894,7 +910,7 @@ Donde dos partes se tocan; los dos involucrados tienen que poder contestar lo b�
 4. **Juntos (día 4):** simulacro: cada uno explica su CU en 3–5 minutos y los otros le preguntan
    cosas de la [sección 6](#6-fronteras-entre-partes).
 5. **Pendiente para AD que también se defiende:** cada uno su test (ver
-   [analisis §7](analisis-estado-proyecto.md#7-tests--ad)). Candidatos naturales por parte:
+   [analisis §4.4](analisis-estado-proyecto.md#44-tests-)). Candidatos naturales por parte:
    A → `statusFromPayments`/`createCheckout` de donaciones o `authService.login`;
    B → `recipeService.updateRecipe` (403 si no es dueño) o las reglas de pasos/ingredientes;
    C → `pantryMatchService` o `recipeNutritionService`;

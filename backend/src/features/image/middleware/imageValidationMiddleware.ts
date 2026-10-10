@@ -57,18 +57,12 @@ export const validateUpdateImage = [
     }),
 ];
 
-// Middleware que lee los errores de express-validator y responde 422 si los hay.
-// Se debe usar después de las reglas de validación en el router.
-export const handleValidationErrors = (req: Request, res: Response, next: NextFunction): void => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    // Si multer ya había guardado un archivo, se borra: la request no va a seguir.
-    if (req.file) void deleteLocalUpload(toPublicPath(RECIPE_IMAGES_FOLDER, req.file.filename));
-    res.status(422).json({
-      message: 'Error de validación. Revisá los campos enviados.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
+// Va entre las reglas y handleValidationErrors (el de core, que responde el 422). Multer guarda
+// el archivo ANTES de validar, así que si los datos no son válidos la foto ya está en disco y
+// la request no va a seguir: se borra acá para no dejar archivos huérfanos.
+export const discardUploadIfInvalid = (req: Request, _res: Response, next: NextFunction): void => {
+  if (req.file && !validationResult(req).isEmpty()) {
+    void deleteLocalUpload(toPublicPath(RECIPE_IMAGES_FOLDER, req.file.filename));
   }
   next();
 };

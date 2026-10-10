@@ -2,6 +2,7 @@
 // completo de edición). Mismo lenguaje visual que RoleFormModal/IngredientFormModal:
 // overlay + tarjeta clara, chips togglables como en UserRolesPanel.
 import { useState } from 'react';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import '../styles/_ingredient-categories-modal.scss';
 
 // Recibe: ingredient (crudo, con ingredientcategoryingredient[]), categories (lista
@@ -13,6 +14,7 @@ function IngredientCategoriesModal({ ingredient, categories, onSubmit, onCancel 
   const [selectedCategoryIds, setSelectedCategoryIds] = useState(initialCategoryIds);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const overlayCloseProps = useOverlayClose(isSubmitting ? undefined : onCancel);
 
   const handleToggle = (id) => {
     setSelectedCategoryIds((prev) =>
@@ -37,7 +39,7 @@ function IngredientCategoriesModal({ ingredient, categories, onSubmit, onCancel 
   };
 
   return (
-    <div className="IngredientCategoriesModal-overlay" onClick={isSubmitting ? undefined : onCancel}>
+    <div className="IngredientCategoriesModal-overlay" {...overlayCloseProps}>
       <div
         className="IngredientCategoriesModal-card"
         role="dialog"

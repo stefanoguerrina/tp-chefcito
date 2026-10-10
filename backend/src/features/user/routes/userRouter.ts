@@ -16,8 +16,8 @@ import {
   validateCreateUser,
   validateUpdateUser,
   validateChangePassword,
-  handleValidationErrors,
 } from '../middleware/userValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 import { uploadUserImage } from '../middleware/userImageUploadMiddleware.js';
 
 const userRouter = Router();

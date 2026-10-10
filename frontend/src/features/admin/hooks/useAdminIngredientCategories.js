@@ -1,7 +1,8 @@
 // Hook que carga los datos de la sección "Categorías de Ingredientes" del panel de
-// administración (categorías con cuántos ingredientes tiene cada una, ya contado en el
-// backend, y el total de ingredientes del resumen) y expone las acciones de alta, edición
-// y borrado.
+// administración (categorías con cuántos ingredientes tiene cada una, ya contado en el backend) y
+// expone las acciones de alta, edición y borrado. Después de cada acción actualiza la
+// lista local con lo que respondió el backend, sin volver a pedir todo. El total de
+// ingredientes lo trae el resumen que pide AdminPage.
 import { useState, useEffect, useMemo } from 'react';
 import {
   getAllIngredientCategories,
@@ -9,37 +10,26 @@ import {
   updateIngredientCategory,
   deleteIngredientCategory,
 } from '../../ingredientCategory/services/ingredientCategoryService.js';
-import { getAdminSummary } from '../services/adminService.js';
+import { countIngredientsByCategory } from '../models/adminIngredientCategoriesModel.js';
 import {
-  countIngredientsByCategory,
-  buildTopCategoriesByIngredientCount,
+  buildTopCategoriesByCount,
   buildCategoriesDistribution,
-} from '../models/adminIngredientCategoriesModel.js';
+  replaceCategory,
+} from '../models/adminCategoriesModel.js';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 
 export const useAdminIngredientCategories = () => {
   const [categories, setCategories] = useState([]);
-  // Cantidad total de ingredientes (para el "hint" de la tarjeta de distribución), y el
-  // Map de idCategory -> cantidad de ingredientes vinculados. Ambos se recalculan solo
-  // cuando cambian los ingredientes, no al editar/borrar una categoría.
-  const [ingredientsCount, setIngredientsCount] = useState(0);
-  const [ingredientCountByCategory, setIngredientCountByCategory] = useState(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Pide en paralelo las categorías (cada una trae cuántos ingredientes tiene) y el
-  // resumen del panel (solo para el total de ingredientes, ya contado en la base).
+  // Pide las categorías (cada una trae cuántos ingredientes tiene).
   // El estado se actualiza solo dentro de los callbacks de la promesa (nunca de forma
   // sincrónica), así se puede llamar desde el useEffect sin renders en cascada.
   const fetchCategories = () =>
-    Promise.all([
-      fetchListOrEmpty(() => getAllIngredientCategories()),
-      getAdminSummary(),
-    ])
-      .then(([categoriesData, summary]) => {
+    fetchListOrEmpty(() => getAllIngredientCategories())
+      .then((categoriesData) => {
         setCategories(categoriesData);
-        setIngredientsCount(summary.ingredientsCount);
-        setIngredientCountByCategory(countIngredientsByCategory(categoriesData));
         setError('');
       })
       .catch((err) => setError(err.message || 'No pudimos cargar las categorías de ingrediente.'))
@@ -57,10 +47,10 @@ export const useAdminIngredientCategories = () => {
     fetchCategories();
   }, []);
 
-  // Todo lo derivado se recalcula solo cuando cambian las categorías o el conteo por
-  // categoría — mismo patrón que useAdminIngredients con categoryDistribution.
+  // Todo lo derivado se recalcula solo cuando cambian las categorías.
+  const ingredientCountByCategory = useMemo(() => countIngredientsByCategory(categories), [categories]);
   const topCategories = useMemo(
-    () => buildTopCategoriesByIngredientCount(categories, ingredientCountByCategory, 3),
+    () => buildTopCategoriesByCount(categories, ingredientCountByCategory, 3),
     [categories, ingredientCountByCategory]
   );
   const categoriesDistribution = useMemo(
@@ -68,16 +58,16 @@ export const useAdminIngredientCategories = () => {
     [categories, ingredientCountByCategory]
   );
 
-  // Crea una categoría nueva y recarga la lista.
+  // Crea una categoría nueva y la suma al final de la lista (todavía sin ingredientes).
   const handleCreateCategory = async (data) => {
-    await createIngredientCategory(data);
-    await fetchCategories();
+    const created = await createIngredientCategory(data);
+    setCategories((prev) => [...prev, created]);
   };
 
-  // Edita una categoría existente y recarga la lista.
+  // Edita una categoría existente y la reemplaza en la lista.
   const handleUpdateCategory = async (id, data) => {
-    await updateIngredientCategory(id, data);
-    await fetchCategories();
+    const updated = await updateIngredientCategory(id, data);
+    setCategories((prev) => replaceCategory(prev, updated));
   };
 
   // Elimina una categoría. Falla (409) si todavía tiene ingredientes asociados — el
@@ -90,7 +80,6 @@ export const useAdminIngredientCategories = () => {
 
   return {
     categories,
-    ingredientsCount,
     ingredientCountByCategory,
     topCategories,
     categoriesDistribution,
@@ -100,5 +89,7 @@ export const useAdminIngredientCategories = () => {
     handleCreateCategory,
     handleUpdateCategory,
     handleDeleteCategory,
+    // Vuelve a pedir las categorías sin mostrar "cargando" (al volver a la sección).
+    refresh: fetchCategories,
   };
 };

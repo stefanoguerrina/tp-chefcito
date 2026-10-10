@@ -2,7 +2,6 @@
 // Orquesta el repositorio, aplica reglas y transforma datos para el controller.
 // Retorna discriminated unions { ok, reason } para que el controller mapee los HTTP codes.
 import { inventoryRepository } from '../repository/inventoryRepository.js';
-import prisma from '../../../core/prismaClient.js';
 import type { AddInventoryData, UpdateInventoryData } from '../models/inventoryModel.js';
 
 // Devuelve todos los ítems del inventario de un usuario.
@@ -27,10 +26,7 @@ export async function addToInventory(
   | { ok: false; reason: 'already_exists'; current: { availableQuantity: any; unitOfMeasure: string | null } }
 > {
   // Verificar que el ingrediente exista en la BD global
-  const ingredientExists = await prisma.ingredient.findUnique({
-    where: { id: data.idIngredient },
-    select: { id: true },
-  });
+  const ingredientExists = await inventoryRepository.ingredientExists(data.idIngredient);
   if (!ingredientExists) return { ok: false, reason: 'ingredient_not_found' };
 
   // Verificar si ya está en el inventario del usuario

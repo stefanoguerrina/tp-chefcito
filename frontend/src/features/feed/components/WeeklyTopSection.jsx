@@ -3,6 +3,7 @@
 // es TopRecipesCarousel.
 import { useNavigate } from 'react-router-dom';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import FeedSectionHeader from './FeedSectionHeader.jsx';
 import FeedEmptyState from './FeedEmptyState.jsx';
 import TopRecipesCarousel from './TopRecipesCarousel.jsx';
@@ -39,7 +40,7 @@ function WeeklyTopSection({ currentUserId, savedRecipeIds, onToggleSave }) {
 
   let content;
   if (isLoading) {
-    content = <p className="FeedSection-status">Armando el ranking de la semana...</p>;
+    content = <LoadingState message="Armando el ranking de la semana..." />;
   } else if (error) {
     content = <ErrorState message={error} onRetry={retry} />;
   } else {

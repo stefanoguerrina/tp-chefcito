@@ -1,20 +1,17 @@
-// Express application entry point — configures middleware and mounts routers.
+// Arma la app de Express (middlewares, rutas y manejo de errores) y la exporta, SIN levantar
+// el servidor: así los tests de integración (Supertest) pueden usarla sin abrir un puerto.
+// El servidor lo levanta server.ts, que es el punto de entrada (npm run dev / npm start).
 import express from "express";
 import cors from "cors";
 import { apiRouter } from "./routes/apiRouter.js";
 import path from 'path';
 import dotenv from 'dotenv';
 import { UPLOADS_DIR, UPLOADS_PUBLIC_PATH } from './core/fileStorage.js';
-import { expireStaleDonations } from './features/donation/services/donationService.js';
 import { handleNotFound, handleUnexpectedError } from './core/middleware/errorMiddleware.js';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-// Application initialization
 const app = express();
-// Puerto y orígenes de CORS salen del .env (en el deploy el hosting define PORT y la URL
-// del frontend); si no están, se usan los valores de desarrollo local.
-const PORT = Number(process.env.PORT) || 3000;
 
 // Middleware
 // Orígenes permitidos para CORS. En el .env: CORS_ORIGINS separados por comas
@@ -29,7 +26,9 @@ const DEFAULT_ORIGINS = [
 const ALLOWED_ORIGINS = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
   : DEFAULT_ORIGINS;
-app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
+// maxAge: el navegador guarda 10 minutos la respuesta del preflight (el pedido OPTIONS que
+// hace antes de los que llevan el token), en vez de repetirlo antes de cada pedido.
+app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true, maxAge: 600 }));
 // Límite del body JSON: 1mb sobra para cualquier formulario. Las imágenes ya no viajan en
 // el JSON: se suben como archivo (multipart) y las procesa multer (ver features/image).
 app.use(express.json({ limit: '1mb' }));
@@ -47,21 +46,4 @@ app.use("/api", apiRouter);
 app.use(handleNotFound);
 app.use(handleUnexpectedError);
 
-// Cada cuánto se revisan las donaciones pendientes con el link de pago vencido.
-const DONATION_EXPIRATION_CHECK_MS = 10 * 60 * 1000;
-
-// Recibe nada. Revisa las donaciones pendientes vencidas (ver expireStaleDonations) y
-// registra el resultado; los errores se loguean para que nunca tiren abajo el servidor.
-const checkStaleDonations = () =>
-    expireStaleDonations()
-        .then((count) => {
-            if (count > 0) console.log(`[donations] ${count} donación(es) pendiente(s) actualizada(s).`);
-        })
-        .catch((error) => console.error('[donations] Falló la revisión de donaciones pendientes:', error));
-
-app.listen(PORT, () => {
-    console.log(`Server listening in ${PORT}`);
-    // Una revisión al arrancar (por si el servidor estuvo apagado) y después cada 10 minutos.
-    checkStaleDonations();
-    setInterval(checkStaleDonations, DONATION_EXPIRATION_CHECK_MS);
-});
+export default app;

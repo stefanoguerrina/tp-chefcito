@@ -2,7 +2,7 @@
 // usuario logueado (CurrentUserProvider, que depende de la sesión) y define
 // todas las rutas de la app, protegidas según el nivel de acceso (visitante, usuario común
 // o administrador).
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './AuthContext.jsx';
 import { CurrentUserProvider } from './CurrentUserContext.jsx';
@@ -10,23 +10,26 @@ import { ThemeProvider } from './ThemeContext.jsx';
 import ProtectedRoute, { PUBLIC_HOME_PATH } from './ProtectedRoute.jsx';
 import UserLayout from '../features/user/components/UserLayout.jsx';
 import LoadingScreen from '../core/components/LoadingScreen.jsx';
+import RequestIndicator from '../core/components/RequestIndicator.jsx';
+import * as pages from './pageLoaders.js';
 
-// Cada página se descarga recién cuando se entra a su ruta (lazy = un archivo JS/CSS
-// aparte por página). Así un visitante solo baja la landing, un usuario no baja el panel
-// de admin, etc., en vez de bajar la app entera antes de mostrar la primera pantalla.
-const AuthPage = lazy(() => import('../features/auth/pages/AuthPage.jsx'));
-const HomePage = lazy(() => import('../features/user/pages/HomePage.jsx'));
-const ProfilePage = lazy(() => import('../features/user/pages/ProfilePage.jsx'));
-const RecipePage = lazy(() => import('../features/recipe/pages/RecipePage.jsx'));
-const RecipeEditorPage = lazy(() => import('../features/recipe/pages/RecipeEditorPage.jsx'));
-const RecipeDetailPage = lazy(() => import('../features/recipe/pages/RecipeDetailPage.jsx'));
-const InventoryPage = lazy(() => import('../features/inventory/pages/InventoryPage.jsx'));
-const SavedRecipesPage = lazy(() => import('../features/userRecipe/pages/SavedRecipesPage.jsx'));
-const SearchResultsPage = lazy(() => import('../features/search/pages/SearchResultsPage.jsx'));
-const SearchListingPage = lazy(() => import('../features/search/pages/SearchListingPage.jsx'));
-const AdminPage = lazy(() => import('../features/admin/pages/AdminPage.jsx'));
-const DonationResultPage = lazy(() => import('../features/donation/pages/DonationResultPage.jsx'));
-const DonationsPage = lazy(() => import('../features/donation/pages/DonationsPage.jsx'));
+// Cada página se descarga recién cuando se entra a su ruta (un archivo JS/CSS aparte por
+// página, ver pageLoaders.js). Así un visitante solo baja la landing, un usuario no baja el
+// panel de admin, etc., en vez de bajar la app entera antes de mostrar la primera pantalla.
+// Las de un usuario se precargan en segundo plano apenas entra (ver UserLayout).
+const AuthPage = pages.lazyPage(pages.loadAuthPage);
+const HomePage = pages.lazyPage(pages.loadHomePage);
+const ProfilePage = pages.lazyPage(pages.loadProfilePage);
+const RecipePage = pages.lazyPage(pages.loadRecipePage);
+const RecipeEditorPage = pages.lazyPage(pages.loadRecipeEditorPage);
+const RecipeDetailPage = pages.lazyPage(pages.loadRecipeDetailPage);
+const InventoryPage = pages.lazyPage(pages.loadInventoryPage);
+const SavedRecipesPage = pages.lazyPage(pages.loadSavedRecipesPage);
+const SearchResultsPage = pages.lazyPage(pages.loadSearchResultsPage);
+const SearchListingPage = pages.lazyPage(pages.loadSearchListingPage);
+const AdminPage = pages.lazyPage(pages.loadAdminPage);
+const DonationResultPage = pages.lazyPage(pages.loadDonationResultPage);
+const DonationsPage = pages.lazyPage(pages.loadDonationsPage);
 
 function App() {
   return (
@@ -36,7 +39,8 @@ function App() {
           <BrowserRouter>
             {/* Suspense muestra la pantalla de carga solo en la primera carga (mientras
                 baja el archivo de esa página). Al navegar, React Router hace el cambio como
-                transición: la página anterior sigue visible hasta que la nueva está lista. */}
+                transición: la página anterior sigue visible hasta que la nueva está lista, y
+                si tarda aparece el loader global (lazyPage cuenta la descarga como un pedido). */}
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
                 {/* Visitantes sin sesión: landing con login y registro. */}
@@ -73,6 +77,8 @@ function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
+            {/* Loader global: aparece cuando un pedido al backend tarda, en cualquier pantalla. */}
+            <RequestIndicator />
           </BrowserRouter>
         </CurrentUserProvider>
       </AuthProvider>

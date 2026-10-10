@@ -8,6 +8,8 @@ import { formatDonationAmount } from '../models/donationModel.js';
 import DonationWaitingView from './DonationWaitingView.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import '../../../core/components/_confirm-modal.scss';
 import '../styles/_donation-modal.scss';
 
@@ -63,6 +65,8 @@ function DonationModal({ grantee, onClose }) {
     if (!isRedirecting) onClose();
   };
 
+  const overlayCloseProps = useOverlayClose(handleClose);
+
   const confirmLabel = isRedirecting
     ? 'Preparando el pago...'
     : selectedTier
@@ -73,7 +77,7 @@ function DonationModal({ grantee, onClose }) {
   // llegaría al overlay de la donación y cerraría los dos modales.
   return (
     <>
-      <div className="ConfirmModal-overlay" onClick={handleClose}>
+      <div className="ConfirmModal-overlay" {...overlayCloseProps}>
         <div
           className="ConfirmModal-card DonationModal"
           role="dialog"
@@ -97,7 +101,7 @@ function DonationModal({ grantee, onClose }) {
                 Elegí qué querés invitarle. El pago se hace de forma segura con Mercado Pago.
               </p>
 
-              {isLoading && <p className="DonationModal-status">Cargando opciones...</p>}
+              {isLoading && <LoadingState message="Cargando opciones..." />}
 
               {!isLoading && loadError && (
                 <ErrorState title="No pudimos cargar los montos" message={loadError} onRetry={handleRetry} />

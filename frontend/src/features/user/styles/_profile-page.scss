@@ -187,7 +187,7 @@
     min-width: 0;
   }
 
-  // Buscador, "Todo / Con mi despensa" y los selectores miden lo mismo (el alto del
+  // Buscador, "Todo / Inventario" y los selectores miden lo mismo (el alto del
   // buscador), así la fila queda pareja. Solo en el perfil: el resto de los listados
   // conserva sus tamaños.
   &-galleryFilters {
@@ -201,7 +201,7 @@
     }
 
     .ListingModeToggle-button,
-    .ListingSortSelect-field select {
+    .ListingSortSelect-field .DropdownSelect-trigger {
       box-sizing: border-box;
       height: var(--gallery-control-height);
       border-radius: $radius-lg;
@@ -247,10 +247,6 @@
     font-size: 15px;
     text-align: center;
     margin: $spacing-xl 0;
-
-    &--error {
-      color: $color-error;
-    }
   }
 }
 

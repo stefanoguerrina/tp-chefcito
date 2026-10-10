@@ -10,7 +10,7 @@ import DonationStatsCard from '../components/DonationStatsCard.jsx';
 import DonationTopUsersChart from '../components/DonationTopUsersChart.jsx';
 import DonationActivityList from '../components/DonationActivityList.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
-import SwirlingLoader from '../../../core/components/SwirlingLoader.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import '../styles/_donations-page.scss';
 
 // Textos de cada lado. El primero es el que se muestra si la URL no dice otra cosa.
@@ -58,11 +58,7 @@ function DonationsPage() {
 
       <DonationModeToggle modes={MODES} activeId={activeMode.id} onChange={handleModeChange} />
 
-      {isLoading && (
-        <div className="DonationsPage-loading" role="status" aria-label="Cargando donaciones">
-          <SwirlingLoader className="DonationsPage-spinner" />
-        </div>
-      )}
+      {isLoading && <LoadingState message="Cargando donaciones..." />}
 
       {loadError && <ErrorState message={loadError} onRetry={reload} title="No pudimos cargar tus donaciones" />}
 

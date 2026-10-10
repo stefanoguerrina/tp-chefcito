@@ -5,6 +5,12 @@ import type { AddInventoryData, UpdateInventoryData } from '../models/inventoryM
 
 export const inventoryRepository = {
 
+  // Indica si existe el ingrediente en el catálogo global (tabla ingredient).
+  ingredientExists: async (idIngredient: number): Promise<boolean> => {
+    const ingredient = await prisma.ingredient.findUnique({ where: { id: idIngredient }, select: { id: true } });
+    return ingredient !== null;
+  },
+
   // Devuelve todos los ítems del inventario de un usuario, incluyendo los datos
   // del ingrediente (nombre, unidad de medida base) para mostrarlos en la UI.
   findByUser: (idUser: number) =>

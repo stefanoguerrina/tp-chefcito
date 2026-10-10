@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { compressImage } from '../../../shared/utils/compressImage.js';
 import { createImage, updateImage, deleteImage } from '../../image/services/imageService.js';
-import { recipeImagesToDraft } from '../models/recipeModel.js';
+import { recipeImagesToDraft } from '../../image/models/imageModel.js';
 
 const MAX_PHOTOS = 6;
 

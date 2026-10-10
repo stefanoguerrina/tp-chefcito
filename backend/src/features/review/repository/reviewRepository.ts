@@ -23,6 +23,21 @@ const withAuthor = {
 
 export const reviewRepository = {
 
+  // Promedio y cantidad de reseñas de cada receta, en UNA sola consulta agrupada (así nadie
+  // tiene que pedir las reseñas receta por receta). Con `recipeIds`, solo esas recetas; con
+  // `since`, solo las reseñas escritas desde esa fecha (ranking por plazo). Las recetas sin
+  // reseñas no aparecen en el resultado. La usan recipe, search y feed.
+  findReviewStats: ({ since, recipeIds }: { since?: Date; recipeIds?: number[] } = {}) =>
+    prisma.review.groupBy({
+      by: ['idRecipe'],
+      where: {
+        ...(since && { createdAt: { gte: since } }),
+        ...(recipeIds && { idRecipe: { in: recipeIds } }),
+      },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+
   // Devuelve todas las reviews de una receta, incluyendo los datos del autor.
   findAllByRecipe: (idRecipe: number) =>
     prisma.review.findMany({

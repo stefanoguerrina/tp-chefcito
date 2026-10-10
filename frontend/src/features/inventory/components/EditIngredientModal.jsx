@@ -2,6 +2,7 @@
 // Muestra el nombre como texto, un stepper (+/-) con input editable central,
 // y la unidad de medida como texto debajo del stepper.
 import { useState } from 'react';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import { normalizeDecimalInput, isValidQuantity, stepQuantity } from '../../../shared/utils/decimalInput.js';
 import '../styles/_edit-ingredient-modal.scss';
 
@@ -44,10 +45,7 @@ function EditIngredientModal({ item, onConfirm, onClose }) {
     });
   };
 
-  // Cierra si se hace clic en el overlay (fuera del panel)
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) onClose();
-  };
+  const overlayCloseProps = useOverlayClose(onClose);
 
   return (
     <div
@@ -55,7 +53,7 @@ function EditIngredientModal({ item, onConfirm, onClose }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="edit-modal-title"
-      onClick={handleOverlayClick}
+      {...overlayCloseProps}
     >
       <div className="EditModal">
         {/* Botón cerrar */}

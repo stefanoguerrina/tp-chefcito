@@ -4,11 +4,14 @@
 // con el lenguaje visual del panel de administración.
 // Recibe: user ({ id, username, fullName }), onClose.
 import UserRolesPanel from '../../role/components/UserRolesPanel.jsx';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import '../styles/_admin-user-roles-modal.scss';
 
 function AdminUserRolesModal({ user, onClose }) {
+  const overlayCloseProps = useOverlayClose(onClose);
+
   return (
-    <div className="AdminUserRolesModal-overlay" onClick={onClose}>
+    <div className="AdminUserRolesModal-overlay" {...overlayCloseProps}>
       <div
         className="AdminUserRolesModal-card"
         role="dialog"

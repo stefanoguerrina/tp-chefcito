@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import AlertModal from '../../../core/components/AlertModal.jsx';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import { useAssistantChat } from '../hooks/useAssistantChat.js';
 import '../styles/_assistant-chat-modal.scss';
 
@@ -20,6 +21,7 @@ function AssistantChatModal({ onClose }) {
   const [draft, setDraft] = useState('');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const overlayCloseProps = useOverlayClose(onClose);
 
   // Baja hasta el último mensaje cada vez que llega uno nuevo o aparece "escribiendo...".
   useEffect(() => {
@@ -62,7 +64,7 @@ function AssistantChatModal({ onClose }) {
   // con transform u overflow (ej. ScrollReveal), que haría que el overlay no cubra la pantalla.
   return createPortal(
     <>
-      <div className="AssistantChat-overlay" onClick={onClose}>
+      <div className="AssistantChat-overlay" {...overlayCloseProps}>
         <div
           className="AssistantChat-card"
           role="dialog"
