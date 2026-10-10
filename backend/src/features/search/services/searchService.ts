@@ -1,6 +1,8 @@
 // Lógica de negocio de la búsqueda: la búsqueda rápida (categorías, recetas y usuarios en
 // una sola respuesta) y los listados completos con filtros, orden y paginación.
 import { searchRepository } from '../repository/searchRepository.js';
+import { reviewRepository } from '../../review/repository/reviewRepository.js';
+import { withReviewStats } from '../../review/services/reviewService.js';
 import { LISTING_PAGE_SIZE, NUTRITION_GOALS, QUICK_SEARCH_LIMITS } from '../models/searchModel.js';
 import type {
   CategoryListingFilters,
@@ -44,16 +46,7 @@ export async function quickSearch(term: string) {
 
   // Valoración de las pocas recetas encontradas, en una sola consulta agrupada: así la
   // sección "Recetas sugeridas" no tiene que pedir las reseñas de cada una por separado.
-  const reviewStats = await searchRepository.findReviewStats(recipes.map((recipe) => recipe.id));
-  const statsByRecipeId = new Map(reviewStats.map((stat) => [stat.idRecipe, stat]));
-  const recipesWithStats = recipes.map((recipe) => {
-    const stats = statsByRecipeId.get(recipe.id);
-    return {
-      ...recipe,
-      averageRating: stats?._avg.rating ? Number(stats._avg.rating) : 0,
-      reviewCount: stats?._count._all ?? 0,
-    };
-  });
+  const recipesWithStats = await withReviewStats(recipes);
 
   return {
     term,
@@ -169,7 +162,7 @@ export async function listRecipes(filters: RecipeListingFilters, idUser: number)
   const hasNutritionGoals = filters.nutritionGoals.length > 0;
 
   const [reviewStats, saveCounts, inventory, savedDates, nutritionData] = await Promise.all([
-    searchRepository.findReviewStats(recipeIds),
+    reviewRepository.findReviewStats({ recipeIds }),
     searchRepository.findSaveCounts(recipeIds),
     filters.pantry ? searchRepository.findInventory(idUser) : Promise.resolve([]),
     filters.savedByUserId ? searchRepository.findSavedDates(idUser, recipeIds) : Promise.resolve([]),

@@ -12,13 +12,6 @@
   font-family: $font-body;
   color: $color-on-surface;
 
-  &-status {
-    padding: $spacing-xl;
-    text-align: center;
-    font-size: 14px;
-    color: $color-on-surface-variant;
-  }
-
   &-backBtn {
     display: inline-flex;
     align-items: center;

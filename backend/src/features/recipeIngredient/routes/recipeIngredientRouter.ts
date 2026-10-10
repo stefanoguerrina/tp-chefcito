@@ -9,8 +9,8 @@ import {
 import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import {
   validateReplaceRecipeIngredients,
-  handleValidationErrors,
 } from '../middleware/recipeIngredientValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const recipeIngredientRouter = Router({ mergeParams: true });
 

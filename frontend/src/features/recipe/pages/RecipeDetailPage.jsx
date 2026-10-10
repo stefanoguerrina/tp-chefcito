@@ -20,6 +20,7 @@ import RecipeStepsPanel from '../components/RecipeStepsPanel.jsx';
 import ReviewList from '../../review/components/ReviewList.jsx';
 import AlertModal from '../../../core/components/AlertModal.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import DonationModal from '../../donation/components/DonationModal.jsx';
 import '../styles/_recipe-detail-page.scss';
 
@@ -108,7 +109,7 @@ function RecipeDetailPage() {
     </button>
   );
 
-  if (isLoading) return <p className="RecipeDetailPage-status">Cargando receta...</p>;
+  if (isLoading) return <LoadingState message="Cargando receta..." />;
   if (fetchError) {
     return (
       <div className="RecipeDetailPage">
@@ -120,7 +121,7 @@ function RecipeDetailPage() {
   if (!recipe) return null;
 
   const isOwnRecipe = recipe.idUser === currentUserId;
-  // Ingredientes de la receta que el usuario tiene en su inventario: llevan la etiqueta "Despensa".
+  // Ingredientes de la receta que el usuario tiene en su inventario: llevan la etiqueta "Lo tenés".
   const pantryIngredientIds = new Set(recipe.viewer?.pantryIngredientIds ?? []);
 
   return (

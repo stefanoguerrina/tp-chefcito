@@ -4,8 +4,8 @@ import { handleRegister, handleLogin } from '../controllers/authController.js';
 import {
   validateRegister,
   validateLogin,
-  handleValidationErrors,
 } from '../middleware/authValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const authRouter = Router();
 

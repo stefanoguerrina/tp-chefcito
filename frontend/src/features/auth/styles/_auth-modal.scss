@@ -6,7 +6,7 @@
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0, 0, 0, 0.55);
+  background: $color-scrim;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: flex;
@@ -400,22 +400,4 @@
   text-decoration-color: $color-primary;
   text-underline-offset: 2px;
   cursor: pointer;
-}
-
-.AuthModal-legal {
-  font-size: 11px;
-  color: $color-on-surface-variant;
-  line-height: 1.5;
-  max-width: 90%;
-  margin: $spacing-md auto 0;
-  text-align: center;
-
-  a {
-    color: inherit;
-    text-decoration: underline;
-
-    &:hover {
-      color: $color-on-background;
-    }
-  }
 }

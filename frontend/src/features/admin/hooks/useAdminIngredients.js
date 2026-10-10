@@ -142,5 +142,7 @@ export const useAdminIngredients = () => {
     handleSaveIngredient,
     handleUpdateIngredientCategories,
     handleDeleteIngredient,
+    // Vuelve a pedir todo sin mostrar "cargando" (al volver a la sección).
+    refresh: fetchIngredients,
   };
 };

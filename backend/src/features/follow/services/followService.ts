@@ -2,7 +2,7 @@
 // estado de seguimiento de un perfil (¿lo sigo?, cuántos seguidores y seguidos tiene).
 import { followRepository } from '../repository/followRepository.js';
 import { userRepository } from '../../user/repository/userRepository.js';
-import type { FollowStatus } from '../models/followModel.js';
+import type { FollowStatus, FollowListKind, FollowListUser } from '../models/followModel.js';
 
 // Recibe: el usuario autenticado (idUser) y el perfil que está mirando (idTarget).
 // Devuelve: el estado de seguimiento de ese perfil. Los tres datos son independientes,
@@ -26,6 +26,23 @@ export async function getFollowStatus(
   if (!target) return { ok: false, reason: 'user_not_found' };
 
   return { ok: true, status: await buildFollowStatus(idUser, idTarget) };
+}
+
+// Lista de seguidores o de seguidos del perfil idTarget (solo usuarios activos).
+// Recibe: idTarget y kind ('followers' | 'following'). Devuelve: la lista (vacía si no
+// hay nadie) o user_not_found si el perfil no existe o está dado de baja.
+export async function getFollowList(
+  idTarget: number,
+  kind: FollowListKind
+): Promise<{ ok: true; users: FollowListUser[] } | { ok: false; reason: 'user_not_found' }> {
+  const target = await userRepository.findById(idTarget);
+  if (!target) return { ok: false, reason: 'user_not_found' };
+
+  const users =
+    kind === 'followers'
+      ? (await followRepository.findFollowers(idTarget)).map((row) => row.follower)
+      : (await followRepository.findFollowing(idTarget)).map((row) => row.followed);
+  return { ok: true, users };
 }
 
 // idUser empieza a seguir a idTarget.

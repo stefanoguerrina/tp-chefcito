@@ -198,8 +198,8 @@ INSERT INTO userrole (UserId, RoleId) VALUES
 -- ---------------------------------------------------------------------
 
 -- 5.1 Milanesas con puré (Juan · Carnes)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_juan, 'Milanesas con puré', 'Milanesas de carne clásicas acompañadas de puré de papas casero.', 40, 'Media', DATE_SUB(NOW(), INTERVAL 25 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_juan, 'Milanesas con puré', 'Milanesas de carne clásicas acompañadas de puré de papas casero.', 40, 'Media', DATE_SUB(NOW(), INTERVAL 25 DAY));
 SET @recipe_milanesas := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_milanesas, @rc_carnes);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -212,8 +212,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_milanesas, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Milanesas+con+pur%C3%A9', 1);
 
 -- 5.2 Ensalada César (Juan · Ensaladas)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_juan, 'Ensalada César', 'Ensalada fresca con pollo grillado, lechuga y aderezo casero.', 15, 'Fácil', DATE_SUB(NOW(), INTERVAL 5 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_juan, 'Ensalada César', 'Ensalada fresca con pollo grillado, lechuga y aderezo casero.', 15, 'Fácil', DATE_SUB(NOW(), INTERVAL 5 DAY));
 SET @recipe_cesar := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_cesar, @rc_ensaladas);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -225,8 +225,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_cesar, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Ensalada+Cesar', 1);
 
 -- 5.3 Fideos con tuco (María · Pastas)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_maria, 'Fideos con tuco', 'Fideos secos con salsa de tomate casera y cebolla.', 25, 'Fácil', DATE_SUB(NOW(), INTERVAL 18 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_maria, 'Fideos con tuco', 'Fideos secos con salsa de tomate casera y cebolla.', 25, 'Fácil', DATE_SUB(NOW(), INTERVAL 18 DAY));
 SET @recipe_fideos := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_fideos, @rc_pastas);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -239,8 +239,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_fideos, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Fideos+con+tuco', 1);
 
 -- 5.4 Tarta de verduras (María · Ensaladas)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_maria, 'Tarta de verduras', 'Tarta casera de verduras con huevo y queso.', 45, 'Media', DATE_SUB(NOW(), INTERVAL 3 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_maria, 'Tarta de verduras', 'Tarta casera de verduras con huevo y queso.', 45, 'Media', DATE_SUB(NOW(), INTERVAL 3 DAY));
 SET @recipe_tarta := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_tarta, @rc_ensaladas);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -253,8 +253,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_tarta, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Tarta+de+verduras', 1);
 
 -- 5.5 Guiso de lentejas (Carlos · Guisos y Sopas)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_carlos, 'Guiso de lentejas', 'Guiso abundante de lentejas con verduras.', 50, 'Media', DATE_SUB(NOW(), INTERVAL 15 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_carlos, 'Guiso de lentejas', 'Guiso abundante de lentejas con verduras.', 50, 'Media', DATE_SUB(NOW(), INTERVAL 15 DAY));
 SET @recipe_guiso := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_guiso, @rc_guisos);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -267,8 +267,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_guiso, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Guiso+de+lentejas', 1);
 
 -- 5.6 Arroz con pollo (Carlos · Carnes)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_carlos, 'Arroz con pollo', 'Arroz cremoso con pollo y verduras salteadas.', 35, 'Media', DATE_SUB(NOW(), INTERVAL 2 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_carlos, 'Arroz con pollo', 'Arroz cremoso con pollo y verduras salteadas.', 35, 'Media', DATE_SUB(NOW(), INTERVAL 2 DAY));
 SET @recipe_arrozpollo := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_arrozpollo, @rc_carnes);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -280,8 +280,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_arrozpollo, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Arroz+con+pollo', 1);
 
 -- 5.7 Flan casero (Lucía · Postres)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_lucia, 'Flan casero', 'Flan casero con huevo y leche, bien cremoso.', 60, 'Media', DATE_SUB(NOW(), INTERVAL 12 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_lucia, 'Flan casero', 'Flan casero con huevo y leche, bien cremoso.', 60, 'Media', DATE_SUB(NOW(), INTERVAL 12 DAY));
 SET @recipe_flan := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_flan, @rc_postres);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -294,8 +294,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_flan, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Flan+casero', 1);
 
 -- 5.8 Ensalada de tomate y lechuga (Lucía · Ensaladas)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_lucia, 'Ensalada de tomate y lechuga', 'Ensalada simple y fresca para acompañar cualquier plato.', 10, 'Fácil', DATE_SUB(NOW(), INTERVAL 1 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_lucia, 'Ensalada de tomate y lechuga', 'Ensalada simple y fresca para acompañar cualquier plato.', 10, 'Fácil', DATE_SUB(NOW(), INTERVAL 1 DAY));
 SET @recipe_ensaladasimple := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_ensaladasimple, @rc_ensaladas);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -307,8 +307,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_ensaladasimple, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Ensalada+fresca', 1);
 
 -- 5.9 Sopa de verduras (Martín · Guisos y Sopas)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_martin, 'Sopa de verduras', 'Sopa liviana de verduras de estación.', 30, 'Fácil', DATE_SUB(NOW(), INTERVAL 8 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_martin, 'Sopa de verduras', 'Sopa liviana de verduras de estación.', 30, 'Fácil', DATE_SUB(NOW(), INTERVAL 8 DAY));
 SET @recipe_sopa := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_sopa, @rc_guisos);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -320,8 +320,8 @@ INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
   (@recipe_sopa, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Sopa+de+verduras', 1);
 
 -- 5.10 Panqueques dulces (Martín · Postres)
-INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt, saveCount)
-VALUES (@user_martin, 'Panqueques dulces', 'Panqueques clásicos con dulce de leche.', 20, 'Fácil', DATE_SUB(NOW(), INTERVAL 4 DAY), 0);
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_martin, 'Panqueques dulces', 'Panqueques clásicos con dulce de leche.', 20, 'Fácil', DATE_SUB(NOW(), INTERVAL 4 DAY));
 SET @recipe_panqueques := LAST_INSERT_ID();
 INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_panqueques, @rc_postres);
 INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
@@ -346,7 +346,6 @@ INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
 INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
   (@user_maria, @recipe_milanesas, 1, 5.0, '¡Riquísimas, quedaron muy jugosas!', DATE_SUB(NOW(), INTERVAL 19 DAY)),
   (@user_carlos, @recipe_milanesas, 1, 4.5, 'Muy buena receta, el puré quedó perfecto.', DATE_SUB(NOW(), INTERVAL 17 DAY));
-UPDATE recipe SET saveCount = 2 WHERE id = @recipe_milanesas;
 
 -- Fideos con tuco (María): guardada y reseñada por Juan y Lucía
 INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
@@ -355,14 +354,12 @@ INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
 INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
   (@user_juan, @recipe_fideos, 1, 4.0, 'Salsa muy casera, buenísima.', DATE_SUB(NOW(), INTERVAL 14 DAY)),
   (@user_lucia, @recipe_fideos, 1, 5.0, 'La hice para toda la familia y encantó.', DATE_SUB(NOW(), INTERVAL 9 DAY));
-UPDATE recipe SET saveCount = 2 WHERE id = @recipe_fideos;
 
 -- Guiso de lentejas (Carlos): guardada y reseñada por Martín
 INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
   (@user_martin, @recipe_guiso, 1, DATE_SUB(NOW(), INTERVAL 12 DAY));
 INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
   (@user_martin, @recipe_guiso, 1, 4.5, 'Ideal para un día de frío.', DATE_SUB(NOW(), INTERVAL 11 DAY));
-UPDATE recipe SET saveCount = 1 WHERE id = @recipe_guiso;
 
 -- Flan casero (Lucía): guardada y reseñada por Juan y María
 INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
@@ -371,12 +368,10 @@ INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
 INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
   (@user_juan, @recipe_flan, 1, 5.0, 'El mejor flan casero que probé.', DATE_SUB(NOW(), INTERVAL 7 DAY)),
   (@user_maria, @recipe_flan, 1, 4.0, 'Muy cremoso, quedó perfecto.', DATE_SUB(NOW(), INTERVAL 5 DAY));
-UPDATE recipe SET saveCount = 2 WHERE id = @recipe_flan;
 
 -- Ensalada César (Juan): guardada (sin reseña) por Carlos, para ver el listón sin rating
 INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
   (@user_carlos, @recipe_cesar, 1, DATE_SUB(NOW(), INTERVAL 2 DAY));
-UPDATE recipe SET saveCount = 1 WHERE id = @recipe_cesar;
 
 -- ---------------------------------------------------------------------
 -- 7. Inventario de ejemplo para Juan (para probar "Mi inventario" y el
@@ -571,6 +566,50 @@ UPDATE recipe SET servings = 6 WHERE name = 'Flan casero';
 UPDATE recipe SET servings = 2 WHERE name = 'Ensalada de tomate y lechuga';
 UPDATE recipe SET servings = 3 WHERE name = 'Sopa de verduras';
 UPDATE recipe SET servings = 4 WHERE name = 'Panqueques dulces';
+
+-- ---------------------------------------------------------------------
+-- 10. Donaciones de ejemplo (para la página "Donaciones": totales, gráfico
+--     de quiénes más donaron y actividad reciente).
+--
+--     Se puede correr SOLA sobre una base ya cargada (desde "-- 10." hasta
+--     el COMMIT; final): vuelve a buscar los ids por nombre y primero borra
+--     las donaciones de demo (transactionRef 'demo-...'), así se puede
+--     repetir sin duplicar. Las donaciones reales hechas con Mercado Pago
+--     no se tocan.
+--
+--     Son registros inventados: no existen en Mercado Pago. Por eso no hay
+--     ninguna 'pending' (el backend las revisaría contra Mercado Pago y las
+--     pasaría a 'expired'). Montos = los fijos de donationModel.ts.
+--     juanperez es el indicado para verlas: tiene recibidas de 4 personas
+--     y realizadas en los distintos estados (completada, rechazada, vencida).
+-- ---------------------------------------------------------------------
+SET NAMES utf8mb4;
+
+SET @user_juan   := (SELECT id FROM user WHERE username = 'juanperez' LIMIT 1);
+SET @user_maria  := (SELECT id FROM user WHERE username = 'mariagomez' LIMIT 1);
+SET @user_carlos := (SELECT id FROM user WHERE username = 'carlosdiaz' LIMIT 1);
+SET @user_lucia  := (SELECT id FROM user WHERE username = 'luciafernandez' LIMIT 1);
+SET @user_martin := (SELECT id FROM user WHERE username = 'martinlopez' LIMIT 1);
+
+DELETE FROM donation WHERE transactionRef LIKE 'demo-%';
+
+INSERT INTO donation (idDonor, idGrantee, transactionRef, createdAt, amount, currency, status) VALUES
+  -- Recibidas por Juan (todas completadas)
+  (@user_maria,  @user_juan, 'demo-01', DATE_SUB(NOW(), INTERVAL 20 DAY), 1000.00,  'ARS', 'completed'),
+  (@user_maria,  @user_juan, 'demo-02', DATE_SUB(NOW(), INTERVAL 9 DAY),  2500.00,  'ARS', 'completed'),
+  (@user_carlos, @user_juan, 'demo-03', DATE_SUB(NOW(), INTERVAL 8 DAY),  10000.00, 'ARS', 'completed'),
+  (@user_lucia,  @user_juan, 'demo-04', DATE_SUB(NOW(), INTERVAL 3 DAY),  5000.00,  'ARS', 'completed'),
+  (@user_martin, @user_juan, 'demo-05', DATE_SUB(NOW(), INTERVAL 1 DAY),  1000.00,  'ARS', 'completed'),
+  (@user_martin, @user_juan, 'demo-06', DATE_SUB(NOW(), INTERVAL 5 HOUR), 2500.00,  'ARS', 'completed'),
+  -- Realizadas por Juan (en distintos estados: solo las completadas suman en los totales)
+  (@user_juan, @user_maria,  'demo-07', DATE_SUB(NOW(), INTERVAL 12 DAY), 2500.00, 'ARS', 'completed'),
+  (@user_juan, @user_carlos, 'demo-08', DATE_SUB(NOW(), INTERVAL 6 DAY),  5000.00, 'ARS', 'completed'),
+  (@user_juan, @user_lucia,  'demo-09', DATE_SUB(NOW(), INTERVAL 4 DAY),  1000.00, 'ARS', 'rejected'),
+  (@user_juan, @user_maria,  'demo-10', DATE_SUB(NOW(), INTERVAL 2 DAY),  1000.00, 'ARS', 'expired'),
+  -- Entre otros usuarios, para que sus páginas tampoco estén vacías
+  (@user_lucia,  @user_maria,  'demo-11', DATE_SUB(NOW(), INTERVAL 10 DAY), 5000.00, 'ARS', 'completed'),
+  (@user_carlos, @user_lucia,  'demo-12', DATE_SUB(NOW(), INTERVAL 7 DAY),  2500.00, 'ARS', 'completed'),
+  (@user_martin, @user_carlos, 'demo-13', DATE_SUB(NOW(), INTERVAL 2 DAY),  1000.00, 'ARS', 'completed');
 
 COMMIT;
 

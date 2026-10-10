@@ -6,8 +6,9 @@ import { createCategoryListing, createRecipeListing, createUserListing } from '.
 // Busca un texto en categorías de receta, recetas y usuarios a la vez.
 // Recibe: el texto a buscar (ya recortado, con al menos SEARCH_MIN_LENGTH caracteres).
 // Devuelve: { categories, recipes, users } (ver createQuickSearchResults), o lanza ApiError.
+// background: se dispara mientras el usuario escribe y el panel ya muestra "Buscando...".
 export const quickSearch = async (term) => {
-  const raw = await apiFetch(`/search?q=${encodeURIComponent(term)}`);
+  const raw = await apiFetch(`/search?q=${encodeURIComponent(term)}`, { background: true });
   return createQuickSearchResults(raw);
 };
 

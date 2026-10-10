@@ -24,7 +24,7 @@
 ```bash
 npm run dev   # Compila en modo watch y levanta el servidor (puerto 3000)
 npm run build # Build de producción: prisma generate + tsc (a dist/)
-npm start     # Levanta el build de producción (node ./dist/app.js)
+npm start     # Levanta el build de producción (node ./dist/server.js)
 ```
 
 ---
@@ -36,13 +36,6 @@ Variables requeridas:
 
 ```env
 DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DBNAME"
-
-# Variables individuales usadas por el pool directo de mysql2 (database.ts)
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=chefcito
 
 # JWT
 JWT_SECRET=tu_clave_secreta_aqui
@@ -68,14 +61,15 @@ backend/
 ├── prisma/
 │   └── schema.prisma          # Esquema de la BD (fuente de verdad)
 ├── src/
-│   ├── app.ts                 # Entry point: configura Express, CORS y monta rutas
-│   ├── database.ts            # Pool directo de mysql2 (queries raw si fuera necesario)
+│   ├── server.ts              # Entry point: levanta el servidor (listen) y el timer de donaciones
+│   ├── app.ts                 # Arma y exporta la app: CORS, rutas y manejo de errores (sin listen)
 │   ├── core/
 │   │   ├── prismaClient.ts    # Singleton de PrismaClient — importar desde acá siempre
 │   │   ├── fileStorage.ts     # Carpeta uploads/: rutas públicas y borrado de archivos subidos
 │   │   └── middleware/
 │   │       ├── authMiddleware.ts        # verifyToken / verifyAdmin / verifyOwnerOrAdmin
-│   │       └── validationMiddleware.ts  # handleValidationErrors compartido (lo usan follow y feed)
+│   │       ├── validationMiddleware.ts  # handleValidationErrors: el único, lo usan todas las rutas
+│   │       └── errorMiddleware.ts       # 404 y errores inesperados en JSON (al final de app.ts)
 │   ├── routes/
 │   │   └── apiRouter.ts       # Router central que monta todos los sub-routers
 │   └── features/
@@ -216,18 +210,11 @@ export const validateCreateUser = [
   body('email').isEmail().withMessage('Email inválido.'),
 ];
 
-// 2. Middleware que consume los errores y responde 422
-export const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({ message: 'Error de validación.', errors: errors.array() });
-    return;
-  }
-  next();
-};
+// 2. En el router: reglas → handleValidationErrors (el de core, no se copia por feature) → controller
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
+router.post('/', validateCreateUser, handleValidationErrors, createUser);
 
-// 3. Uso en el router: validaciones → handleValidationErrors → controller
-router.post('/', validateCreateUser, handleValidationErrors, handleCreateUser);
+// Si falla, responde 422 { message, errors: [{ campo, mensaje }] }.
 ```
 
 ---

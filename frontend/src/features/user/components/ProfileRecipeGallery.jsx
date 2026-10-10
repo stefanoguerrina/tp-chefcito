@@ -1,11 +1,12 @@
-// Galería completa de recetas del perfil: buscador por nombre, "Todo" / "Con mi despensa",
+// Galería completa de recetas del perfil: buscador por nombre, "Todo" / "Inventario",
 // categoría y orden, en una grilla masonry con paginación. Usa el mismo listado que el
 // buscador y "Recetas guardadas" (GET /api/search/recipes, acá con authorId) y, como
-// ellos, guarda los filtros en la URL (ej. /perfil?despensa=1).
+// ellos, guarda los filtros en la URL (ej. /perfil?inventario=1).
 import { useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import RecipeCard from '../../../core/components/RecipeCard.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import ListingSearchInput from '../../search/components/ListingSearchInput.jsx';
 import ListingModeToggle from '../../search/components/ListingModeToggle.jsx';
 import ListingSortSelect from '../../search/components/ListingSortSelect.jsx';
@@ -51,7 +52,7 @@ function ProfileRecipeGallery({
     ...categories.map((category) => ({ value: String(category.id), label: category.name })),
   ];
   const hasClearableFilters = Boolean(filters.categoryId) || filters.pantry;
-  // Con la despensa vacía ya lo explica PantryNotice: no hace falta el "no encontramos".
+  // Con el inventario vacío ya lo explica PantryNotice: no hace falta el "no encontramos".
   const isPantryEmpty = filters.pantry && data?.pantry?.inventoryCount === 0;
 
   return (
@@ -96,7 +97,7 @@ function ProfileRecipeGallery({
             />
           )}
 
-          {/* Con la despensa, el orden lo define cuánto de cada receta tenés. */}
+          {/* Con el inventario, el orden lo define cuánto de cada receta tenés. */}
           {!filters.pantry && (
             <ListingSortSelect
               id="profile-recipes-sort"
@@ -110,7 +111,7 @@ function ProfileRecipeGallery({
 
       <div className={`ProfilePage-results${isLoading && data ? ' ProfilePage-results--loading' : ''}`} aria-busy={isLoading}>
         {error && <ErrorState title="No pudimos cargar las recetas" message={error} onRetry={retry} />}
-        {!error && !data && <p className="ProfilePage-empty">Cargando recetas...</p>}
+        {!error && !data && <LoadingState message="Cargando recetas..." />}
 
         {!error && data && (
           <>

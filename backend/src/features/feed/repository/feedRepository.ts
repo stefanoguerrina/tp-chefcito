@@ -79,20 +79,6 @@ export const feedRepository = {
       take: limit,
     }),
 
-  // Promedio y cantidad de reseñas de cada receta. Con `since`, cuenta solo las reseñas
-  // escritas desde esa fecha (ranking por plazo); con `recipeIds`, solo esas recetas. Una
-  // sola consulta agrupada (mismo criterio que searchRepository).
-  findReviewStats: ({ since, recipeIds }: { since?: Date; recipeIds?: number[] } = {}) =>
-    prisma.review.groupBy({
-      by: ['idRecipe'],
-      where: {
-        ...(since && { createdAt: { gte: since } }),
-        ...(recipeIds && { idRecipe: { in: recipeIds } }),
-      },
-      _avg: { rating: true },
-      _count: { _all: true },
-    }),
-
   // Datos de card de las recetas indicadas, salteando las de usuarios dados de baja.
   findRecipeCardsByIds: (recipeIds: number[]) =>
     prisma.recipe.findMany({

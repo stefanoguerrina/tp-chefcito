@@ -1,13 +1,14 @@
 // Modelo de dominio de la feature UserRecipe (recetas guardadas por un usuario).
 // Factory functions simples, sin clases ni TypeScript.
-import { recipeToCardProps } from '../../recipe/models/recipeModel.js';
 
-// Convierte un registro userrecipe crudo del backend (con su receta anidada) a la
-// forma que usan los componentes: la receta lista para RecipeCard + el idRecipe
-// (necesario para las llamadas de guardar/quitar).
-export const savedRecipeFromApi = (raw) => ({
+// Convierte un registro userrecipe crudo del backend (la relación usuario-receta) al
+// objeto que usa el frontend. La misma fila existe también si el usuario solo reseñó la
+// receta: por eso isSaved dice si de verdad está guardada.
+// Recibe: { idUser, idRecipe, isSaved, savedAt, ... }.
+// Devuelve: { idUser, idRecipe, isSaved, savedAt }.
+export const userRecipeFromApi = (raw) => ({
   idUser: raw.idUser,
   idRecipe: raw.idRecipe,
-  savedAt: raw.savedAt,
-  recipe: recipeToCardProps(raw.recipe),
+  isSaved: Boolean(raw.isSaved),
+  savedAt: raw.savedAt ?? null,
 });

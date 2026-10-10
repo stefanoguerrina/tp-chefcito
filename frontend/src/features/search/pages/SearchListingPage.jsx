@@ -1,6 +1,6 @@
 // Página de listado completo de un tipo de resultado (ruta /buscar/:searchType): se llega
 // desde "Ver todas", las cards "+N más" o el click en una categoría. Según el tipo muestra
-// el listado de recetas (con filtros y "Con mi despensa") o el de categorías / usuarios.
+// el listado de recetas (con filtros y "Inventario") o el de categorías / usuarios.
 // Los filtros viven en la URL: esta página los lee y, cuando cambian, reescribe la URL.
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import SearchNavbar from '../components/SearchNavbar.jsx';

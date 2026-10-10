@@ -2,6 +2,7 @@
 // escribe y muestra las primeras coincidencias en categorías, recetas y usuarios.
 // Solo muestra lo que recibe: el pedido al backend lo hace useQuickSearch (en SearchNavbar).
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import QuickSearchSection from './QuickSearchSection.jsx';
 import CategoryResultItem from './CategoryResultItem.jsx';
 import RecipeResultItem from './RecipeResultItem.jsx';
@@ -35,7 +36,7 @@ function QuickSearchPanel({ id, query, results, resultsTerm, isLoading, error, o
       <div className="QuickSearchPanel-body">
         {error && <ErrorState title="No pudimos completar la búsqueda" message={error} onRetry={onRetry} />}
 
-        {!error && !results && isLoading && <p className="QuickSearchPanel-message">Buscando resultados...</p>}
+        {!error && !results && isLoading && <LoadingState message="Buscando resultados..." className="LoadingState--compact" />}
 
         {isEmpty && (
           <div className="QuickSearchPanel-empty">

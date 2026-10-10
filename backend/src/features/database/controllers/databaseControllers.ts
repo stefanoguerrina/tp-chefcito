@@ -1,14 +1,16 @@
-// Controller handling database initialization and seeding logic.
+// Controller del health check: indica si la API puede conectarse a la base de datos.
 import { Request, Response } from 'express';
-import pool from '../../../database.js';
+import { databaseRepository } from '../repository/databaseRepository.js';
 
-
-// Health check endpoint — also tests the database connection
-export const handleHealth = async (req: Request, res: Response) => {
+// Responde 200 si la base responde, o 503 si no. El detalle del error solo se loguea en
+// el servidor: no se le muestra al cliente (puede incluir datos de la conexión).
+// GET /api/database/health
+export const handleHealth = async (_req: Request, res: Response): Promise<void> => {
   try {
-    await pool.query('SELECT 1');
-    res.json({ status: 'OK', database: 'connected' });
-  } catch (error: any) {
-    res.status(500).json({ status: 'ERROR', database: 'disconnected', detail: error.message });
+    await databaseRepository.ping();
+    res.status(200).json({ status: 'OK', database: 'connected' });
+  } catch (error) {
+    console.error('[handleHealth] No se pudo conectar con la base de datos:', error);
+    res.status(503).json({ status: 'ERROR', database: 'disconnected' });
   }
 };

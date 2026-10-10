@@ -1,9 +1,8 @@
 // Router de inventory — define los endpoints de /api/users/:userId/inventory.
 // Todos los endpoints requieren token; además verifican que el usuario autenticado
 // sea el dueño del recurso o un administrador.
-import { Router, Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../../../core/middleware/authMiddleware.js';
-import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
+import { Router } from 'express';
+import { verifyToken, verifyOwnerOrAdminOf } from '../../../core/middleware/authMiddleware.js';
 import {
   handleGetInventory,
   handleAddToInventory,
@@ -13,30 +12,16 @@ import {
 import {
   validateAddInventory,
   validateUpdateInventory,
-  handleValidationErrors,
 } from '../middleware/inventoryValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const inventoryRouter = Router({ mergeParams: true });
 
-// Middleware inline equivalente a verifyOwnerOrAdmin pero para el parámetro :userId.
-// El authMiddleware genérico usa :id; aquí el parámetro es :userId, así que
-// se implementa localmente para no modificar el middleware compartido de otros devs.
-const verifyInventoryOwnerOrAdmin = (req: Request, res: Response, next: NextFunction): void => {
-  const authReq = req as AuthRequest;
-  const requestedUserId = Number(req.params.userId);
-
-  if (!authReq.user) {
-    res.status(401).json({ message: 'Acceso denegado. No se proporcionó un token.' });
-    return;
-  }
-
-  if (authReq.user.isAdmin || authReq.user.id === requestedUserId) {
-    next();
-    return;
-  }
-
-  res.status(403).json({ message: 'Acceso denegado. Solo podés ver y modificar tu propio inventario.' });
-};
+// El parámetro de estas rutas es :userId (no :id), por eso se arma el chequeo para ese nombre.
+const verifyInventoryOwnerOrAdmin = verifyOwnerOrAdminOf(
+  'userId',
+  'Acceso denegado. Solo podés ver y modificar tu propio inventario.'
+);
 
 // GET /api/users/:userId/inventory — obtiene el inventario completo del usuario
 inventoryRouter.get('/', verifyToken, verifyInventoryOwnerOrAdmin, handleGetInventory);

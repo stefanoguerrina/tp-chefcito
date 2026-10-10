@@ -1,5 +1,5 @@
 // Botones de modo de un listado, de los que hay uno solo activo a la vez (ej. "Todo" /
-// "Con mi despensa" en recetas, o "Todas" / "Con recetas" en categorías).
+// "Inventario" en recetas, o "Todas" / "Con recetas" en categorías).
 import '../styles/_listing-controls.scss';
 
 // Recibe: options ([{ value, label, icon?, count? }]; count se muestra como globito, solo

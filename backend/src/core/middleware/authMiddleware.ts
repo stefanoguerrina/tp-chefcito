@@ -62,11 +62,16 @@ export const verifyAdmin = (req: AuthRequest, res: Response, next: NextFunction)
   next();
 };
 
-// Verifica que el usuario autenticado sea el dueño del recurso (por ID en params)
-// o que sea administrador. Permite que un usuario solo acceda a sus propios datos,
-// pero le da al admin acceso total. Devuelve 403 si ninguna condición se cumple.
-export const verifyOwnerOrAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  const requestedId = Number(req.params.id);
+// Arma un middleware que verifica que el usuario autenticado sea el dueño del recurso (el id
+// de usuario que viene en req.params[paramName]) o un administrador. Así un usuario solo
+// accede a sus propios datos y el admin a todos. Debe usarse después de verifyToken.
+// Recibe: el nombre del parámetro de la ruta (ej. 'userId') y el mensaje del 403.
+// Devuelve: el middleware (401 sin usuario, 403 si no es el dueño ni admin).
+export const verifyOwnerOrAdminOf = (
+  paramName: string,
+  forbiddenMessage = 'Acceso denegado. Solo podés modificar tu propia cuenta.'
+) => (req: AuthRequest, res: Response, next: NextFunction): void => {
+  const requestedId = Number(req.params[paramName]);
 
   if (!req.user) {
     res.status(401).json({ message: 'Acceso denegado. No se proporcionó un token.' });
@@ -78,5 +83,8 @@ export const verifyOwnerOrAdmin = (req: AuthRequest, res: Response, next: NextFu
     return;
   }
 
-  res.status(403).json({ message: 'Acceso denegado. Solo podés modificar tu propia cuenta.' });
+  res.status(403).json({ message: forbiddenMessage });
 };
+
+// El caso más común: rutas de /users/:id.
+export const verifyOwnerOrAdmin = verifyOwnerOrAdminOf('id');

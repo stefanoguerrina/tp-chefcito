@@ -9,8 +9,8 @@ import {
   validateQuickSearch,
   validateRecipeListing,
   validateNameOrRecipesListing,
-  handleValidationErrors,
 } from '../middleware/searchValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const searchRouter = Router();
 

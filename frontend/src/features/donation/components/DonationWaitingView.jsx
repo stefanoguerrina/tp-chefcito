@@ -15,7 +15,7 @@ function DonationWaitingView({ transactionRef, checkoutUrl, onClose }) {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      getDonation(transactionRef)
+      getDonation(transactionRef, { background: true })
         .then((donation) => {
           if (donation.status !== 'pending') navigate(`/donaciones/resultado?donacion=${transactionRef}`);
         })

@@ -22,8 +22,8 @@ import {
   validateUserIdParam,
   validateAssignRole,
   validateUnassignRole,
-  handleValidationErrors,
 } from '../middleware/roleValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 
 const roleRouter = Router();
 

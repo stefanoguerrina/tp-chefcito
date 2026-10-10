@@ -3,6 +3,7 @@
 // RecipeCategoryPicker (elegir categoría), cada uno pasando su propio catálogo ya
 // filtrado (sin los que la receta ya tiene).
 import { useEffect, useRef, useState } from 'react';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import '../styles/_recipe-search-modal.scss';
 
 // Recibe: title y placeholder (textos propios de cada uso), items (catálogo ya
@@ -15,6 +16,7 @@ function RecipeSearchModal({ title, placeholder, items, emptyMessage, allPickedM
   // scroll, no todo el tiempo (si no, se ve raro con listas cortas que ya entran enteras).
   const [hasMoreBelow, setHasMoreBelow] = useState(false);
   const listRef = useRef(null);
+  const overlayCloseProps = useOverlayClose(onClose);
 
   const normalizedQuery = searchTerm.trim().toLowerCase();
   const results = normalizedQuery
@@ -37,7 +39,7 @@ function RecipeSearchModal({ title, placeholder, items, emptyMessage, allPickedM
   };
 
   return (
-    <div className="RecipeSearchModal-overlay" onClick={onClose}>
+    <div className="RecipeSearchModal-overlay" {...overlayCloseProps}>
       <div
         className="RecipeSearchModal-card"
         role="dialog"

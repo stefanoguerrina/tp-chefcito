@@ -3,6 +3,7 @@
 // nombre o por cantidad de recetas): cambia qué se le pide al backend, los textos y cómo
 // se dibuja cada resultado, que llegan en `config` (ver SearchListingPage).
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import SearchListingHeader from './SearchListingHeader.jsx';
 import ListingModeToggle from './ListingModeToggle.jsx';
 import ListingSortSelect from './ListingSortSelect.jsx';
@@ -54,7 +55,7 @@ function NameOrRecipesListing({ config, filters, onFiltersChange }) {
 
       <section className={`SearchListing-results${isLoading && data ? ' SearchListing-results--loading' : ''}`} aria-busy={isLoading}>
         {error && <ErrorState title="No pudimos cargar el listado" message={error} onRetry={retry} />}
-        {!error && !data && <p className="SearchListing-status">Buscando...</p>}
+        {!error && !data && <LoadingState message="Buscando..." />}
 
         {!error && data?.total === 0 && (
           <ListingEmptyState

@@ -1,0 +1,45 @@
+// Estilos del componente compartido LoadingState (core/components).
+@use '../../styles/abstracts' as *;
+
+.LoadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  padding: $spacing-lg $spacing-md;
+  font-family: $font-body;
+  text-align: center;
+
+  @include respond-to(md) {
+    padding: $spacing-xl $spacing-lg;
+  }
+}
+
+.LoadingState-spinner {
+  width: 40px;
+  height: 40px;
+  // El spinner pinta su trazo con currentColor: el verde de la app en cada tema.
+  color: $color-primary;
+}
+
+.LoadingState-message {
+  margin: 0;
+  font-size: 14px;
+  color: $color-on-surface-variant;
+}
+
+// Variante para lugares chicos (ej. el panel de búsqueda rápida): en fila y sin tanto aire.
+.LoadingState--compact {
+  flex-direction: row;
+  padding: $spacing-md;
+
+  @include respond-to(md) {
+    padding: $spacing-md;
+  }
+
+  .LoadingState-spinner {
+    width: 20px;
+    height: 20px;
+  }
+}

@@ -1,7 +1,8 @@
 // Hook que carga los datos de la sección "Categorías de Recetas" del panel de
-// administración (categorías con cuántas recetas tiene cada una, ya contado en el
-// backend, y el total de recetas del resumen) y expone las acciones de alta, edición y
-// borrado.
+// administración (categorías con cuántas recetas tiene cada una, ya contado en el backend) y
+// expone las acciones de alta, edición y borrado. Después de cada acción actualiza la
+// lista local con lo que respondió el backend, sin volver a pedir todo. El total de
+// recetas lo trae el resumen que pide AdminPage.
 import { useState, useEffect, useMemo } from 'react';
 import {
   getAllCategories,
@@ -9,37 +10,26 @@ import {
   updateCategory,
   deleteCategory,
 } from '../../category/services/categoryService.js';
-import { getAdminSummary } from '../services/adminService.js';
+import { countRecipesByCategory } from '../models/adminRecipeCategoriesModel.js';
 import {
-  countRecipesByCategory,
-  buildTopCategoriesByRecipeCount,
+  buildTopCategoriesByCount,
   buildCategoriesDistribution,
-} from '../models/adminRecipeCategoriesModel.js';
+  replaceCategory,
+} from '../models/adminCategoriesModel.js';
 import { fetchListOrEmpty } from '../../../shared/utils/apiFetch.js';
 
 export const useAdminRecipeCategories = () => {
   const [categories, setCategories] = useState([]);
-  // Cantidad total de recetas (para el "hint" de la tarjeta de distribución), y el Map de
-  // idCategory -> cantidad de recetas vinculadas. Ambos se recalculan solo cuando cambian
-  // las recetas, no al editar/borrar una categoría.
-  const [recipesCount, setRecipesCount] = useState(0);
-  const [recipeCountByCategory, setRecipeCountByCategory] = useState(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Pide en paralelo las categorías (cada una trae cuántas recetas tiene) y el resumen
-  // del panel (solo para el total de recetas, ya contado en la base).
+  // Pide las categorías (cada una trae cuántas recetas tiene).
   // El estado se actualiza solo dentro de los callbacks de la promesa (nunca de forma
   // sincrónica), así se puede llamar desde el useEffect sin renders en cascada.
   const fetchCategories = () =>
-    Promise.all([
-      fetchListOrEmpty(() => getAllCategories()),
-      getAdminSummary(),
-    ])
-      .then(([categoriesData, summary]) => {
+    fetchListOrEmpty(() => getAllCategories())
+      .then((categoriesData) => {
         setCategories(categoriesData);
-        setRecipesCount(summary.recipesCount);
-        setRecipeCountByCategory(countRecipesByCategory(categoriesData));
         setError('');
       })
       .catch((err) => setError(err.message || 'No pudimos cargar las categorías de receta.'))
@@ -57,10 +47,10 @@ export const useAdminRecipeCategories = () => {
     fetchCategories();
   }, []);
 
-  // Todo lo derivado se recalcula solo cuando cambian las categorías o el conteo por
-  // categoría — mismo patrón que useAdminIngredientCategories.
+  // Todo lo derivado se recalcula solo cuando cambian las categorías.
+  const recipeCountByCategory = useMemo(() => countRecipesByCategory(categories), [categories]);
   const topCategories = useMemo(
-    () => buildTopCategoriesByRecipeCount(categories, recipeCountByCategory, 3),
+    () => buildTopCategoriesByCount(categories, recipeCountByCategory, 3),
     [categories, recipeCountByCategory]
   );
   const categoriesDistribution = useMemo(
@@ -68,22 +58,22 @@ export const useAdminRecipeCategories = () => {
     [categories, recipeCountByCategory]
   );
 
-  // Crea una categoría nueva y recarga la lista.
+  // Crea una categoría nueva y la suma al final de la lista (todavía sin recetas).
   const handleCreateCategory = async (data) => {
-    await createCategory(data);
-    await fetchCategories();
+    const created = await createCategory(data);
+    setCategories((prev) => [...prev, created]);
   };
 
-  // Edita una categoría existente y recarga la lista.
+  // Edita una categoría existente y la reemplaza en la lista.
   const handleUpdateCategory = async (id, data) => {
-    await updateCategory(id, data);
-    await fetchCategories();
+    const updated = await updateCategory(id, data);
+    setCategories((prev) => replaceCategory(prev, updated));
   };
 
   // Elimina una categoría. A diferencia de las de ingrediente, esta no bloquea por uso:
   // si tenía recetas asignadas, esos vínculos se borran en cascada (las recetas quedan,
-  // solo pierden la etiqueta). Se relanza igual para que la tabla muestre cualquier otro
-  // error inesperado en un modal de aviso.
+  // solo pierden la etiqueta). Si falla, el error sigue de largo para que la tabla lo
+  // muestre en un modal de aviso.
   const handleDeleteCategory = async (id) => {
     await deleteCategory(id);
     setCategories((prev) => prev.filter((category) => category.id !== id));
@@ -91,7 +81,6 @@ export const useAdminRecipeCategories = () => {
 
   return {
     categories,
-    recipesCount,
     recipeCountByCategory,
     topCategories,
     categoriesDistribution,
@@ -101,5 +90,7 @@ export const useAdminRecipeCategories = () => {
     handleCreateCategory,
     handleUpdateCategory,
     handleDeleteCategory,
+    // Vuelve a pedir las categorías sin mostrar "cargando" (al volver a la sección).
+    refresh: fetchCategories,
   };
 };

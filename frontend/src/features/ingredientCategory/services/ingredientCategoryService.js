@@ -1,36 +1,36 @@
 // Servicio de categorías de ingrediente: centraliza las llamadas HTTP al backend.
 // Todas las llamadas pasan por apiFetch (agrega el token si hay sesión y normaliza los errores).
 import { apiFetch } from '../../../shared/utils/apiFetch.js';
+import { ingredientCategoryFromApi } from '../models/ingredientCategoryModel.js';
 
 // Trae todas las categorías de ingrediente (lectura pública).
-// Devuelve el array de categorías o lanza un Error con el mensaje del backend.
+// Devuelve las categorías mapeadas con ingredientCategoryFromApi, o lanza un Error con el
+// mensaje del backend.
 export const getAllIngredientCategories = async () => {
-  return await apiFetch(`/ingredient-categories`);
-};
-
-// Obtiene una categoría por ID (lectura pública).
-export const getIngredientCategoryById = async (id) => {
-  return await apiFetch(`/ingredient-categories/${id}`);
+  const categories = await apiFetch('/ingredient-categories');
+  return categories.map(ingredientCategoryFromApi);
 };
 
 // Crea una nueva categoría (requiere token de admin).
 // Recibe: { name, description? }
-// Devuelve: la categoría creada.
+// Devuelve: la categoría creada (ingredientCategoryFromApi).
 export const createIngredientCategory = async (data) => {
-  return await apiFetch('/ingredient-categories', {
+  const category = await apiFetch('/ingredient-categories', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  return ingredientCategoryFromApi(category);
 };
 
 // Actualiza una categoría existente (requiere token de admin).
 // Recibe: id, { name?, description? }
-// Devuelve: la categoría actualizada.
+// Devuelve: la categoría actualizada (ingredientCategoryFromApi).
 export const updateIngredientCategory = async (id, data) => {
-  return await apiFetch(`/ingredient-categories/${id}`, {
+  const category = await apiFetch(`/ingredient-categories/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
   });
+  return ingredientCategoryFromApi(category);
 };
 
 // Elimina una categoría por ID (requiere token de admin).

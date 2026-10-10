@@ -12,8 +12,9 @@ import { verifyToken } from '../../../core/middleware/authMiddleware.js';
 import {
   validateCreateImage,
   validateUpdateImage,
-  handleValidationErrors,
+  discardUploadIfInvalid,
 } from '../middleware/imageValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 import { uploadRecipeImage } from '../middleware/imageUploadMiddleware.js';
 
 const imageRouter = Router({ mergeParams: true });
@@ -23,10 +24,10 @@ imageRouter.get('/', handleSearchImagesByRecipe);
 
 // POST /api/recipes/:idRecipe/images — agrega una imagen (solo dueño o admin).
 // Acepta un archivo (multipart, campo "image") o un link externo (JSON, campo imageUrl).
-imageRouter.post('/', verifyToken, uploadRecipeImage, validateCreateImage, handleValidationErrors, handleCreateImage);
+imageRouter.post('/', verifyToken, uploadRecipeImage, validateCreateImage, discardUploadIfInvalid, handleValidationErrors, handleCreateImage);
 
 // PATCH /api/recipes/:idRecipe/images/:id — modifica una imagen (solo dueño o admin)
-imageRouter.patch('/:id', verifyToken, uploadRecipeImage, validateUpdateImage, handleValidationErrors, handleUpdateImageById);
+imageRouter.patch('/:id', verifyToken, uploadRecipeImage, validateUpdateImage, discardUploadIfInvalid, handleValidationErrors, handleUpdateImageById);
 
 // DELETE /api/recipes/:idRecipe/images/:id — elimina una imagen (solo dueño o admin)
 imageRouter.delete('/:id', verifyToken, handleDeleteImageById);

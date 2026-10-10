@@ -7,6 +7,7 @@ import IngredientNutritionStep from './IngredientNutritionStep.jsx';
 import RequiredFieldsNote from '../../../core/components/RequiredFieldsNote.jsx';
 import { hasFieldErrors } from '../../../shared/utils/fieldAria.js';
 import { useIngredientForm, DETAILS_STEP, NUTRITION_STEP } from '../hooks/useIngredientForm.js';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
 import '../styles/_ingredient-form-modal.scss';
 
 const STEPS = [
@@ -33,6 +34,7 @@ function IngredientFormModal({ initialData, categories, onSubmit, onCancel }) {
     handleBackToDetails,
     handleSubmit,
   } = useIngredientForm(initialData, onSubmit);
+  const overlayCloseProps = useOverlayClose(isSubmitting ? undefined : onCancel);
 
   const isEditing = initialData !== null;
 
@@ -44,7 +46,7 @@ function IngredientFormModal({ initialData, categories, onSubmit, onCancel }) {
   };
 
   return (
-    <div className="IngredientFormModal-overlay" onClick={isSubmitting ? undefined : onCancel}>
+    <div className="IngredientFormModal-overlay" {...overlayCloseProps}>
       <div
         className="IngredientFormModal-card"
         role="dialog"

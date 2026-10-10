@@ -1,6 +1,6 @@
 // Middleware compartido que corta la request con un 422 si alguna regla de express-validator
-// falló. Las features nuevas (follow, feed) lo usan en vez de copiar su propia versión
-// (ver 6.4 en docs/analisis-estado-proyecto.md): mismo formato de respuesta que el resto.
+// falló. Es el único del backend: todas las rutas lo usan después de sus reglas (validateX de
+// cada feature), así todos los errores de validación tienen el mismo formato.
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 

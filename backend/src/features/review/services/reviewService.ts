@@ -5,6 +5,25 @@ import { reviewRepository } from '../repository/reviewRepository.js';
 import { recipeRepository } from '../../recipe/repository/recipeRepository.js';
 import type { CreateReviewData, UpdateReviewData } from '../models/reviewModel.js';
 
+// Le suma a cada receta su valoración: averageRating (0 si no tiene reseñas) y reviewCount,
+// con una sola consulta para toda la lista. La usan los listados de recipe, search y feed.
+// Recibe: recetas (con id). Devuelve: las mismas recetas con esos dos campos.
+export async function withReviewStats<T extends { id: number }>(recipes: T[]) {
+  if (recipes.length === 0) return [];
+
+  const stats = await reviewRepository.findReviewStats({ recipeIds: recipes.map((recipe) => recipe.id) });
+  const statsByRecipeId = new Map(stats.map((stat) => [stat.idRecipe, stat]));
+
+  return recipes.map((recipe) => {
+    const recipeStats = statsByRecipeId.get(recipe.id);
+    return {
+      ...recipe,
+      averageRating: recipeStats?._avg.rating ? Number(recipeStats._avg.rating) : 0,
+      reviewCount: recipeStats?._count._all ?? 0,
+    };
+  });
+}
+
 // Devuelve todas las reviews de una receta junto con el promedio de rating.
 // El promedio es null si no hay reviews.
 export async function getReviewsByRecipe(idRecipe: number) {

@@ -1,7 +1,6 @@
 // Middlewares de validación para las rutas de categoría, usando express-validator.
 // Se ejecutan antes del controller para rechazar datos inválidos con mensajes claros.
-import { body, param, validationResult } from 'express-validator';
-import { Request, Response, NextFunction } from 'express';
+import { body, param } from 'express-validator';
 
 // Reglas de validación para el endpoint de creación de categoría (POST /).
 // name y description respetan los largos máximos definidos en prisma/schema.prisma (VarChar 100 y 255).
@@ -53,17 +52,3 @@ export const validateCategoryId = [
     .isInt({ min: 1 })
     .withMessage('El ID de categoría debe ser un número entero positivo.'),
 ];
-
-// Middleware que lee los errores de express-validator y responde 422 si los hay.
-// Se debe usar después de las reglas de validación en el router.
-export const handleValidationErrors = (req: Request, res: Response, next: NextFunction): void => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(422).json({
-      message: 'Error de validación. Revisá los campos enviados.',
-      errors: errors.array().map((e) => ({ campo: e.type === 'field' ? (e as any).path : 'general', mensaje: e.msg })),
-    });
-    return;
-  }
-  next();
-};

@@ -2,12 +2,15 @@
 // Reutiliza los estilos de ConfirmModal (misma tarjeta/overlay), pero para casos donde no
 // hay nada que confirmar — por ejemplo, mostrar por qué falló una acción — en vez de dejar
 // ese mensaje como un banner de texto que se queda pegado en la pantalla.
+import { useOverlayClose } from '../hooks/useOverlayClose.js';
 import './_confirm-modal.scss';
 
 // Recibe: title, message, closeLabel (opcional), onClose.
 function AlertModal({ title, message, closeLabel = 'Entendido', onClose }) {
+  const overlayCloseProps = useOverlayClose(onClose);
+
   return (
-    <div className="ConfirmModal-overlay" onClick={onClose}>
+    <div className="ConfirmModal-overlay" {...overlayCloseProps}>
       <div
         className="ConfirmModal-card"
         role="alertdialog"

@@ -87,6 +87,37 @@ export async function getDashboardSummary() {
   };
 }
 
+// Recibe los ids de los usuarios de una página. Devuelve un Map idUser → { count, average }
+// con las reseñas que recibieron sus recetas (average null si no tiene ninguna). Son siempre
+// dos consultas, sin importar cuántos usuarios haya en la página (en vez de una por usuario).
+async function getReviewStatsByAuthor(idUsers: number[]) {
+  const recipes = await adminRepository.findRecipeAuthors(idUsers);
+  const totals = recipes.length > 0
+    ? await adminRepository.findReviewTotalsByRecipe(recipes.map((recipe) => recipe.id))
+    : [];
+  const authorByRecipe = new Map(recipes.map((recipe) => [recipe.id, recipe.idUser]));
+
+  // Junta la suma y la cantidad de todas las recetas de cada autor.
+  const sumsByAuthor = new Map<number, { sum: number; count: number }>();
+  totals.forEach((total) => {
+    const idUser = authorByRecipe.get(total.idRecipe)!;
+    const current = sumsByAuthor.get(idUser) ?? { sum: 0, count: 0 };
+    sumsByAuthor.set(idUser, {
+      sum: current.sum + Number(total._sum.rating ?? 0),
+      count: current.count + total._count._all,
+    });
+  });
+
+  return new Map(idUsers.map((idUser) => {
+    const author = sumsByAuthor.get(idUser);
+    return [idUser, {
+      count: author?.count ?? 0,
+      // Redondeado a un decimal, como se muestra en la tabla.
+      average: author ? Math.round((author.sum / author.count) * 10) / 10 : null,
+    }];
+  }));
+}
+
 // Una página del listado de usuarios del panel, con lo que muestra cada fila: datos
 // públicos (sin contraseña), roles, cantidad de recetas y valoraciones recibidas.
 // Si la página pedida ya no existe (ej. se dio de baja al último de la última página),
@@ -102,19 +133,15 @@ export async function listUsers(filters: AdminUserFilters) {
     (page - 1) * ADMIN_USERS_PAGE_SIZE,
     ADMIN_USERS_PAGE_SIZE
   );
-  const reviewStats = await Promise.all(users.map((user) => adminRepository.findReviewStatsByAuthor(user.id)));
+  const reviewStats = await getReviewStatsByAuthor(users.map((user) => user.id));
 
-  const rows = users.map((user, index) => {
+  const rows = users.map((user) => {
     const { _count, userRoles, ...userData } = user;
-    const stats = reviewStats[index];
     return {
       ...toPublic(userData),
       recipesCount: _count.recipe,
       roles: userRoles.map((link) => link.role),
-      reviewStats: {
-        count: stats._count._all,
-        average: stats._avg.rating !== null ? Math.round(Number(stats._avg.rating) * 10) / 10 : null,
-      },
+      reviewStats: reviewStats.get(user.id),
     };
   });
 

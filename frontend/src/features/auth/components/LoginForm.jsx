@@ -89,10 +89,6 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister, initialIdentif
                         Registrate
                     </button>
                 </p>
-                <p className="AuthModal-legal">
-                    Al continuar, aceptás las <a href="#">Condiciones del servicio</a> de Chefcito y confirmás
-                    que leíste nuestra <a href="#">Política de privacidad</a>.
-                </p>
             </div>
         </AuthModalLayout>
     );

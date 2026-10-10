@@ -8,8 +8,8 @@ Chefcito ("tp-chefcito") is a university full-stack project (DSW course): a reci
 users plan meals from available ingredients and nutritional needs, create/save/review recipes, and
 donate to recipe creators. See [docs/proposal.md](docs/proposal.md) for functional scope,
 [backend/prisma/schema.prisma](backend/prisma/schema.prisma) for the reference schema, and
-[docs/guia-profesor.md](docs/guia-profesor.md) + [docs/demo-seed.sql](docs/demo-seed.sql) for how
-to set up a local DB with demo data (incl. a ready-to-use admin account) to try the app.
+[docs/demo-seed.sql](docs/demo-seed.sql) to load demo data into a local DB (incl. a ready-to-use
+admin account, `admindemo` / `123456`, and demo donations for `juanperez`).
 
 The repo is a two-package monorepo, agnostic frontend/backend communicating over a REST API:
 - `backend/` — Express 5 + TypeScript + Prisma (MySQL)
@@ -21,17 +21,18 @@ Run each from its respective directory (`backend/` or `frontend/`) — there is 
 
 ### Backend (`backend/`)
 ```
-npm run dev        # tsc-watch: compiles src/ to dist/ and runs node dist/app.js on every change
+npm run dev        # tsc-watch: compiles src/ to dist/ and runs node dist/server.js on every change
 npm run build      # prisma generate + tsc (production build into dist/)
-npm start          # node ./dist/app.js (run the production build)
+npm start          # node ./dist/server.js (run the production build)
 npx prisma generate    # regenerate Prisma client after editing prisma/schema.prisma
 npx prisma db push      # (or migrate) push schema changes to the MySQL database
 ```
 No test script is configured yet (`npm test` is a placeholder). No lint script is configured.
-Requires a `backend/.env` (gitignored) with `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`,
-`DB_NAME`, `JWT_SECRET`, and `DATABASE_URL` (mysql connection string used by Prisma).
-Optional for deploy: `PORT` (default 3000) and `CORS_ORIGINS` (comma-separated allowed origins;
-default = the local Vite origins on 5173/5174), both read in `src/app.ts`.
+Requires a `backend/.env` (gitignored) with `JWT_SECRET` and `DATABASE_URL` (mysql connection
+string used by Prisma; the old `DB_HOST/PORT/USER/PASSWORD/NAME` are no longer read).
+Optional for deploy: `PORT` (default 3000, read in `src/server.ts`) and `CORS_ORIGINS`
+(comma-separated allowed origins; default = the local Vite origins on 5173/5174, read in
+`src/app.ts`).
 `docs/demo-seed.sql` starts with `SET NAMES utf8mb4;` so accents load correctly from any MySQL
 client; keep it there (without it, a latin1 client stores "á" as "Ã¡").
 Optional: `GEMINI_API_KEY` (and `GEMINI_MODEL`, default `gemini-3.5-flash`, plus
@@ -62,7 +63,9 @@ There is no automated test suite in either package currently.
 
 ### Backend: layered, feature-sliced Express app
 
-`src/app.ts` builds the Express app, applies `cors`/`express.json`, and mounts everything under
+`src/server.ts` is the entry point: it imports the app, calls `listen` and schedules the
+periodic donation check. `src/app.ts` only builds and exports the Express app (no `listen`, so
+integration tests can import it with Supertest); it applies `cors`/`express.json`, and mounts everything under
 `/api` via `src/routes/apiRouter.ts`, which in turn mounts one router per feature
 (`src/features/<feature>/routes/*Router.ts`, e.g. `/api/auth`, `/api/users`, `/api/database`).
 The last two middlewares in `app.ts` (`core/middleware/errorMiddleware.ts`) keep every response
@@ -96,20 +99,24 @@ mirror this shape:
 - `models/` — plain types/interfaces describing the feature's data shapes (no logic), e.g.
   `toPublic()` in `features/user/models/userModel.ts` strips `password` before a user is returned
   over the API.
-- `middleware/` — feature-specific `express-validator` chains + a shared
-  `handleValidationErrors` that turns validation failures into a `422` with a normalized
-  `{ errores: [{ campo, mensaje }] }` body.
+- `middleware/` — feature-specific `express-validator` chains (`validateX`). The response is
+  always built by the single shared `handleValidationErrors` in
+  `core/middleware/validationMiddleware.ts` (never copy it into a feature): a `422` with
+  `{ message, errors: [{ campo, mensaje }] }`. Expected 409s with a field (e.g. duplicated
+  username) use the same `errors` shape.
 
 Cross-cutting auth lives in `src/core/middleware/authMiddleware.ts` (not per-feature):
 `verifyToken` (decodes the JWT into `req.user`), `verifyAdmin` (role check), and
-`verifyOwnerOrAdmin` (lets a user act on their own `:id` or lets an admin act on anyone's).
+`verifyOwnerOrAdmin` (lets a user act on their own `:id` or lets an admin act on anyone's;
+for a route whose user param has another name use `verifyOwnerOrAdminOf('userId', message)`).
 Compose these on routes in that order, e.g.
 `router.patch('/:id', verifyToken, verifyOwnerOrAdmin, validateX, handleValidationErrors, controllerFn)`.
 
-Two DB access paths currently coexist: `core/prismaClient.ts` (singleton `PrismaClient`, used by
-feature repositories — the primary path for CRUD) and `src/database.ts` (a raw `mysql2/promise`
-pool, used for a lower-level health check in the `database` feature). Prefer Prisma for new
-feature work.
+All DB access goes through `core/prismaClient.ts` (singleton `PrismaClient`), imported only by
+repositories — the health check too (`features/database/repository`, `SELECT 1`). A query used
+by several features lives in the repository of the entity it reads and the others import it
+(e.g. `reviewRepository.findReviewStats` + `withReviewStats` in `reviewService`, used by recipe,
+search and feed).
 
 `prisma/schema.prisma` is the source of truth for the data model: `User`, `role`/`UserRole`,
 `recipe`, `ingredient`/`ingredientcategory`, `category`/`recipecategory`, `recipeingredient`,
@@ -136,7 +143,7 @@ Auth model: JWT (`jsonwebtoken`) with an 8h expiry, payload `{ id, username, isA
 `ADMIN_ROLE_ID` (role id `1`, defined in `features/user/models/userModel.ts`). Passwords are hashed
 with `bcrypt` (10 salt rounds) — plaintext passwords must never cross the repository boundary.
 
-TypeScript compiles CommonJS-style `__dirname` usage (`app.ts`, `database.ts` load `.env` via
+TypeScript compiles CommonJS-style `__dirname` usage (`app.ts` loads `.env` via
 `path.resolve(__dirname, '../.env')`) — the `tsconfig.json` module target is `NodeNext`, so keep
 new modules consistent with the existing import/export style (ESM `import`/`export`, `.js`
 extensions on relative imports since output is compiled to `dist/`).
@@ -174,9 +181,13 @@ retry is the only manual reload. Ingredients are created/edited in a 2-step moda
 (`IngredientFormModal`: details → nutritional values) whose unit and nutrient options live in
 `features/ingredient/models/ingredientFormModel.js`.
 New pages should be routes (read params with `useParams`,
-navigate with `useNavigate`), not panels toggled by local state. Pages are imported in `App.jsx`
-with `lazy(() => import(...))` (one chunk per page, inside a single `<Suspense>`), so a new page
-must be added the same way, never as a static import.
+navigate with `useNavigate`), not panels toggled by local state. Pages are loaded one chunk per
+page (inside a single `<Suspense>`): add a `loadXPage` to `app/pageLoaders.js` and use
+`lazyPage(loadXPage)` in `App.jsx`, never a static import. `lazyPage` counts the download in
+`requestTracker` (React Router navigates as a transition: the old page stays until the new
+one is ready, so without it there's no feedback), and `UserLayout` preloads the user pages in
+the background (`preloadPages(USER_PAGE_LOADERS)`), so add new user pages there too.
+In dev, `vite.config.js` warms up (pre-compiles) every page on `npm run dev`.
 Material Symbols are requested as a subset: `index.html` lists every icon used in
 `icon_names=` (alphabetical, weight 400 only). Using a new icon (in the frontend or as a
 backend-provided name, e.g. donation tiers) means adding it there, or its name shows as text.
@@ -189,8 +200,10 @@ Each feature under `src/features/<name>/` mirrors a slice of the backend's shape
   `onLoginSuccess` callback passed down from `App.jsx`)
 - `services/` — one function per API call, built on `fetch` directly against
   `import.meta.env.VITE_API_BASE_URL` (see `loginService.js`, `registerService.js`); these parse
-  the backend's `{ message }` / `{ errores: [...] }` error shapes into a thrown `Error`.
-- `models/` — plain JS shapes for request/response data (no framework logic).
+  the backend's `{ message }` / `{ message, errors: [...] }` error shapes into a thrown `Error`.
+- `models/` — plain JS shapes for request/response data (no framework logic): every feature
+  has one, and its services map the raw response with a factory (`categoryFromApi`,
+  `userFromApi`, `stepFromApi`, ...) before returning it.
 - `styles/` — feature-scoped CSS.
 
 `src/shared/utils/apiFetch.js` is the single HTTP helper for every service (public or
@@ -204,7 +217,15 @@ error message strings. Avoid one request per item (N+1): if a list needs extra d
 (e.g. rating), have the backend include it (`GET /api/recipes` already returns `averageRating`
 and `reviewCount`). UI error convention: field errors inline under the field; failed actions
 → `AlertModal`; failed section loads → `ErrorState` (core/components) with a retry button;
-destructive actions → `ConfirmModal`. Never use `window.alert/confirm` or `console.error`.
+destructive actions → `ConfirmModal` (in admin tables, via `useDeleteConfirmation`); empty
+results → `EmptyState`. Loading convention: a section that is loading shows
+`<LoadingState message="Cargando ..." />` (core/components: spinner + text), never a bare
+"Cargando..." paragraph. Every `apiFetch` call is also counted by `shared/utils/requestTracker.js`,
+and `RequestIndicator` (mounted once in `App.jsx`) shows a floating spinner when a request takes
+more than 400 ms and no `LoadingState` is on screen, so actions (save, delete, follow, page
+changes) give feedback without extra code. Pass `apiFetch(url, { background: true })` only for
+requests the user is not waiting on or that already show their own indicator (payment polling,
+quick search, the chatbot). Never use `window.alert/confirm` or `console.error`.
 Forms: required fields get `<RequiredMark />` (red `*`) in their label and the form shows
 `<RequiredFieldsNote isVisible={hasFieldErrors(fieldErrors)} />` (the note only appears after a submit that left field errors, never permanently; `hasFieldErrors` is in `shared/utils/fieldAria.js`); fields without `*` are optional, so don't add "(opcional)" to labels.
 Validate before sending (use `noValidate` on the `<form>`, not the native `required` bubbles),
@@ -219,19 +240,31 @@ Recipe images: `shared/utils/compressImage.js` (canvas → WebP) before upload a
 `shared/utils/imageUrl.js` (`resolveImageUrl`) to turn `/uploads/...` paths into full URLs.
 
 `src/core/components/` holds cross-feature UI primitives (`ConfirmModal`, `AlertModal`,
-`ErrorState`, `RecipeCard`, `RatingBadge`, `SaveRecipeButton`, `UserAvatar`, `ScrollReveal`,
-`StarRating`, `RequiredMark`, `RequiredFieldsNote`, `FieldError`, `SwirlingLoader` (spinner,
+`ErrorState`, `EmptyState`, `RecipeCard`, `RatingBadge`, `SaveRecipeButton`, `UserAvatar`, `ScrollReveal`,
+`StarRating`, `RequiredMark`, `RequiredFieldsNote`, `FieldError`, `LoadingState`,
+`CategoryFormModal` (shared by recipe and ingredient categories),
+`RequestIndicator`, `SwirlingLoader` (spinner,
 takes the parent's text color), `LoadingScreen` (full-screen loader: `<Suspense>` fallback in
 `App.jsx`, with a static copy inside `#root` in `index.html` — keep both in sync; their styles
 and `_themes.scss` are linked from `index.html` via `styles/critical.scss`, not imported from
 JS, so the loader is styled before the bundle downloads), `DropdownSelect` — use it instead of a native `<select>`: its list scrolls without a visible scrollbar, ...) and `src/core/hooks/` shared hooks (`useDragScroll` for carousels, `useHasBeenVisible` to fetch a
 lower "screen" only when the user scrolls to it, `useImagePicker` to pick a photo with a local
 preview and upload it on save, `useOverlayClose(onClose)` spread on a modal's overlay so it only
-closes when the press starts and ends on the backdrop, never `onClick={onClose}`); reuse them
-instead of duplicating.
+closes when the press starts and ends on the backdrop, never `onClick={onClose}` (every modal
+uses it), `useDeleteConfirmation(onDelete)` for "confirm, delete, show why it failed"); reuse
+them instead of duplicating. A modal opened from inside `ScrollReveal` (it uses `transform`)
+must render through `createPortal(..., document.body)` or its fixed overlay won't cover the page.
+Admin tables share `AdminTablePagination`, and both category sections use `AdminCategoriesTable`.
+`AdminPage` lazy-loads each section (`SECTION_LOADERS`, preloaded after entering), keeps the
+sections already opened mounted but `hidden` (each takes `isActive` and calls
+`useRefreshOnReturn(isActive, refresh)` to refresh silently when shown again) and owns the only
+`useAdminSummary()`, passing the counts down: a new section must follow the same pattern.
 The home (`/`, `features/user/pages/HomePage.jsx`) is 3 snap-scrolling screens like the profile,
 fed by `features/feed` (friends' recipes, weekly top 10, friends' reviews); "friends" = users you
-follow (`features/follow`, backend table `follow`).
+follow (`features/follow`, backend table `follow`; the follower/following lists are
+`GET /api/users/:userId/follow/followers|following`, shown in `FollowListModal` from the profile
+metrics). `GET /api/feed/top-recipes` is the only public feed endpoint: the landing
+(`features/landing`) shows its top 5 of the last 30 days, never mock data.
 `CollapsibleSidebar` is the shared shell for both the user `Sidebar` and `AdminSidebar`: they only
 pass data (`items`, `footerItems`, `account`); desktop = icon rail that expands on hover (pure CSS,
 overlays the content), mobile = top bar + slide-in panel. Layout sizes live in `_variables.scss`
@@ -244,7 +277,8 @@ Light/dark mode: every `$color-*` / `$shadow-*` variable is a CSS custom propert
 `core/components/ThemeToggle.jsx` is the switch button (landing navbar; the sidebars use a footer item instead). Because of that, SASS color functions
 (`rgba($color, x)`, `color.adjust`) don't work on them — use `with-opacity($color, 0.1)` and
 `shade($color, 8%)` from `abstracts/_functions.scss`. Use `$color-on-image` (always white) for
-text over darkened photos, since `$color-on-primary` turns dark in dark mode.
+text over darkened photos, since `$color-on-primary` turns dark in dark mode, and
+`$color-scrim` for the dark backdrop behind every modal.
 
 ## Documentation conventions (course requirement)
 

@@ -5,7 +5,7 @@ import { recipeToCardProps, getRecipeImageUrl } from '../../recipe/models/recipe
 import { resolveImageUrl } from '../../../shared/utils/imageUrl.js';
 
 // Plazo del ranking de la 2ª sección, en días.
-export const WEEKLY_TOP_DAYS = 7;
+const WEEKLY_TOP_DAYS = 7;
 
 // Query string de cada sección (los servicios los reciben tal cual, ver useSearchListing).
 // Recetas de amigos: 1 destacada + 3 compactas. Reseñas: 2 filas de 3 en escritorio.

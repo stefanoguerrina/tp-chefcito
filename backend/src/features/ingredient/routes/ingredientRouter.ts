@@ -15,8 +15,8 @@ import { verifyToken, verifyAdmin } from '../../../core/middleware/authMiddlewar
 import {
   validateCreateIngredient,
   validateUpdateIngredient,
-  handleValidationErrors,
 } from '../middleware/ingredientValidationMiddleware.js';
+import { handleValidationErrors } from '../../../core/middleware/validationMiddleware.js';
 import { uploadIngredientImage } from '../middleware/ingredientImageUploadMiddleware.js';
 import { nutritionalValueRouter } from '../../nutritionalValue/routes/nutritionalValueRouter.js';
 

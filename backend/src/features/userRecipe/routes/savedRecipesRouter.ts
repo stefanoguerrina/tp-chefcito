@@ -3,11 +3,16 @@
 // sino que lista todas las recetas guardadas por un usuario.
 import { Router } from 'express';
 import { handleListSavedRecipesByUser } from '../controllers/userRecipeController.js';
-import { verifyToken } from '../../../core/middleware/authMiddleware.js';
+import { verifyToken, verifyOwnerOrAdminOf } from '../../../core/middleware/authMiddleware.js';
 
 const savedRecipesRouter = Router();
 
 // GET /api/saved-recipes/:idUser — recetas guardadas por un usuario (el propio o admin)
-savedRecipesRouter.get('/:idUser', verifyToken, handleListSavedRecipesByUser);
+savedRecipesRouter.get(
+  '/:idUser',
+  verifyToken,
+  verifyOwnerOrAdminOf('idUser', 'Acceso denegado. Solo podés ver tus propias recetas guardadas.'),
+  handleListSavedRecipesByUser
+);
 
 export { savedRecipesRouter };

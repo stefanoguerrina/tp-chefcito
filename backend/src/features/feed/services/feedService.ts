@@ -3,6 +3,8 @@
 // "Amigos" = los usuarios que sigue el usuario autenticado (feature follow).
 import { feedRepository } from '../repository/feedRepository.js';
 import { followRepository } from '../../follow/repository/followRepository.js';
+import { reviewRepository } from '../../review/repository/reviewRepository.js';
+import { withReviewStats } from '../../review/services/reviewService.js';
 import type { RecipeRanking } from '../models/feedModel.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -18,19 +20,7 @@ export async function getFriendsRecipes(idUser: number, limit: number) {
   ]);
 
   // La valoración se pide después porque depende de qué recetas salieron.
-  const stats = recipes.length > 0
-    ? await feedRepository.findReviewStats({ recipeIds: recipes.map((recipe) => recipe.id) })
-    : [];
-  const statsById = new Map(stats.map((stat) => [stat.idRecipe, stat]));
-
-  const items = recipes.map((recipe) => {
-    const recipeStats = statsById.get(recipe.id);
-    return {
-      ...recipe,
-      averageRating: recipeStats?._avg.rating ? Number(recipeStats._avg.rating) : 0,
-      reviewCount: recipeStats?._count._all ?? 0,
-    };
-  });
+  const items = await withReviewStats(recipes);
   return { followingCount, items };
 }
 
@@ -61,7 +51,7 @@ export async function getFriendsReviews(idUser: number, limit: number) {
 // reviewCount (calculados solo con las reseñas del plazo).
 export async function getTopRecipes(days: number, limit: number) {
   const since = new Date(Date.now() - days * DAY_MS);
-  const stats = await feedRepository.findReviewStats({ since });
+  const stats = await reviewRepository.findReviewStats({ since });
 
   const ranking: RecipeRanking[] = stats
     .map((stat) => ({
@@ -73,20 +63,23 @@ export async function getTopRecipes(days: number, limit: number) {
 
   if (ranking.length === 0) return { days, items: [] };
 
-  // Se piden las cards de todo el ranking (no solo de las primeras `limit`) porque
-  // algunas pueden quedar afuera por ser de un usuario dado de baja: así el top igual se
-  // completa con las siguientes. Se recorre `ranking` para respetar el orden.
-  const cards = await feedRepository.findRecipeCardsByIds(ranking.map((row) => row.idRecipe));
-  const cardsById = new Map(cards.map((card) => [card.id, card]));
+  // Las cards se piden de a `limit` (no de todo el ranking): casi siempre alcanza con un
+  // pedido. Si alguna receta queda afuera por ser de un usuario dado de baja, se pide el
+  // siguiente tramo del ranking hasta completar el top o quedarse sin recetas.
+  const items = [];
+  for (let start = 0; start < ranking.length && items.length < limit; start += limit) {
+    const batch = ranking.slice(start, start + limit);
+    const cards = await feedRepository.findRecipeCardsByIds(batch.map((row) => row.idRecipe));
+    const cardsById = new Map(cards.map((card) => [card.id, card]));
 
-  const items = ranking
-    .filter((row) => cardsById.has(row.idRecipe))
-    .slice(0, limit)
-    .map((row) => ({
-      ...cardsById.get(row.idRecipe)!,
-      averageRating: row.averageRating,
-      reviewCount: row.reviewCount,
-    }));
+    // Se recorre `batch` (no `cards`) para respetar el orden del ranking.
+    for (const row of batch) {
+      const card = cardsById.get(row.idRecipe);
+      if (card && items.length < limit) {
+        items.push({ ...card, averageRating: row.averageRating, reviewCount: row.reviewCount });
+      }
+    }
+  }
 
   return { days, items };
 }

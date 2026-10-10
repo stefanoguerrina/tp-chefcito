@@ -11,9 +11,9 @@ function RegisterSuccess({ titleId, username, onGoToLogin }) {
             <div className="AuthModal-icon AuthModal-icon--success">
                 <span className="material-symbols-outlined">check</span>
             </div>
-            <h2 className="AuthModal-title" id={titleId}>¡Tu cuenta está lista!</h2>
+            <h2 className="AuthModal-title" id={titleId}>¡Registro exitoso!</h2>
             <p className="AuthModal-subtitle">
-                Te registraste como <strong>@{username}</strong>. Iniciá sesión para empezar a cocinar.
+                Tu cuenta <strong>@{username}</strong> ya está lista. Iniciá sesión para empezar a cocinar.
             </p>
 
             {/* autoFocus: el foco estaba en "Crear cuenta", que ya no existe; así con Enter se sigue. */}

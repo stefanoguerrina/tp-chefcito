@@ -1,4 +1,4 @@
-// Bloque que se suma a cada receta en modo "Con mi despensa": cuántos ingredientes tenés,
+// Bloque que se suma a cada receta en modo "Inventario": cuántos ingredientes tenés,
 // una barra de progreso y qué te falta.
 import '../styles/_pantry-match.scss';
 

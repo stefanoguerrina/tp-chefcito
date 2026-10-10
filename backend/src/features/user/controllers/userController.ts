@@ -224,8 +224,11 @@ export const handleChangeUserPassword = async (req: Request, res: Response): Pro
         res.status(404).json({ message: 'Usuario no encontrado.' });
         return;
       }
-      // La contraseña actual no coincide con la almacenada.
-      res.status(401).json({ message: 'La contraseña actual ingresada es incorrecta.' });
+      // La contraseña actual no coincide con la almacenada. Va como 400 con el error en
+      // su campo, no como 401: un 401 significa "token inválido" y el frontend cierra la
+      // sesión al recibirlo.
+      const message = 'La contraseña actual ingresada es incorrecta.';
+      res.status(400).json({ message, errors: [{ campo: 'currentPassword', mensaje: message }] });
       return;
     }
 

@@ -161,16 +161,6 @@ export const searchRepository = {
       },
     }),
 
-  // Promedio de valoración y cantidad de reseñas de cada receta de la lista, en una sola
-  // consulta agrupada (en vez de pedir las reseñas receta por receta).
-  findReviewStats: (recipeIds: number[]) =>
-    prisma.review.groupBy({
-      by: ['idRecipe'],
-      where: { idRecipe: { in: recipeIds } },
-      _avg: { rating: true },
-      _count: { _all: true },
-    }),
-
   // Cuántos usuarios guardaron cada receta de la lista (para "Más populares").
   findSaveCounts: (recipeIds: number[]) =>
     prisma.userrecipe.groupBy({

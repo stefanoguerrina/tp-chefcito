@@ -11,6 +11,7 @@ import UserResultItem from '../components/UserResultItem.jsx';
 import RecipeSuggestions from '../components/RecipeSuggestions.jsx';
 import AssistantBanner from '../components/AssistantBanner.jsx';
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import { useQuickSearch } from '../hooks/useQuickSearch.js';
 import {
   buildSearchPagePath, CATEGORY_ACCENTS, countQuickSearchResults, isQuickSearchEmpty,
@@ -48,7 +49,7 @@ function SearchResultsPage() {
         </div>
       )}
 
-      {isLoading && <p className="SearchResultsPage-status">Buscando resultados...</p>}
+      {isLoading && <LoadingState message="Buscando resultados..." />}
 
       {error && <ErrorState title="No pudimos completar la búsqueda" message={error} onRetry={retry} />}
 

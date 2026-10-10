@@ -1,6 +1,7 @@
 // 3ª sección de la home: "Reseñas de amigos", las últimas reseñas que escribieron las
 // personas que sigue el usuario, en una grilla (1 columna en mobile, 2 en md y 3 en lg).
 import ErrorState from '../../../core/components/ErrorState.jsx';
+import LoadingState from '../../../core/components/LoadingState.jsx';
 import FeedSectionHeader from './FeedSectionHeader.jsx';
 import FeedEmptyState from './FeedEmptyState.jsx';
 import FriendReviewCard from './FriendReviewCard.jsx';
@@ -18,7 +19,7 @@ function FriendsReviewsSection() {
 
   let content;
   if (isLoading) {
-    content = <p className="FeedSection-status">Cargando las reseñas de tus amigos...</p>;
+    content = <LoadingState message="Cargando las reseñas de tus amigos..." />;
   } else if (error) {
     content = <ErrorState message={error} onRetry={retry} />;
   } else if (data.items.length === 0) {
