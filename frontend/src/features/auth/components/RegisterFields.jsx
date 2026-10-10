@@ -3,7 +3,10 @@
 // un usuario desde el panel admin (AdminCreateUserModal), así los dos piden lo mismo y con
 // las mismas validaciones. Desde sm van de a dos por fila (AuthModal-row).
 import { useState } from "react";
-import { formatDateDisplay, PHONE_COUNTRY_PREFIX, PASSWORD_MIN_LENGTH } from "../models/registerModel";
+import {
+    formatDateDisplay, PHONE_COUNTRY_PREFIX, PHONE_NUMBER_MAX_LENGTH, NAME_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH
+} from "../models/registerModel";
 import { getFieldAriaProps } from "../../../shared/utils/fieldAria.js";
 import DatePickerModal from "../../../core/components/DatePickerModal.jsx";
 import ArgentinaFlag from "../../../core/components/ArgentinaFlag.jsx";
@@ -39,6 +42,7 @@ function RegisterFields({ form, fieldErrors, onInputChange, onDateChange, idPref
                         id={ids.name}
                         type="text"
                         autoComplete="given-name"
+                        maxLength={NAME_MAX_LENGTH}
                         value={form.formalName}
                         onChange={(event) => onInputChange(event, "formalName")}
                         {...getFieldAriaProps(ids.name, { error: fieldErrors.formalName, isRequired: true })}
@@ -50,6 +54,7 @@ function RegisterFields({ form, fieldErrors, onInputChange, onDateChange, idPref
                         id={ids.lastName}
                         type="text"
                         autoComplete="family-name"
+                        maxLength={NAME_MAX_LENGTH}
                         value={form.surName}
                         onChange={(event) => onInputChange(event, "surName")}
                         {...getFieldAriaProps(ids.lastName, { error: fieldErrors.surName, isRequired: true })}
@@ -96,6 +101,8 @@ function RegisterFields({ form, fieldErrors, onInputChange, onDateChange, idPref
                             id={ids.phone}
                             type="tel"
                             autoComplete="tel-national"
+                            placeholder="341 555-0101"
+                            maxLength={PHONE_NUMBER_MAX_LENGTH}
                             value={form.telephone}
                             onChange={(event) => onInputChange(event, "telephone")}
                             {...getFieldAriaProps(ids.phone, { error: fieldErrors.telephone })}
@@ -123,6 +130,7 @@ function RegisterFields({ form, fieldErrors, onInputChange, onDateChange, idPref
                 <PasswordInput
                     id={ids.password}
                     autoComplete="new-password"
+                    maxLength={PASSWORD_MAX_LENGTH}
                     value={form.password}
                     onChange={(event) => onInputChange(event, "password")}
                     {...getFieldAriaProps(ids.password, {

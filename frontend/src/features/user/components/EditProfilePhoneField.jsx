@@ -2,11 +2,7 @@
 // izquierda (no se edita) y solo se escribe el resto del número.
 import EditProfileField from './EditProfileField.jsx';
 import ArgentinaFlag from '../../../core/components/ArgentinaFlag.jsx';
-import { PHONE_COUNTRY_PREFIX } from '../../auth/models/registerModel.js';
-
-// El backend acepta hasta 20 caracteres para todo el teléfono: se descuentan los que
-// ocupa la característica fija ("+54 ").
-const PHONE_NUMBER_MAX_LENGTH = 20 - `${PHONE_COUNTRY_PREFIX} `.length;
+import { PHONE_COUNTRY_PREFIX, PHONE_NUMBER_MAX_LENGTH } from '../../auth/models/registerModel.js';
 
 // Recibe: inputProps (id, value, onChange y aria del input) y error (texto o undefined).
 function EditProfilePhoneField({ inputProps, error }) {
@@ -21,7 +17,7 @@ function EditProfilePhoneField({ inputProps, error }) {
           className="EditProfileModal-input EditProfileModal-input--addon"
           type="tel"
           autoComplete="tel-national"
-          placeholder="Ej: 9 11 1234-5678"
+          placeholder="Ej: 341 555-0101"
           maxLength={PHONE_NUMBER_MAX_LENGTH}
           {...inputProps}
         />
