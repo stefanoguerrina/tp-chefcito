@@ -135,6 +135,9 @@ instrucciones para correrlos están en la sección "Tests" del [README.md](../RE
 
 ### 3.3 Deploy y credenciales 🟠
 
+El plan completo (opción de hosting recomendada, pasos en orden, variables, riesgos y lista de
+prueba) está en [deploy.md](deploy.md). Resumen:
+
 | Parte | Opciones | A tener en cuenta |
 |---|---|---|
 | Base de datos | Railway, Aiven, Clever Cloud o TiDB (MySQL gestionado) | `npx prisma db push` contra esa URL y cargar `demo-seed.sql`. Las secciones 8 y 10 del seed usan fechas relativas (Top 10 de los últimos 7 días, donaciones): recargarlas antes del video y de la entrega. La intercalación tiene que ignorar mayúsculas y tildes (`utf8mb4_0900_ai_ci`). |
@@ -142,9 +145,9 @@ instrucciones para correrlos están en la sección "Tests" del [README.md](../RE
 | Frontend | Vercel o Netlify | `VITE_API_BASE_URL` apuntando al backend. Redirigir todas las rutas a `/index.html` (`vercel.json` o `public/_redirects`): sin eso, recargar `/admin` da 404. |
 | Fotos | | Ver la decisión 3 de 2.3 antes de elegir hosting. |
 
-Después, `docs/deploy.md` con los links y las credenciales: admin (`admindemo`), un usuario
-común (`juanperez`) y el comprador de prueba de Mercado Pago con la tarjeta de prueba. Sumarlo
-al índice. Probarlo desde un celular, con una donación incluida.
+Después, completar la sección "Links y credenciales" de [deploy.md](deploy.md) (ya está en el
+índice): links, admin (`admindemo`), un usuario común (`juanperez`) y el comprador de prueba de
+Mercado Pago con la tarjeta de prueba. Probarlo desde un celular, con una donación incluida.
 
 ### 3.4 Video 🟠
 

@@ -14,7 +14,7 @@ Trabajo práctico de la materia Desarrollo de Software, comisión 3K02.
 | 54780 | Persig, Juan Andrés |
 | 54323 | Schujman, Gastón Enrique |
 
-La documentación del proyecto (propuesta, API, metodología, tracking, minutas y tests) está en
+La documentación del proyecto (propuesta, API, metodología, tracking, minutas, tests y deploy) está en
 [docs/README.md](docs/README.md).
 
 ## Estructura
