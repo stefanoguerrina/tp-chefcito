@@ -79,7 +79,9 @@ function CollapsibleSidebar({ brandSubtitle, items, footerItems, account, classN
 
   const brand = (
     <Link className="CollapsibleSidebar-brand" to="/" onClick={handleCloseMenu}>
-      <span className="CollapsibleSidebar-brandIcon material-symbols-outlined">restaurant_menu</span>
+      <span className="CollapsibleSidebar-brandIcon">
+        <span className="CollapsibleSidebar-brandMark" />
+      </span>
       <span className="CollapsibleSidebar-brandText CollapsibleSidebar-label">
         <span className="CollapsibleSidebar-brandName">Chefcito</span>
         {brandSubtitle && <span className="CollapsibleSidebar-brandSubtitle">{brandSubtitle}</span>}

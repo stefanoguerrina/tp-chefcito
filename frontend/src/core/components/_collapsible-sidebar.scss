@@ -160,11 +160,18 @@
     flex-shrink: 0;
     border-radius: $radius-md;
     background: $gradient-brand;
-    color: $color-on-primary;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+  }
+
+  // Silueta del logo calada sobre el cuadrado: el PNG se usa como máscara (solo importa
+  // dónde es transparente), así se pinta del color que se quiera en vez de su verde.
+  &-brandMark {
+    width: 26px;
+    height: 26px;
+    background-color: $color-on-primary;
+    mask: url('../../assets/chefcito-logo-dark-theme.png') center / contain no-repeat;
   }
 
   &-brandText {

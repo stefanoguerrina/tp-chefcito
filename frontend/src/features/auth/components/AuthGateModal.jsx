@@ -2,6 +2,7 @@
 // real de la app (ver una receta, guardarla, comentar, etc.) en vez de mandarlo
 // directo a un formulario. Deja elegir entre iniciar sesión o registrarse.
 import { useOverlayClose } from "../../../core/hooks/useOverlayClose.js";
+import ChefcitoLogo from "../../../core/components/ChefcitoLogo.jsx";
 import "../styles/_auth-modal.scss";
 
 const AuthGateModal = ({ onClose, onLoginClick, onRegisterClick }) => {
@@ -26,9 +27,7 @@ const AuthGateModal = ({ onClose, onLoginClick, onRegisterClick }) => {
                 </button>
 
                 <div className="AuthModal-header">
-                    <div className="AuthModal-icon">
-                        <span className="material-symbols-outlined">restaurant_menu</span>
-                    </div>
+                    <ChefcitoLogo className="AuthModal-logo" />
                     <h2 className="AuthModal-title" id="auth-gate-modal-title">Necesitás una cuenta</h2>
                     <p className="AuthModal-subtitle">
                         Iniciá sesión o registrate gratis para guardar recetas, reseñar y mucho más.

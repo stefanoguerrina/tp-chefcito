@@ -1,6 +1,7 @@
 // Barra de navegación superior de la landing: logo, buscador (decorativo por ahora,
 // no hay feature de búsqueda de recetas todavía) y accesos a login/registro.
 import ThemeToggle from '../../../core/components/ThemeToggle.jsx';
+import ChefcitoLogo from '../../../core/components/ChefcitoLogo.jsx';
 import '../styles/_navbar.scss';
 
 // Recibe: onLoginClick y onRegisterClick, los handlers de useAuth que muestran cada form, y
@@ -14,7 +15,7 @@ function Navbar({ onLoginClick, onRegisterClick, onRequireAuth }) {
             centrada en la columna del medio, sin importar cuánto midan logo+links. */}
         <div className="Navbar-start">
           <a className="Navbar-logo" href="#top">
-            <span className="material-symbols-outlined">restaurant_menu</span>
+            <ChefcitoLogo />
             Chefcito
           </a>
         </div>

@@ -1,0 +1,9 @@
+// Logo de Chefcito (core/components/ChefcitoLogo). El alto lo define quien lo usa;
+// el ancho sale de la proporción de la imagen.
+.ChefcitoLogo {
+  display: block;
+  height: 36px;
+  width: auto;
+  flex-shrink: 0;
+  object-fit: contain;
+}
