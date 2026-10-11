@@ -18,4 +18,10 @@ export default defineConfig({
       ],
     },
   },
+  // Tests de componentes (npm test, con Vitest): corren en un DOM simulado (jsdom). Solo los
+  // .test.jsx de src: los end-to-end de e2e/ los corre Playwright (npm run test:e2e).
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.test.{js,jsx}'],
+  },
 })

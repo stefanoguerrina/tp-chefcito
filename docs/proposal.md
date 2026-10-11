@@ -97,3 +97,6 @@ Al ser un monorepo, cada PR puede incluir cambios de backend y de frontend. Todo
 |[#28](https://github.com/stefanoguerrina/tp-chefcito/pull/28)|Persig, Juan|Corrección de errores, pantalla de carga e historial de donaciones|
 |[#29](https://github.com/stefanoguerrina/tp-chefcito/pull/29)|Guerrina, Stéfano|Estados de carga en todas las páginas, optimización de backend y frontend, código sin uso eliminado|
 |[#31](https://github.com/stefanoguerrina/tp-chefcito/pull/31)|Guerrina, Stéfano|Prefijo `handle` en los nombres de los handlers|
+|[#32](https://github.com/stefanoguerrina/tp-chefcito/pull/32)|Guerrina, Stéfano|Documentación para la aprobación directa: README, API, metodología, tracking, minutas y propuesta actualizada (T-6.3)|
+|[#33](https://github.com/stefanoguerrina/tp-chefcito/pull/33)|Schujman, Gastón|Validaciones en los formularios de registro|
+|[#34](https://github.com/stefanoguerrina/tp-chefcito/pull/34)|Guerrina, Stéfano|Tests automatizados de backend y frontend con base de test aparte, y el rol administrador creado con id 1 en una base vacía (T-6.1, T-6.2)|

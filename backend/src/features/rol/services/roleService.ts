@@ -3,7 +3,10 @@
 import { roleRepository } from '../repository/roleRepository.js';
 import { userRepository } from '../../user/repository/userRepository.js';
 import { toPublic } from '../../user/models/userModel.js';
-import { ADMIN_ROLE_ID, DEFAULT_USER_ROLE_NAME, type CreateRoleData, type UpdateRoleData } from '../models/roleModel.js';
+import {
+  ADMIN_ROLE_ID, ADMIN_ROLE_NAME, ADMIN_ROLE_DESCRIPTION, DEFAULT_USER_ROLE_NAME,
+  type CreateRoleData, type UpdateRoleData,
+} from '../models/roleModel.js';
 
 // Devuelve todos los roles.
 export async function getAllRoles() {
@@ -113,7 +116,15 @@ export async function assignRoleToUser(
 // Devuelve el rol por defecto para usuarios nuevos (DEFAULT_USER_ROLE_NAME), creándolo
 // si todavía no existe en la BD. Usado por authService.register para que el alta de
 // usuarios funcione también en una BD recién clonada, sin necesidad de un seed manual.
+// Antes se asegura de que exista el rol administrador con id ADMIN_ROLE_ID: en una BD vacía,
+// si "Usuario" se creara primero tomaría el id 1 (autoincremental) y, como ser admin es
+// tener el rol 1, todo usuario nuevo quedaría como administrador.
 export async function ensureDefaultUserRole() {
+  await roleRepository.createIfMissing(ADMIN_ROLE_ID, {
+    name: ADMIN_ROLE_NAME,
+    description: ADMIN_ROLE_DESCRIPTION,
+  });
+
   const existing = await roleRepository.findByName(DEFAULT_USER_ROLE_NAME);
   if (existing) return existing;
 

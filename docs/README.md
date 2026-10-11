@@ -10,6 +10,7 @@ el [README.md](../README.md) de la raíz.
 | [metodologia.md](metodologia.md) | Metodología de trabajo y flujo de git |
 | [tracking.md](tracking.md) | Seguimiento de tareas por fase, bugs corregidos e issues abiertos |
 | [minutas.md](minutas.md) | Avance por fase, devoluciones de los profesores y minutas de reunión |
+| [tests.md](tests.md) | Tests automatizados: qué prueba cada uno, cómo se corren y evidencia de la ejecución |
 | [demo-seed.sql](demo-seed.sql) | Datos de prueba para cargar en la base, con los usuarios de demo |
 
 Documentos internos del equipo:

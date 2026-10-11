@@ -14,7 +14,7 @@ Trabajo práctico de la materia Desarrollo de Software, comisión 3K02.
 | 54780 | Persig, Juan Andrés |
 | 54323 | Schujman, Gastón Enrique |
 
-La documentación del proyecto (propuesta, API, metodología, tracking y minutas) está en
+La documentación del proyecto (propuesta, API, metodología, tracking, minutas y tests) está en
 [docs/README.md](docs/README.md).
 
 ## Estructura
@@ -165,6 +165,44 @@ Mercado Pago.
 | `frontend/` | `npm run build` | Build de producción en `dist/` |
 | `frontend/` | `npm run preview` | Sirve el build de producción |
 | `frontend/` | `npm run lint` | Revisa el código con ESLint |
+| `backend/` | `npm test` | Tests unitarios y de integración (Vitest + Supertest) |
+| `backend/` | `npm run test:db` | Crea las tablas en la base de test (`.env.test`) |
+| `frontend/` | `npm test` | Test de componente (Vitest + Testing Library) |
+| `frontend/` | `npm run test:e2e` | Test end-to-end en el navegador (Playwright) |
+
+## Tests
+
+La evidencia de la ejecución está en [docs/tests.md](docs/tests.md).
+
+### Backend
+
+```bash
+cd backend
+npm test
+```
+
+Los tests unitarios no usan la base. El test de integración tiene una parte que escribe en
+la base (registro, login y ruta protegida), y para no tocar nunca la base de desarrollo usa una
+base aparte. Solo corre si existe `backend/.env.test`; si no está, esa parte se saltea:
+
+1. Copiar `backend/.env.test.example` como `backend/.env.test` con los datos de conexión de
+   MySQL y otro nombre de base (por ejemplo `chefcito_test`).
+2. Crear las tablas en esa base (si no existe, la crea): `npm run test:db`.
+3. Correr `npm test`.
+
+### Frontend
+
+```bash
+cd frontend
+npm test                          # test de componente
+npx playwright install chromium   # solo la primera vez: descarga el navegador
+npm run test:e2e                  # test end-to-end
+```
+
+El test end-to-end inicia sesión con `juanperez`, busca una receta y abre su detalle, así que
+necesita la base de desarrollo con los datos de `demo-seed.sql`. Si el backend y el frontend no
+están corriendo, los levanta solo. El reporte queda en `frontend/playwright-report/`
+(`npx playwright show-report` lo abre).
 
 ## Problemas comunes
 

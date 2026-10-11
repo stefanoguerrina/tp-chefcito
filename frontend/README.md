@@ -38,6 +38,8 @@ La app queda disponible en `http://localhost:5173`.
 | `npm run build` | Build de producción en `dist/` |
 | `npm run preview` | Sirve el build de producción para probarlo |
 | `npm run lint` | Revisa el código con ESLint |
+| `npm test` | Test de componente con Vitest + Testing Library (`src/**/*.test.jsx`) |
+| `npm run test:e2e` | Test end-to-end con Playwright (`e2e/`). La primera vez: `npx playwright install chromium` |
 
 ## Stack
 

@@ -37,7 +37,7 @@ const toDonationStatus = (paymentStatus: string): DonationStatus => {
 // Recibe los pagos de Mercado Pago de una misma donación (puede haber varios intentos, ej. uno
 // rechazado y después uno aprobado). Devuelve el estado que corresponde: manda el aprobado,
 // después uno en proceso, y si todos fallaron 'rejected'. null si todavía no hay ningún pago.
-const statusFromPayments = (payments: { status: string }[]): DonationStatus | null => {
+export const statusFromPayments = (payments: { status: string }[]): DonationStatus | null => {
   const statuses = payments.map((payment) => toDonationStatus(payment.status));
   if (statuses.includes('completed')) return 'completed';
   if (statuses.includes('pending')) return 'pending';
@@ -85,7 +85,7 @@ const toHistoryItem = (
 // Recibe las filas de un lado del historial (recibidas o realizadas). Devuelve ese lado con
 // su resumen (total, cantidad y promedio) y el top de personas, contando solo las
 // donaciones completadas.
-const buildHistorySide = (items: DonationHistoryItem[]): DonationHistorySide => {
+export const buildHistorySide = (items: DonationHistoryItem[]): DonationHistorySide => {
   const completed = items.filter((item) => item.status === 'completed');
   const totalAmount = completed.reduce((total, item) => total + item.amount, 0);
 

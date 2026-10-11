@@ -25,7 +25,14 @@
 npm run dev   # Compila en modo watch y levanta el servidor (puerto 3000)
 npm run build # Build de producción: prisma generate + tsc (a dist/)
 npm start     # Levanta el build de producción (node ./dist/server.js)
+npm test      # Tests con Vitest (unitarios + integración con Supertest)
+npm run test:db # Crea las tablas en la base de test (la de .env.test)
 ```
+
+Los tests están junto al archivo que prueban (`*.test.ts`) y quedan fuera del build. El test de
+integración (`src/app.integration.test.ts`) usa la base de test de `.env.test` (copiar
+`.env.test.example`); sin ese archivo, la parte que escribe en la base se saltea. Detalle y
+evidencia en [docs/tests.md](../docs/tests.md).
 
 ---
 
@@ -366,9 +373,9 @@ Esto evita abrir múltiples conexiones innecesarias a la BD.
 - [x] Login con autenticación propia (JWT + bcrypt)
 - [x] Al menos 2 niveles de acceso (USER / ADMIN)
 - [x] Rutas protegidas por nivel de acceso
-- [x] Ambientes con `.env`
-- [ ] 1 test automatizado por integrante (pendiente)
-- [ ] 1 test de integración (pendiente)
+- [x] Ambientes con `.env` (desarrollo) y `.env.test` (base de test)
+- [x] 1 test automatizado por integrante (4 unitarios, ver [docs/tests.md](../docs/tests.md))
+- [x] 1 test de integración (Supertest)
 
 ---
 

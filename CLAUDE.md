@@ -26,8 +26,10 @@ npm run build      # prisma generate + tsc (production build into dist/)
 npm start          # node ./dist/server.js (run the production build)
 npx prisma generate    # regenerate Prisma client after editing prisma/schema.prisma
 npx prisma db push      # (or migrate) push schema changes to the MySQL database
+npm test           # vitest run (unit + Supertest integration tests)
+npm run test:db    # prisma db push against the test DB from .env.test
 ```
-No test script is configured yet (`npm test` is a placeholder). No lint script is configured.
+No lint script is configured.
 Requires a `backend/.env` (gitignored; copy `backend/.env.example`, which lists every variable) with `JWT_SECRET` and `DATABASE_URL` (mysql connection
 string used by Prisma; the old `DB_HOST/PORT/USER/PASSWORD/NAME` are no longer read).
 Optional for deploy: `PORT` (default 3000, read in `src/server.ts`) and `CORS_ORIGINS`
@@ -52,12 +54,23 @@ npm run dev       # start Vite dev server
 npm run build     # production build
 npm run lint      # eslint .
 npm run preview   # preview production build
+npm test          # vitest run (component tests, jsdom)
+npm run test:e2e  # playwright test (needs the demo seed; starts back + front if not running)
 ```
 Requires a `frontend/.env` (gitignored; copy `frontend/.env.example`) with `VITE_API_BASE_URL` pointing
 at the backend API (e.g. `http://localhost:3000/api`) — `src/shared/config/config.js` and every
 service file read this directly via `import.meta.env.VITE_API_BASE_URL`.
 
-There is no automated test suite in either package currently.
+### Tests (see [docs/tests.md](docs/tests.md))
+Backend: Vitest, tests next to the file they test (`*.test.ts`, excluded from `tsc` in
+`tsconfig.json`); `vitest.config.mts` (`.mts` because the package is CommonJS). Unit tests use
+pure functions or `vi.mock` of the repositories, never the DB. `src/app.integration.test.ts`
+uses Supertest on `app`; its DB block only runs when `backend/.env.test` exists (gitignored,
+copy `.env.test.example`): the config loads it before `app.ts` loads `.env` (dotenv doesn't
+override), so it hits the separate test DB, never the dev one.
+Frontend: Vitest + Testing Library in jsdom (`src/**/*.test.jsx`, `test` block in
+`vite.config.js`; call `cleanup()` in `afterEach`, there are no globals) and Playwright in
+`e2e/` (`playwright.config.js`, Chromium only).
 
 ## Architecture
 
