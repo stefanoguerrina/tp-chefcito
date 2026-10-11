@@ -7,7 +7,8 @@
     "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/server.js\"",
     "build": "prisma generate && tsc -p ./tsconfig.json",
     "start": "node ./dist/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:db": "node --env-file=.env.test ./node_modules/prisma/build/index.js db push --skip-generate"
   },
   "keywords": [],
   "author": "",
@@ -32,8 +33,11 @@
     "@types/jsonwebtoken": "^9.0.2",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.0",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
     "tsc-watch": "^7.2.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.3"
   },
   "allowScripts": {
     "bcrypt@6.0.0": true,

@@ -353,7 +353,8 @@ flowchart LR
 - `POST /api/auth/register`: valida (usuario 3–50, contraseña ≥ 6, email válido…), chequea
   duplicados (409 **con el campo** para mostrarlo debajo del input), hashea con bcrypt, crea el
   usuario y le asigna el rol "Usuario" (`ensureDefaultUserRole` lo crea si la BD no lo tiene,
-  así una base vacía funciona sin seed).
+  así una base vacía funciona sin seed). Antes crea el rol "Admin" con id 1 si falta: si no,
+  en una base vacía "Usuario" tomaría el id 1 y todos los usuarios nuevos serían admin.
 - `POST /api/auth/login`: acepta **email o nombre de usuario**; si no coincide responde siempre
   "Email, usuario o contraseña incorrectos" (no revela si el usuario existe). Busca los roles →
   `isAdmin` → firma el JWT (8 h) → `{ token, isAdmin }`.
@@ -910,9 +911,9 @@ Donde dos partes se tocan; los dos involucrados tienen que poder contestar lo b�
    parte (mejor reconocer un límite que inventar).
 4. **Juntos (día 4):** simulacro: cada uno explica su CU en 3–5 minutos y los otros le preguntan
    cosas de la [sección 6](#6-fronteras-entre-partes).
-5. **Pendiente para AD que también se defiende:** cada uno su test (ver
-   [analisis §3.2](analisis-estado-proyecto.md#32-tests-)). Candidatos naturales por parte:
-   A → `statusFromPayments`/`createCheckout` de donaciones o `authService.login`;
-   B → `recipeService.updateRecipe` (403 si no es dueño) o las reglas de pasos/ingredientes;
-   C → `pantryMatchService` o `recipeNutritionService`;
-   D → `reviewService.createReview` o `followService`.
+5. **Tests (también se defienden):** cada uno explica los de su parte (qué prueban, cómo se
+   corren y por qué ese tipo de test). Detalle en [tests.md](tests.md):
+   A → `donationService.test.ts` (`statusFromPayments` y `buildHistorySide`);
+   B → `ErrorState.test.jsx` (componente) y el E2E `login-search-recipe.spec.js`;
+   C → `pantryMatchService.test.ts` y `recipeNutritionService.test.ts`;
+   D → `reviewService.test.ts` (repositorios con mocks) y `app.integration.test.ts` (Supertest).

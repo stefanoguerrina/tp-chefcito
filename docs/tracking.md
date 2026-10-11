@@ -59,9 +59,9 @@ Estados: **Hecha**, **En curso**, **Pendiente**.
 
 | Tarea | Descripción | Asignada a | Estado |
 |---|---|---|---|
-| T-6.1 | Tests: 1 unitario por integrante y 1 de integración en el backend | Todos | Pendiente |
-| T-6.2 | Tests del frontend: 1 de componente y 1 end-to-end | Juan, Gastón | Pendiente |
-| T-6.3 | Documentación: README, API, metodología, tracking y minutas | Stéfano | Hecha |
+| T-6.1 | Tests: 1 unitario por integrante y 1 de integración en el backend, con base de test aparte ([#34](https://github.com/stefanoguerrina/tp-chefcito/pull/34)) | Todos | Hecha |
+| T-6.2 | Tests del frontend: 1 de componente y 1 end-to-end ([#34](https://github.com/stefanoguerrina/tp-chefcito/pull/34)) | Juan, Gastón | Hecha |
+| T-6.3 | Documentación: README, API, metodología, tracking y minutas ([#32](https://github.com/stefanoguerrina/tp-chefcito/pull/32)) | Stéfano | Hecha |
 | T-6.4 | Deploy de backend, frontend y base de datos | Gastón | Pendiente |
 | T-6.5 | Video de la aplicación | Juan | Pendiente |
 | T-6.6 | Pull request de `develop` a `main` y formulario de entrega | Stéfano | Pendiente |
@@ -79,12 +79,12 @@ Estados: **Hecha**, **En curso**, **Pendiente**.
 | Validaciones duplicadas en los controllers | Una sola validación en el middleware de cada ruta | [#28](https://github.com/stefanoguerrina/tp-chefcito/pull/28) |
 | Páginas sin indicador mientras cargaban datos | Estado de carga en todas las secciones y aviso global para pedidos lentos | [#28](https://github.com/stefanoguerrina/tp-chefcito/pull/28), [#29](https://github.com/stefanoguerrina/tp-chefcito/pull/29) |
 | El panel de administración volvía a cargar todo al cambiar de sección | Las secciones abiertas quedan montadas y se actualizan en segundo plano | [#29](https://github.com/stefanoguerrina/tp-chefcito/pull/29) |
+| En una base vacía, el primer registro creaba el rol "Usuario" con el id 1 (el de administrador) y todo usuario nuevo quedaba como admin | Al registrar, primero se crea el rol "Admin" con id 1 si no existe | [#34](https://github.com/stefanoguerrina/tp-chefcito/pull/34) |
 
 ## Issues abiertos
 
 | Issue | Detalle |
 |---|---|
-| Sin tests automatizados | Ver Fase 6 |
 | Sin deploy | Las fotos se guardan en el disco del servidor: el hosting elegido tiene que conservarlas entre deploys |
 | Sin webhook de Mercado Pago | El pago se confirma consultando a Mercado Pago; con el deploy en https se podría sumar el webhook |
 | Recorrido visual pendiente | Revisar las pantallas en 375 px y 768 px y en modo claro |

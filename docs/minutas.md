@@ -14,7 +14,7 @@ detalle de cada tarea está en [tracking.md](tracking.md).
 | 02/09 al 05/09 | Fases 2 y 3: CRUD Categoría-Receta, landing e inicio, CRUD Receta con pasos e imágenes y CRUD Rol (#8, #9). |
 | 22/09 al 26/09 | Fases 3 y 4: reseñas, inventario, recetas guardadas, perfil, primer panel de administración e imágenes guardadas en el servidor (#10 a #17). |
 | 29/09 al 30/09 | Fases 4 y 5: editor de recetas, buscador y listados con filtros, Chefcito Bot, seguir usuarios, correcciones pedidas por el profesor, nuevo panel de administración, landing, valores nutricionales por porción y donaciones con Mercado Pago (#18 a #27). |
-| 09/10 al 10/10 | Fase 5: corrección de errores y optimización de backend y frontend (#28, #29, #31). Documentación para la entrega. |
+| 09/10 al 10/10 | Fase 5: corrección de errores y optimización de backend y frontend (#28, #29, #31) y validaciones del registro (#33). Fase 6: documentación para la entrega (#32) y tests automatizados (#34). |
 
 ## Devoluciones de los profesores
 

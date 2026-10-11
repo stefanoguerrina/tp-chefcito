@@ -41,5 +41,6 @@ Los pull requests de cada integrante están listados en la [propuesta](proposal.
 - Comentarios, mensajes de commit, mensajes de error y documentación en español.
 - Commits con un mensaje que explique qué se hizo.
 - Las dependencias nuevas se acuerdan en grupo antes de agregarlas.
-- Antes de abrir un pull request: el backend compila (`npm run build`) y el frontend pasa el lint
-  (`npm run lint`) y compila (`npm run build`).
+- Antes de abrir un pull request: el backend compila (`npm run build`) y pasa sus tests
+  (`npm test`), y el frontend pasa el lint
+  (`npm run lint`), sus tests (`npm test`) y compila (`npm run build`).

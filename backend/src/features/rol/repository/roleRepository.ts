@@ -31,6 +31,14 @@ export const roleRepository = {
       },
     }),
 
+  // Crea el rol con ese ID si todavía no existe; si ya existe, lo deja como está.
+  createIfMissing: (id: number, data: CreateRoleData) =>
+    prisma.role.upsert({
+      where: { id },
+      update: {},
+      create: { id, name: data.name, description: data.description ?? null },
+    }),
+
   // Actualiza los datos de un rol existente.
   update: (id: number, data: UpdateRoleData) =>
     prisma.role.update({ where: { id }, data }),
