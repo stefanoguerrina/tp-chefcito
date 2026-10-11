@@ -1,5 +1,6 @@
 // Pie de página de la landing: marca, atajos a las pantallas de la página, qué se puede
 // hacer con una cuenta, los accesos a login/registro y el copyright.
+import ChefcitoLogo from '../../../core/components/ChefcitoLogo.jsx';
 import '../styles/_footer.scss';
 
 // Atajos a las pantallas de la landing. Los ids los pone LandingPage; el scroll suave lo
@@ -29,7 +30,8 @@ function Footer({ onLoginClick, onRegisterClick }) {
       <div className="Footer-content">
         <div className="Footer-brand">
           <span className="Footer-logo">
-            <span className="material-symbols-outlined">restaurant_menu</span>
+            {/* El footer es oscuro en los dos temas: siempre va el logo verde claro. */}
+            <ChefcitoLogo onDarkBackground />
             Chefcito
           </span>
           <p>

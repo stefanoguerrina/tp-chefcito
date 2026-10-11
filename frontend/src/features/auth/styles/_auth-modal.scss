@@ -71,6 +71,12 @@
   margin-bottom: $spacing-lg;
 }
 
+// Logo de Chefcito arriba del título del login, del registro y del aviso de "necesitás una cuenta".
+.AuthModal-logo {
+  height: 56px;
+  margin-bottom: $spacing-md;
+}
+
 .AuthModal-icon {
   width: 48px;
   height: 48px;

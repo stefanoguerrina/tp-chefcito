@@ -7,6 +7,7 @@ import RequiredFieldsNote from "../../../core/components/RequiredFieldsNote.jsx"
 import AuthModalLayout from "./AuthModalLayout.jsx";
 import AuthField from "./AuthField.jsx";
 import PasswordInput from "./PasswordInput.jsx";
+import ChefcitoLogo from "../../../core/components/ChefcitoLogo.jsx";
 import "../styles/_auth-modal.scss";
 
 const TITLE_ID = "login-modal-title";
@@ -34,9 +35,7 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister, initialIdentif
     return (
         <AuthModalLayout titleId={TITLE_ID} onClose={onClose}>
             <div className="AuthModal-header">
-                <div className="AuthModal-icon">
-                    <span className="material-symbols-outlined">restaurant_menu</span>
-                </div>
+                <ChefcitoLogo className="AuthModal-logo" />
                 <h2 className="AuthModal-title" id={TITLE_ID}>¡Hola de nuevo!</h2>
                 <p className="AuthModal-subtitle">Ingresá para seguir cocinando tu vida.</p>
             </div>

@@ -8,6 +8,7 @@ import { hasFieldErrors } from "../../../shared/utils/fieldAria.js";
 import AuthModalLayout from "./AuthModalLayout.jsx";
 import RegisterFields from "./RegisterFields.jsx";
 import RegisterSuccess from "./RegisterSuccess.jsx";
+import ChefcitoLogo from "../../../core/components/ChefcitoLogo.jsx";
 import "../styles/_auth-modal.scss";
 
 const TITLE_ID = "register-modal-title";
@@ -41,9 +42,7 @@ const RegisterForm = ({ onClose, onGoToLogin, onSwitchToLogin }) => {
     return (
         <AuthModalLayout titleId={TITLE_ID} onClose={onClose} isWide>
             <div className="AuthModal-header">
-                <div className="AuthModal-icon">
-                    <span className="material-symbols-outlined">restaurant_menu</span>
-                </div>
+                <ChefcitoLogo className="AuthModal-logo" />
                 <h2 className="AuthModal-title" id={TITLE_ID}>Sumate a la cocina</h2>
                 <p className="AuthModal-subtitle">Unite gratis a Chefcito para descubrir más recetas.</p>
             </div>
