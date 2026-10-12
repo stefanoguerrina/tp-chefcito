@@ -1,0 +1,21 @@
+// Estilos del componente compartido ScrollReveal (core/components).
+
+.ScrollReveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+
+  // Al terminar queda sin transform (y no en translateY(0)): un transform en un ancestro
+  // cambia la referencia de los position: fixed de adentro (ej. un modal).
+  &--visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  // Si el sistema pide reducir animaciones, el contenido se muestra directamente.
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

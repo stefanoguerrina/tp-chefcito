@@ -1,0 +1,86 @@
+// Estilos del componente compartido ConfirmModal (core/components).
+@use '../../styles/abstracts' as *;
+
+.ConfirmModal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: $color-scrim;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.ConfirmModal-card {
+  width: 100%;
+  max-width: 380px;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-2;
+  padding: $spacing-lg;
+}
+
+.ConfirmModal-title {
+  font-family: $font-body;
+  font-size: 18px;
+  font-weight: 700;
+  color: $color-on-surface;
+  margin: 0 0 $spacing-sm;
+}
+
+.ConfirmModal-message {
+  font-family: $font-body;
+  font-size: 14px;
+  color: $color-on-surface-variant;
+  margin: 0 0 $spacing-lg;
+}
+
+.ConfirmModal-actions {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.ConfirmModal-button {
+  flex: 1;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  font-family: $font-body;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &--cancel {
+    border: 1px solid $color-outline-variant;
+    background: $color-surface-container-lowest;
+    color: $color-on-surface;
+
+    &:hover {
+      background: $color-surface-container-low;
+    }
+  }
+
+  &--confirm {
+    border: none;
+    background: $color-primary;
+    color: $color-on-primary;
+
+    &:hover {
+      background: $color-primary-container;
+    }
+  }
+
+  &--danger {
+    border: none;
+    background: $color-error;
+    color: $color-on-error;
+
+    &:hover {
+      opacity: 0.88;
+    }
+  }
+}

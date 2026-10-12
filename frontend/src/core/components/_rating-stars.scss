@@ -1,0 +1,46 @@
+// Estilos del componente compartido RatingStars (core/components).
+@use '../../styles/abstracts' as *;
+
+.RatingStars {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+
+  &-star {
+    position: relative;
+    display: inline-flex;
+    // Tamaño de la estrella = font-size del ícono; lo define quien la usa con
+    // --rating-star-size (ej. las cards de receta la achican).
+    width: var(--rating-star-size, 14px);
+    height: var(--rating-star-size, 14px);
+  }
+
+  // Contorno: la estrella vacía, siempre visible.
+  &-outline {
+    font-size: var(--rating-star-size, 14px);
+    color: $color-outline;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  // Relleno: la estrella llena con el degradé, tapada hasta el % que indica el promedio.
+  &-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  // El ícono mide la estrella entera (aunque su contenedor esté recortado): así el
+  // degradé cubre la estrella completa y una media estrella muestra solo su mitad.
+  &-fillIcon {
+    display: block;
+    width: var(--rating-star-size, 14px);
+    font-size: var(--rating-star-size, 14px);
+    background: $gradient-brand;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+}

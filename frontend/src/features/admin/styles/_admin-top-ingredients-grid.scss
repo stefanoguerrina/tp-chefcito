@@ -1,0 +1,80 @@
+// Top 3 de ingredientes más usados (features/admin/components/AdminTopIngredientsGrid).
+// Solo colores de styles/abstracts/_variables.scss — nada fuera de la paleta del proyecto.
+@use '../../../styles/abstracts' as *;
+
+.AdminTopIngredientsGrid {
+  display: grid;
+  // Siempre 3 columnas fijas (1, 2, 3 lado a lado): nunca son más de 3 ítems (top 3).
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $spacing-sm;
+
+  &-empty {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+  }
+
+  &-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: $spacing-sm;
+    border-radius: $radius-md;
+    background: $color-surface-container;
+    min-width: 0;
+  }
+
+  &-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  &-rank {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-full;
+    color: $color-on-primary;
+    font-family: $font-body;
+    font-size: 11px;
+    font-weight: 800;
+
+    // Un acento por puesto, con los mismos tres colores que ya usa el resto del panel
+    // (badges de categoría, franjas de la distribución, etc.) — nada nuevo.
+    &--1 {
+      background: $color-primary;
+    }
+
+    &--2 {
+      background: $color-secondary;
+    }
+
+    &--3 {
+      background: $color-tertiary;
+    }
+  }
+
+  &-name {
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-on-background;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  &-value {
+    font-family: $font-body;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+  }
+}

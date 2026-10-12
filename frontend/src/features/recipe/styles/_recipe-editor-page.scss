@@ -1,0 +1,210 @@
+// Estilos base del editor de receta (RecipeEditorPage): la barra de acciones de arriba,
+// la grilla de dos columnas (fotos + instrucciones) y la tarjeta compartida por todos los
+// módulos del editor (.RecipeEditorCard, mismo patrón que .RecipeDetailCard en el detalle
+// de receta). Cada módulo (fotos, datos básicos, ingredientes, instrucciones) suma lo
+// propio en su propio partial.
+@use '../../../styles/abstracts' as *;
+
+// Inputs de texto/select/textarea comparten el mismo look en todo el editor. Los demás
+// partials lo importan con @use '...' as editorPage; @include editorPage.editor-input;
+@mixin editor-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  border: 1px solid $color-outline-variant;
+  background: $color-surface-container-lowest;
+  color: $color-on-surface;
+  font-family: $font-body;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: $color-outline;
+  }
+
+  &:focus {
+    border-color: $color-primary;
+  }
+
+  &:disabled {
+    color: $color-on-surface-variant;
+    cursor: not-allowed;
+  }
+}
+
+.RecipeEditorPage {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+  font-family: $font-body;
+  text-align: left;
+
+  // El proyecto no trae un reset global de box-sizing: border-box, así que lo fijamos
+  // acá para todo el editor (si no, width: 100% + padding desbordan las tarjetas).
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  // Oculta la flechita de incremento/decremento nativa de los inputs numéricos (tiempo,
+  // cantidades): no aporta nada acá y complica el diseño de los campos chicos.
+  input[type='number'] {
+    -moz-appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+
+  // --- Barra de acciones ---
+  &-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md;
+    background: $color-surface-container-lowest;
+    border: 1px solid $color-surface-container-highest;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-level-1;
+  }
+
+  // --- Título de la página, mismo criterio que RecipePage ("Mis recetas") ---
+  &-title {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: $color-on-surface;
+
+    @include respond-to(md) {
+      font-size: 32px;
+    }
+  }
+
+  &-topbarActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-left: auto;
+  }
+
+  &-discardBtn,
+  &-publishBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 $spacing-md;
+    border-radius: $radius-md;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+    white-space: nowrap;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+  }
+
+  &-discardBtn {
+    border: 1px solid with-opacity($color-error, 0.4);
+    background: $color-surface-container-lowest;
+    color: $color-error;
+
+    &:hover {
+      background: with-opacity($color-error, 0.1);
+    }
+  }
+
+  &-publishBtn {
+    border: none;
+    background: $color-primary;
+    color: $color-on-primary;
+
+    &:hover:not(:disabled) {
+      background: shade($color-primary, 10%);
+    }
+  }
+
+  // --- Dos filas de dos columnas (misma proporción de ancho en ambas, una sola columna
+  // en mobile), las dos estiradas a la misma altura (--top/--bottom con align-items:
+  // stretch): fila de arriba Fotos | Instrucciones, fila de abajo Título/Descripción |
+  // columna con Ingredientes + Categorías. Así ambos lados de cada fila ocupan el mismo
+  // espacio en vez de quedar con alturas distintas (ver RecipeBasicInfoSection, donde la
+  // Descripción crece para aprovechar ese alto extra en vez de dejarlo vacío).
+  // La derecha es un poco más angosta que antes (agrupa Instrucciones, Ingredientes y
+  // Categorías, pero ya no hace falta que sea tan ancha).
+  &-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: $spacing-lg;
+    align-items: stretch;
+
+    @include respond-to(lg) {
+      grid-template-columns: minmax(0, 9fr) minmax(0, 11fr);
+    }
+  }
+
+  &-column {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+    min-width: 0;
+  }
+}
+
+// --- Tarjeta compartida por cada módulo del editor ---
+.RecipeEditorCard {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-surface-container-highest;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-1;
+
+  &-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm $spacing-md;
+  }
+
+  &-title {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: normal;
+    color: $color-on-surface;
+  }
+
+  &-empty {
+    margin: 0;
+    padding: $spacing-md;
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+    text-align: center;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+  }
+}

@@ -1,0 +1,7 @@
+// Punto de entrada único de las abstracciones SASS del proyecto.
+// Cualquier partial que necesite variables o el mixin de breakpoints hace:
+//   @use '../../../styles/abstracts' as *;
+@forward 'variables';
+@forward 'breakpoints';
+@forward 'functions';
+@forward 'gradients';

@@ -1,0 +1,9 @@
+// Ajustes de la sidebar del usuario sobre core/components/_collapsible-sidebar.scss.
+// Todo el layout (riel, expansión, panel de mobile) vive en ese componente compartido;
+// acá solo va lo que distingue a esta sidebar (mismo patrón que AdminSidebar).
+@use '../../../styles/abstracts' as *;
+
+.Sidebar {
+  // Sin ajustes propios: el comportamiento (riel colapsado + expansión flotante con
+  // sombra al pasar el mouse) ya lo define CollapsibleSidebar.
+}

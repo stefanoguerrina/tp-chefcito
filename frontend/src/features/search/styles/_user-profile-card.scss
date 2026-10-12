@@ -1,0 +1,138 @@
+// Estilos de la card de perfil del listado de usuarios (features/search/components/UserProfileCard).
+// Estilo "neumórfico" del diseño original: la card parece en relieve con dos sombras, una
+// oscura abajo a la derecha y una clara arriba a la izquierda. La clara usa
+// $color-surface-container-lowest (en los dos temas es más clara que el fondo de la página),
+// así el efecto funciona en modo claro y oscuro sin colores fijos.
+@use '../../../styles/abstracts' as *;
+
+// Recibe: la distancia de las sombras (en px) y la opacidad de la sombra oscura.
+// Devuelve: el box-shadow en relieve (hacia afuera).
+@function raised-shadow($distance, $dark-opacity) {
+  @return
+    $distance $distance ($distance * 2) rgba(0, 0, 0, $dark-opacity),
+    (-$distance) (-$distance) ($distance * 2) with-opacity($color-surface-container-lowest, 0.9);
+}
+
+.UserProfileCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  border: 1px solid transparent;
+  border-radius: $radius-lg * 2;
+  background: $color-surface-container-lowest;
+  color: $color-on-surface;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: raised-shadow(12px, 0.12);
+  transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: with-opacity($color-primary, 0.35);
+    box-shadow: raised-shadow(18px, 0.16);
+    transform: translateY(-6px);
+  }
+
+  // --- Foto ---
+  // Un solo círculo (sin marco interno, capas superpuestas ni zoom): el aro de color del
+  // hover es otra sombra del mismo elemento, así queda siempre alineado con la foto.
+  // Antes, un aro aparte que se escalaba por su cuenta + sombras internas dejaban líneas
+  // sueltas sobre la imagen.
+  &-avatar {
+    width: 104px;
+    height: 104px;
+    flex-shrink: 0;
+    display: block;
+    box-sizing: border-box;
+    border: 4px solid $color-surface-container-lowest;
+    border-radius: $radius-full;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px $color-outline-variant, $shadow-level-1;
+    transition: box-shadow 0.3s ease;
+
+    &--initials {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: with-opacity($color-primary, 0.15);
+      color: $color-primary;
+      font-size: 32px;
+      font-weight: 700;
+    }
+  }
+
+  &:hover &-avatar,
+  &:focus-visible &-avatar {
+    box-shadow: 0 0 0 2px $color-primary, $shadow-level-2;
+  }
+
+  // --- Datos ---
+
+  &-info {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    width: 100%;
+    min-width: 0;
+  }
+
+  &-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    transition: color 0.3s ease;
+  }
+
+  &:hover &-name {
+    color: $color-primary;
+  }
+
+  &-username {
+    margin: 0;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+    overflow-wrap: anywhere;
+  }
+
+  // --- Acción ---
+
+  &-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    width: 100%;
+    margin-top: auto;
+    padding: $spacing-md 0;
+    border-radius: $radius-full;
+    background: $color-surface-container-lowest;
+    color: $color-primary;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: raised-shadow(6px, 0.1);
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+  }
+
+  // Al pasar el mouse el botón "se hunde" (su sombra se achica), como si se apretara.
+  &:hover &-action {
+    background: with-opacity($color-primary, 0.08);
+    box-shadow: raised-shadow(2px, 0.06);
+  }
+
+  // Sin movimiento para quien lo desactivó en su sistema (accesibilidad).
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:hover,
+    &:focus-visible {
+      transform: none;
+    }
+  }
+}

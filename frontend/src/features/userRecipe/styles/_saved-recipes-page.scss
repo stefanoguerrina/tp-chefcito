@@ -1,0 +1,14 @@
+// Estilos del contenedor de "Recetas guardadas" (features/userRecipe/pages/SavedRecipesPage).
+// El contenido (encabezado, filtros, grilla y paginación) es el listado de recetas del
+// buscador, con sus propios estilos (features/search/styles).
+@use '../../../styles/abstracts' as *;
+
+.SavedRecipesPage {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+  font-family: $font-body;
+  color: $color-on-surface;
+}

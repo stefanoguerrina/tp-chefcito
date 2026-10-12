@@ -1,0 +1,130 @@
+// Estilos del modal de confirmación para asignar/quitar un rol a un usuario.
+// Sigue el mismo lenguaje visual que AuthModal (features/auth/styles/_auth-modal.scss):
+// overlay con blur + tarjeta clara con los tokens de styles/abstracts/_variables.scss.
+@use '../../../styles/abstracts' as *;
+
+.RoleConfirmModal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: $color-scrim;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.RoleConfirmModal-card {
+  width: 100%;
+  max-width: 400px;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-2;
+  padding: $spacing-lg;
+  text-align: center;
+}
+
+.RoleConfirmModal-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto $spacing-md;
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // Mismo verde oliva ($color-primary) que el resto de las acciones "activas" del
+  // panel de administración (asignar un rol).
+  background: with-opacity($color-primary, 0.12);
+  color: $color-primary;
+
+  &--remove {
+    background: with-opacity($color-error, 0.12);
+    color: $color-error;
+  }
+}
+
+.RoleConfirmModal-title {
+  // $font-body: toda la app usa una sola familia de fuentes (Inter).
+  font-family: $font-body;
+  font-size: 18px;
+  font-weight: 700;
+  color: $color-on-background;
+  margin: 0 0 $spacing-sm;
+}
+
+.RoleConfirmModal-message {
+  font-family: $font-body;
+  font-size: 14px;
+  color: $color-on-surface-variant;
+  margin: 0 0 $spacing-lg;
+  line-height: 1.5;
+
+  strong {
+    color: $color-on-background;
+  }
+}
+
+.RoleConfirmModal-error {
+  font-family: $font-body;
+  font-size: 13px;
+  color: $color-error;
+  margin: -#{$spacing-md} 0 $spacing-md;
+}
+
+.RoleConfirmModal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.RoleConfirmModal-confirm {
+  width: 100%;
+  border: none;
+  font-family: $font-body;
+  font-weight: 600;
+  padding: $spacing-md;
+  border-radius: $radius-full;
+  cursor: pointer;
+  background: $color-primary;
+  color: $color-on-primary;
+  transition: opacity 0.2s ease;
+
+  &--remove {
+    background: $color-error;
+    color: $color-on-primary;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+.RoleConfirmModal-cancel {
+  width: 100%;
+  background: transparent;
+  color: $color-on-surface-variant;
+  border: 2px solid $color-outline-variant;
+  font-family: $font-body;
+  font-weight: 600;
+  padding: calc(#{$spacing-md} - 2px);
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background: $color-surface-container-high;
+  }
+}

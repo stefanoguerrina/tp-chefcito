@@ -1,0 +1,18 @@
+// Ajustes de la sidebar del admin sobre core/components/_collapsible-sidebar.scss.
+// Todo el layout (riel, expansión, panel de mobile) vive en ese componente compartido;
+// acá solo va lo que distingue al panel de admin.
+@use '../../../styles/abstracts' as *;
+
+.AdminSidebar {
+  // La sección activa usa el mismo verde de la marca que la sidebar de usuario (lo define
+  // CollapsibleSidebar): acá no se pisa, así las dos se ven iguales.
+
+  // Al expandirse empuja el contenido (ver AdminPage-content) en vez de flotar encima,
+  // así que la sombra de "panel flotante" sobra.
+  @include respond-to(md) {
+    .CollapsibleSidebar-panel:hover,
+    .CollapsibleSidebar-panel:has(:focus-visible) {
+      box-shadow: none;
+    }
+  }
+}

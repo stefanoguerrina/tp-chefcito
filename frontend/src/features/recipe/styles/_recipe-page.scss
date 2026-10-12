@@ -1,0 +1,206 @@
+// Estilos del panel "Mis recetas" (listado). El wizard de alta/edición vive en
+// _recipe-editor-page.scss. Header, buscador y estado vacío replican a propósito
+// la misma estructura visual que InventoryPage (_inventory-page.scss): mismo
+// patrón de badge + contador + botón de agregar + buscador en toda la app.
+@use '../../../styles/abstracts' as *;
+
+.RecipePage {
+  padding: $spacing-lg $spacing-xl;
+  font-family: $font-body;
+
+  // ---- Header ----
+  &-header {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding-bottom: $spacing-lg;
+    border-bottom: 1px solid $color-outline-variant;
+    margin-bottom: $spacing-lg;
+
+    @include respond-to(md) {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+  }
+
+  &-titleGroup {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &-title {
+    font-family: $font-body;
+    font-size: 28px;
+    font-weight: 700;
+    color: $color-on-surface;
+    margin: 0;
+    letter-spacing: -0.5px;
+
+    @include respond-to(md) {
+      font-size: 32px;
+    }
+  }
+
+  &-headerActions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+  }
+
+  &-counter {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: 0 $spacing-md;
+    height: 52px;
+    background: $color-surface-container-lowest;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-level-1;
+    white-space: nowrap;
+    min-width: 180px;
+  }
+
+  &-counterIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-md;
+    background: with-opacity($color-secondary, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-secondary;
+    flex-shrink: 0;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+  }
+
+  &-counterText {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+
+  &-counterLabel {
+    font-size: 11px;
+    color: $color-on-surface-variant;
+    font-weight: 500;
+  }
+
+  &-counterValue {
+    font-size: 15px;
+    font-weight: 700;
+    color: $color-on-surface;
+
+    span {
+      font-size: 12px;
+      font-weight: 600;
+      color: $color-primary;
+    }
+  }
+
+  &-addBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    height: 52px;
+    padding: 0 $spacing-lg;
+    background: $color-primary;
+    color: $color-on-primary;
+    border: none;
+    border-radius: $radius-lg;
+    font-size: 14px;
+    font-family: $font-body;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, opacity 0.15s;
+    box-shadow: $shadow-level-1;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover {
+      background: shade($color-primary, 8%);
+    }
+  }
+
+  // ---- Grilla de cards ----
+  &-grid {
+    margin-top: $spacing-lg;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: $spacing-xl;
+  }
+}
+
+// ---- Barra de búsqueda (misma estructura que InventorySearch) ----
+.RecipeSearch {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  padding: $spacing-xs $spacing-sm;
+  margin-bottom: $spacing-lg;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: $shadow-level-1;
+
+  &:focus-within {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px with-opacity($color-primary, 0.12);
+  }
+
+  &-icon {
+    color: $color-on-surface-variant;
+    display: flex;
+    align-items: center;
+    padding-left: 6px;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+  }
+
+  &-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-family: $font-body;
+    font-weight: 500;
+    color: $color-on-surface;
+    outline: none;
+    padding: 8px 0;
+
+    &::placeholder {
+      color: $color-on-surface-variant;
+    }
+  }
+
+  &-clear {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+    padding: 4px 8px;
+    border-radius: $radius-md;
+    transition: background 0.15s, color 0.15s;
+    font-family: $font-body;
+
+    &:hover {
+      background: $color-surface-container;
+      color: $color-on-surface;
+    }
+  }
+}

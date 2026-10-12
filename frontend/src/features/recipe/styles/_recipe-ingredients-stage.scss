@@ -1,0 +1,188 @@
+// Estilos de los ingredientes del editor (components/RecipeIngredientsStage +
+// RecipeIngredientCard). La tarjeta base viene de .RecipeEditorCard.
+@use '../../../styles/abstracts' as *;
+
+.RecipeIngredientsStage {
+  &-titleGroup {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &-counter {
+    font-size: 12px;
+    font-weight: 700;
+    color: $color-primary;
+    background: with-opacity($color-primary, 0.12);
+    padding: 2px 10px;
+    border-radius: $radius-full;
+    white-space: nowrap;
+  }
+
+  &-addButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 $spacing-md;
+    border: 1px solid with-opacity($color-primary, 0.4);
+    border-radius: $radius-md;
+    background: with-opacity($color-primary, 0.12);
+    color: $color-primary;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover {
+      background: $color-primary;
+      color: $color-on-primary;
+    }
+  }
+
+  // Columnas automáticas según el ancho disponible (no una cantidad fija): si no entran
+  // 3 tarjetas de al menos 200px sin achicar el nombre, se acomodan solas en 2 (o 1).
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: $spacing-sm;
+  }
+}
+
+.RecipeIngredientCard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-md;
+  background: $color-surface-container-low;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: $color-outline;
+  }
+
+  // --- Fila ya elegida: puntito + nombre/cantidad + acciones ---
+  &-info {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+  }
+
+  &-dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: $radius-full;
+    background: $color-primary;
+  }
+
+  // line-height: 1 en nombre y cantidad porque el alto de línea por defecto del texto
+  // sumaba de más al gap y dejaba mucho aire entre las dos líneas.
+  &-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  // Sin truncar con "...": si la tarjeta le queda chica, el nombre pasa a una segunda
+  // línea en vez de cortarse (la grilla ya se encarga de darle una tarjeta más ancha
+  // cuando el espacio alcanza, ver &-grid arriba).
+  &-name {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: $color-on-surface;
+    overflow-wrap: anywhere;
+  }
+
+  // Cantidad en modo lectura: solo texto, no se edita tocándola (ver &-qtyRow más abajo,
+  // que es el campo real, solo visible en modo edición).
+  &-qtyText {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: $color-on-surface-variant;
+  }
+
+  &-qtyRow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: $color-on-surface-variant;
+
+    input {
+      width: 64px;
+      padding: 2px 6px;
+      border: 1px solid $color-outline-variant;
+      border-radius: 4px;
+      background: $color-surface-container-lowest;
+      color: $color-on-surface;
+      font-family: $font-body;
+      font-size: 12px;
+      font-weight: 600;
+
+      &:focus {
+        outline: none;
+        border-color: $color-primary;
+      }
+    }
+  }
+
+  &-actions {
+    flex-shrink: 0;
+    display: flex;
+    gap: 4px;
+  }
+
+  &-iconButton {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-md;
+    background: $color-surface-container-lowest;
+    color: $color-primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 15px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-primary;
+      color: $color-on-primary;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &--danger {
+      color: $color-error;
+
+      &:hover:not(:disabled) {
+        background: $color-error;
+        color: $color-on-error;
+      }
+    }
+  }
+}

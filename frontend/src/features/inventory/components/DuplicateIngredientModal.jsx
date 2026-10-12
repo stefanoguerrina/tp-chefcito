@@ -1,0 +1,142 @@
+// Modal que se muestra cuando el usuario intenta agregar un ingrediente
+// que ya está en su inventario. Le muestra la cantidad actual y le permite
+// actualizarla con un stepper o cancelar la operación.
+import { useState } from 'react';
+import { useOverlayClose } from '../../../core/hooks/useOverlayClose.js';
+import { normalizeDecimalInput, isValidQuantity, stepQuantity } from '../../../shared/utils/decimalInput.js';
+import '../styles/_duplicate-ingredient-modal.scss';
+
+// Recibe:
+//   - modal: { ingredientName, idIngredient, current: { availableQuantity, unitOfMeasure } }
+//   - onConfirm(ingredientId, { availableQuantity, unitOfMeasure }): callback al confirmar
+//   - onClose: callback al cancelar
+function DuplicateIngredientModal({ modal, onConfirm, onClose }) {
+  // Arranca con la cantidad que ya hay en el inventario. El padre monta el modal solo
+  // cuando hay un duplicado para mostrar, así que no hace falta sincronizarlo en un efecto.
+  const [quantity, setQuantity] = useState(String(modal.current?.availableQuantity ?? 0));
+  const [error, setError] = useState('');
+
+  const unit = modal.current?.unitOfMeasure ?? '';
+  const isValid = isValidQuantity(quantity);
+
+  // +/- de a una unidad (mínimo 0).
+  const handleStep = (delta) => {
+    setQuantity(stepQuantity(quantity, delta));
+    setError('');
+  };
+
+  // Acepta decimales con coma o punto: se guarda siempre con punto (ver decimalInput).
+  const handleQtyChange = (e) => {
+    setQuantity(normalizeDecimalInput(e.target.value));
+    setError('');
+  };
+
+  const handleConfirm = (e) => {
+    e.preventDefault();
+    if (!isValid) {
+      setError('Ingresá una cantidad válida (mayor o igual a 0).');
+      return;
+    }
+    onConfirm(modal.idIngredient, {
+      availableQuantity: Number(quantity),
+      unitOfMeasure: unit || null,
+    });
+  };
+
+  const overlayCloseProps = useOverlayClose(onClose);
+
+  return (
+    <div
+      className="DuplicateModal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dup-modal-title"
+      {...overlayCloseProps}
+    >
+      <div className="DuplicateModal">
+        {/* Botón cerrar X */}
+        <button
+          type="button"
+          className="DuplicateModal-closeBtn"
+          aria-label="Cerrar modal"
+          onClick={onClose}
+        >
+          <span className="material-symbols-outlined">close</span>
+        </button>
+
+        {/* Título */}
+        <h3 className="DuplicateModal-title" id="dup-modal-title">
+          Ya tenés este ingrediente
+        </h3>
+
+        {/* Subtítulo fluido directamente debajo del título */}
+        <p className="DuplicateModal-subtitle">
+          Actualmente tenés{' '}
+          <strong>
+            {modal.current?.availableQuantity ?? '—'} {unit}
+          </strong>{' '}
+          de <strong>{modal.ingredientName}</strong> en tu inventario. ¿Querés actualizar la cantidad?
+        </p>
+
+        <form className="DuplicateModal-form" onSubmit={handleConfirm}>
+          {/* Stepper de cantidad */}
+          <div className="DuplicateModal-stepperWrapper">
+            <div className="DuplicateModal-stepper">
+              <button
+                type="button"
+                className="DuplicateModal-stepBtn"
+                aria-label="Reducir cantidad"
+                onClick={() => handleStep(-1)}
+                disabled={isValid && Number(quantity) <= 0}
+              >
+                <span className="material-symbols-outlined">remove</span>
+              </button>
+
+              <input
+                autoFocus
+                id="dup-modal-qty"
+                type="text"
+                inputMode="decimal"
+                className="DuplicateModal-qtyInput"
+                value={quantity}
+                onChange={handleQtyChange}
+                aria-label="Nueva cantidad"
+              />
+
+              <button
+                type="button"
+                className="DuplicateModal-stepBtn"
+                aria-label="Aumentar cantidad"
+                onClick={() => handleStep(1)}
+              >
+                <span className="material-symbols-outlined">add</span>
+              </button>
+            </div>
+
+            {/* Unidad debajo del stepper */}
+            {unit && <p className="DuplicateModal-unitText">{unit}</p>}
+          </div>
+
+          {error && <p className="DuplicateModal-error">{error}</p>}
+
+          {/* Acciones simétricas y homogéneas */}
+          <div className="DuplicateModal-actions">
+            <button type="submit" className="DuplicateModal-btn DuplicateModal-btn--confirm">
+              <span className="material-symbols-outlined">check</span>
+              Actualizar cantidad
+            </button>
+            <button
+              type="button"
+              className="DuplicateModal-btn DuplicateModal-btn--cancel"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default DuplicateIngredientModal;

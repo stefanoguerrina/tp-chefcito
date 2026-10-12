@@ -1,0 +1,40 @@
+// Estilos del botón flotante del asistente IA.
+@use '../../../styles/abstracts' as *;
+
+@keyframes assistantBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.FloatingAssistantButton {
+  position: fixed;
+  bottom: $spacing-xl;
+  right: $spacing-xl;
+  width: 64px;
+  height: 64px;
+  border-radius: $radius-full;
+  border: none;
+  background: $color-primary;
+  color: $color-on-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: $shadow-level-2;
+  z-index: 50;
+  animation: assistantBounce 3s infinite;
+  transition: background-color 0.2s ease;
+
+  .material-symbols-outlined {
+    font-size: 28px;
+  }
+
+  &:hover {
+    background: $color-primary-container;
+  }
+}

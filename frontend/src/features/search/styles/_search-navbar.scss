@@ -1,0 +1,164 @@
+// Estilos de la barra de búsqueda de la home (features/search/components/SearchNavbar).
+@use '../../../styles/abstracts' as *;
+
+.SearchNavbar {
+  // Flota arriba mientras se scrollea. En mobile va justo debajo de la barra superior fija
+  // de la sidebar; desde md, pegada al borde de arriba y centrada en vertical con el logo de
+  // Chefcito (que está en un encabezado de $layout-header-height). Arriba de todo no tiene
+  // fondo; al scrollear aparece un difuminado oscuro atrás (ver ::before).
+  position: sticky;
+  top: $layout-topbar-height;
+  // Por encima del contenido de la home, pero debajo de la barra superior y del riel de
+  // la sidebar (z-index 50 en _collapsible-sidebar.scss).
+  z-index: 40;
+  // Para que el difuminado (z-index: -1) quede detrás de la barra pero delante del contenido.
+  isolation: isolate;
+  margin-bottom: $spacing-lg;
+  padding: $spacing-sm 0;
+
+  @include respond-to(md) {
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: $layout-header-height;
+    // Cancela el padding de arriba de la página (HomePage-main): la barra arranca en el
+    // borde de arriba, a la misma altura que el logo.
+    margin-top: -$spacing-xl;
+    margin-bottom: $spacing-lg;
+  }
+
+  // Difuminado oscuro (el color del fondo de la página, no verde) que aparece al scrollear:
+  // más sólido arriba y transparente abajo, con un desenfoque leve de lo que pasa por
+  // detrás. Ocupa todo el ancho de la pantalla (no solo el de la barra) y se extiende un
+  // poco por debajo de ella.
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: -$spacing-xl;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    background: linear-gradient(
+      to bottom,
+      $color-background 0%,
+      with-opacity($color-background, 0.85) 55%,
+      with-opacity($color-background, 0) 100%
+    );
+    backdrop-filter: blur(6px);
+    -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  &--scrolled::before {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      transition: none;
+    }
+  }
+
+  // Ancho de lectura cómodo para el buscador; el panel de resultados se posiciona
+  // respecto de este contenedor, así queda del mismo ancho que la barra.
+  &-container {
+    position: relative;
+    // width: 100% además del max-width: la barra es flex en columna (para centrarla con el
+    // logo) y ahí margin: auto hacía que se encogiera al ancho de su contenido.
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  &-form {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs;
+    background: $color-surface-container-lowest;
+    border: 1px solid $color-outline-variant;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-level-1;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:focus-within {
+      border-color: $color-primary;
+      box-shadow: 0 0 0 3px with-opacity($color-primary, 0.15);
+    }
+  }
+
+  &-input {
+    flex: 1;
+    min-width: 0;
+    padding: $spacing-sm $spacing-sm $spacing-sm $spacing-md;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: $font-body;
+    // 16px y no menos: con una letra más chica, Safari de iPhone hace zoom al enfocar.
+    font-size: 16px;
+    color: $color-on-surface;
+
+    &::placeholder {
+      color: $color-on-surface-variant;
+    }
+  }
+
+  &-clear,
+  &-submit {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  &-clear {
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-full;
+    background: transparent;
+    color: $color-outline;
+
+    .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    &:hover {
+      background: $color-surface-container;
+      color: $color-on-surface;
+    }
+  }
+
+  &-submit {
+    width: 44px;
+    height: 44px;
+    border-radius: $radius-md;
+    background: $color-primary;
+    color: $color-on-primary;
+    box-shadow: $shadow-level-1;
+
+    .material-symbols-outlined {
+      font-size: 22px;
+    }
+
+    &:hover:not(:disabled) {
+      background: $color-primary-container;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+}

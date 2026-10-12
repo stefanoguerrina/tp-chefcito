@@ -1,0 +1,171 @@
+// Estilos de la tarjeta individual del inventario.
+// Mobile-first. Paleta oliva + cálida de Chefcito.
+@use '../../../styles/abstracts/variables' as *;
+@use '../../../styles/abstracts/functions' as *;
+
+.IngredientCard {
+  background: $color-surface-container-lowest;
+  border: 1px solid with-opacity($color-surface-container-highest, 0.9);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(31, 27, 22, 0.05);
+  transition: box-shadow 0.2s, border-color 0.2s;
+  font-family: $font-body;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(31, 27, 22, 0.09);
+    border-color: $color-pantry-muted-light;
+  }
+}
+
+/* --- Thumbnail --- */
+.IngredientCard-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: $color-pantry-cream;
+  border: 1px solid with-opacity($color-surface-container-highest, 0.7);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.IngredientCard:hover .IngredientCard-thumb {
+  transform: scale(1.04);
+}
+
+.IngredientCard-thumbIcon {
+  font-size: 28px;
+  color: $color-pantry-muted;
+  user-select: none;
+}
+
+/* --- Info --- */
+.IngredientCard-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.IngredientCard-titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.IngredientCard-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: $color-on-background;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.IngredientCard-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $radius-full;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &--in {
+    background: with-opacity($color-pantry-green, 0.1);
+    color: $color-pantry-green;
+  }
+
+  &--out {
+    background: with-opacity($color-error, 0.08);
+    color: $color-error;
+  }
+}
+
+/* Líneas de meta-info */
+.IngredientCard-meta {
+  margin: 0;
+  font-size: 13px;
+  color: $color-on-surface-variant;
+  line-height: 1.35;
+
+  strong {
+    color: $color-on-background;
+    font-weight: 600;
+  }
+
+  &--qty strong {
+    color: $color-primary;
+  }
+}
+
+/* --- Acciones --- */
+.IngredientCard-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.IngredientCard-iconBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid with-opacity($color-surface-container-highest, 0.9);
+  background: $color-surface-container-lowest;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &--edit {
+    color: $color-primary;
+
+    &:hover {
+      background: $color-pantry-lime-light;
+    }
+
+    &:active {
+      transform: scale(0.93);
+    }
+  }
+
+  &--delete {
+    background: $color-error;
+    border-color: $color-error;
+    color: $color-on-error;
+
+    &:hover {
+      background: $color-on-error-container;
+      border-color: $color-on-error-container;
+    }
+
+    &:active {
+      transform: scale(0.93);
+    }
+  }
+}

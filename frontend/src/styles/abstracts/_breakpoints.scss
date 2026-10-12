@@ -1,0 +1,26 @@
+// Breakpoints compartidos para el enfoque mobile-first del proyecto.
+// Uso: @include respond-to(md) { ... } dentro de cualquier partial que haga @use de este archivo.
+
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+
+// Genera un media query "min-width" a partir de uno de los tres breakpoints definidos.
+// Recibe: $breakpoint (sm | md | lg). Devuelve: el bloque de estilos envuelto en el media query.
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == sm {
+    @media (min-width: $breakpoint-sm) {
+      @content;
+    }
+  } @else if $breakpoint == md {
+    @media (min-width: $breakpoint-md) {
+      @content;
+    }
+  } @else if $breakpoint == lg {
+    @media (min-width: $breakpoint-lg) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint desconocido: #{$breakpoint}. Usar sm, md o lg.";
+  }
+}

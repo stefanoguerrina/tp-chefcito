@@ -1,0 +1,88 @@
+// Layout general del panel de administración (features/admin/pages/AdminPage).
+@use '../../../styles/abstracts' as *;
+
+.AdminPage {
+  font-family: $font-body;
+  background: $color-surface-container;
+  color: $color-on-background;
+  min-height: 100vh;
+  display: flex;
+
+  &-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    // En mobile la sidebar es una barra fija arriba: se le deja el espacio con padding-top.
+    // Desde md es el riel fijo de la izquierda (mismo layout que HomePage).
+    padding-top: $layout-topbar-height;
+
+    @include respond-to(md) {
+      padding-top: 0;
+      margin-left: $layout-sidebar-collapsed-width;
+      // Misma duración y curva que el ancho de la sidebar, para que se muevan juntos.
+      transition: margin-left 0.2s ease;
+    }
+
+    // A diferencia de la sidebar de usuario (que se expande por encima del contenido),
+    // en el panel de admin la sidebar expandida EMPUJA el contenido para no tapar tablas
+    // ni gráficos. :has() detecta desde CSS que la sidebar está expandida (mouse encima o
+    // foco de teclado adentro), sin estado en React.
+    @include respond-to(md) {
+      .AdminPage:has(.CollapsibleSidebar-panel:hover) &,
+      .AdminPage:has(.CollapsibleSidebar-panel :focus-visible) & {
+        margin-left: $layout-sidebar-expanded-width;
+      }
+    }
+  }
+
+  // Contenedor de cada sección: AdminPage deja montadas las ya abiertas y oculta las que no
+  // se ven. El [hidden] va explícito porque el display: flex de arriba le ganaría.
+  &-section {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  &-main {
+    flex: 1;
+    padding: $spacing-md $spacing-gutter-mobile $spacing-xl;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+
+    @include respond-to(lg) {
+      padding: $spacing-lg $spacing-gutter-desktop $spacing-xl;
+    }
+  }
+
+  &-metricsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-lg;
+
+    @include respond-to(md) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  &-statsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-md;
+
+    @include respond-to(sm) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @include respond-to(lg) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}

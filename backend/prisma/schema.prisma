@@ -1,0 +1,243 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                                Int          @id @default(autoincrement())
+  username                          String       @unique(map: "uq_user_username") @db.VarChar(50)
+  password                          String       @db.VarChar(255)
+  name                              String       @db.VarChar(100)
+  lastName                          String       @db.VarChar(100)
+  email                             String       @unique(map: "uq_user_email") @db.VarChar(150)
+  phone                             String?      @db.VarChar(20)
+  avatarUrl                         String?      @db.VarChar(255)
+  coverUrl                          String?      @db.VarChar(255)
+  bio                               String?      @db.VarChar(255)
+  specialty                         String?      @db.VarChar(60)
+  location                          String?      @db.VarChar(100)
+  birthDate                         DateTime?    @db.Date
+  createdAt                         DateTime?    @default(now()) @db.DateTime(0)
+  deletedAt                         DateTime?    @db.DateTime(0)
+  donation_donation_idDonorTouser   donation[]   @relation("donation_idDonorTouser")
+  donation_donation_idGranteeTouser donation[]   @relation("donation_idGranteeTouser")
+  // A quiénes sigue este usuario (sus "amigos" en la home) y quiénes lo siguen a él.
+  following                         follow[]     @relation("follow_idFollowerTouser")
+  followers                         follow[]     @relation("follow_idFollowedTouser")
+  inventory                         inventory[]
+  recipe                            recipe[]
+  userrecipe                        userrecipe[]
+  userRoles                         UserRole[]
+
+  @@map("user")
+}
+
+model UserRole {
+  userId Int  @map("UserId")
+  roleId Int  @map("RoleId")
+  role   role @relation(fields: [roleId], references: [id], onDelete: Cascade, map: "fk_userrole_role")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_userrole_user")
+
+  @@id([userId, roleId])
+  @@index([roleId], map: "fk_userrole_role")
+  @@map("userrole")
+}
+
+model category {
+  id             Int              @id @default(autoincrement())
+  name           String           @db.VarChar(100)
+  description    String?          @db.VarChar(255)
+  recipecategory recipecategory[]
+}
+
+model donation {
+  idDonor                       Int
+  idGrantee                     Int
+  transactionRef                String    @db.VarChar(100)
+  createdAt                     DateTime? @default(now()) @db.DateTime(0)
+  amount                        Decimal   @db.Decimal(10, 2)
+  currency                      String?   @db.VarChar(10)
+  status                        String?   @db.VarChar(20)
+  user_donation_idDonorTouser   User      @relation("donation_idDonorTouser", fields: [idDonor], references: [id], onDelete: Cascade, map: "fk_donation_donor")
+  user_donation_idGranteeTouser User      @relation("donation_idGranteeTouser", fields: [idGrantee], references: [id], onDelete: Cascade, map: "fk_donation_grantee")
+
+  @@id([idDonor, idGrantee, transactionRef])
+  @@index([idGrantee], map: "fk_donation_grantee")
+}
+
+// "Seguir" entre usuarios: idFollower sigue a idFollowed. La PK compuesta impide seguir
+// dos veces a la misma persona. Si se borra cualquiera de los dos usuarios, la fila se va
+// con él (Cascade); con la baja lógica (deletedAt) la fila queda, pero las consultas
+// filtran a los usuarios dados de baja.
+model follow {
+  idFollower Int
+  idFollowed Int
+  createdAt  DateTime? @default(now()) @db.DateTime(0)
+  follower   User      @relation("follow_idFollowerTouser", fields: [idFollower], references: [id], onDelete: Cascade, map: "fk_follow_follower")
+  followed   User      @relation("follow_idFollowedTouser", fields: [idFollowed], references: [id], onDelete: Cascade, map: "fk_follow_followed")
+
+  @@id([idFollower, idFollowed])
+  @@index([idFollowed], map: "fk_follow_followed")
+}
+
+model image {
+  idRecipe Int
+  id       Int
+  // Solo la ruta del archivo subido (ej. "/uploads/recipes/x.webp") o un link externo
+  // http(s). El archivo en sí vive en backend/uploads/, nunca en la base de datos.
+  imageUrl String   @db.VarChar(500)
+  isMain   Boolean? @default(false)
+  recipe   recipe   @relation(fields: [idRecipe], references: [id], onDelete: Cascade, map: "fk_image_recipe")
+
+  @@id([idRecipe, id])
+}
+
+model ingredient {
+  id                            Int                             @id @default(autoincrement())
+  name                          String                          @db.VarChar(100)
+  description                   String?                         @db.VarChar(255)
+  unitOfMeasure                 String?                         @db.VarChar(20)
+  imagePath                     String?                         @db.VarChar(255)
+  ingredientcategoryingredient  ingredientcategoryingredient[]
+  inventory                     inventory[]
+  nutritionalvalue              nutritionalvalue[]
+  recipeingredient              recipeingredient[]
+}
+
+model ingredientcategory {
+  id                            Int                             @id @default(autoincrement())
+  name                          String                          @db.VarChar(100)
+  description                   String?                         @db.VarChar(255)
+  ingredientcategoryingredient  ingredientcategoryingredient[]
+}
+
+// Tabla intermedia N:M — un ingrediente puede tener varias categorías,
+// y una categoría puede agrupar varios ingredientes.
+model ingredientcategoryingredient {
+  idIngredientCategory Int
+  idIngredient         Int
+  ingredientcategory   ingredientcategory @relation(fields: [idIngredientCategory], references: [id], onDelete: Cascade, map: "fk_ici_category")
+  ingredient           ingredient         @relation(fields: [idIngredient], references: [id], onDelete: Cascade, map: "fk_ici_ingredient")
+
+  @@id([idIngredientCategory, idIngredient])
+  @@index([idIngredient], map: "fk_ici_ingredient")
+}
+
+model inventory {
+  idUser            Int
+  idIngredient      Int
+  unitOfMeasure     String?    @db.VarChar(20)
+  availableQuantity Decimal?   @db.Decimal(10, 2)
+  // Restrict (no Cascade): si un usuario tiene este ingrediente en su inventario, borrar
+  // el ingrediente de la tabla maestra no puede arrastrarse en silencio esa fila.
+  ingredient        ingredient @relation(fields: [idIngredient], references: [id], onDelete: Restrict, map: "fk_inventory_ingredient")
+  user              User       @relation(fields: [idUser], references: [id], onDelete: Cascade, map: "fk_inventory_user")
+
+  @@id([idUser, idIngredient])
+  @@index([idIngredient], map: "fk_inventory_ingredient")
+}
+
+model nutritionalvalue {
+  idIngredient  Int
+  num           Int
+  name          String     @db.VarChar(100)
+  servingAmount Decimal?   @db.Decimal(10, 2)
+  servingUnit   String?    @db.VarChar(20)
+  value         Decimal?   @db.Decimal(10, 2)
+  ingredient    ingredient @relation(fields: [idIngredient], references: [id], onDelete: Cascade, map: "fk_nutritionalvalue_ingredient")
+
+  @@id([idIngredient, num])
+}
+
+model recipe {
+  id               Int                @id @default(autoincrement())
+  idUser           Int
+  name             String             @db.VarChar(150)
+  description      String?            @db.Text
+  preparationTime  Int?
+  // Cuántas porciones rinde la receta: los valores nutricionales se muestran por porción.
+  servings         Int?
+  difficulty       String?            @db.VarChar(20)
+  createdAt        DateTime?          @default(now()) @db.DateTime(0)
+  image            image[]
+  user             User               @relation(fields: [idUser], references: [id], onDelete: Cascade, map: "fk_recipe_user")
+  recipecategory   recipecategory[]
+  recipeingredient recipeingredient[]
+  step             step[]
+  userrecipe       userrecipe[]
+
+  @@index([idUser], map: "fk_recipe_user")
+}
+
+model recipecategory {
+  idRecipe   Int
+  idCategory Int
+  category   category @relation(fields: [idCategory], references: [id], onDelete: Cascade, map: "fk_recipecategory_category")
+  recipe     recipe   @relation(fields: [idRecipe], references: [id], onDelete: Cascade, map: "fk_recipecategory_recipe")
+
+  @@id([idRecipe, idCategory])
+  @@index([idCategory], map: "fk_recipecategory_category")
+}
+
+model recipeingredient {
+  idRecipe         Int
+  idIngredient     Int
+  requiredQuantity Decimal?   @db.Decimal(10, 2)
+  // Restrict (no Cascade): si una receta usa este ingrediente, borrar el ingrediente de la
+  // tabla maestra no puede arrastrarse en silencio ese vínculo (dejaría la receta rota sin
+  // avisar a nadie). ingredientService.deleteIngredient ya espera este rechazo (P2003) para
+  // devolver "in_use"; antes, al ser Cascade, nunca se disparaba y el borrado pasaba igual.
+  ingredient       ingredient @relation(fields: [idIngredient], references: [id], onDelete: Restrict, map: "fk_recipeingredient_ingredient")
+  recipe           recipe     @relation(fields: [idRecipe], references: [id], onDelete: Cascade, map: "fk_recipeingredient_recipe")
+
+  @@id([idRecipe, idIngredient])
+  @@index([idIngredient], map: "fk_recipeingredient_ingredient")
+}
+
+model review {
+  idUser     Int
+  idRecipe   Int
+  idReview   Int
+  // Decimal(3,1) soporta medias estrellas: 1.0, 1.5, 2.0 ... 5.0
+  rating     Decimal    @db.Decimal(3, 1)
+  comment    String?    @db.Text
+  createdAt  DateTime?  @default(now()) @db.DateTime(0)
+  userrecipe userrecipe @relation(fields: [idUser, idRecipe], references: [idUser, idRecipe], onDelete: Cascade, map: "fk_review_userrecipe")
+
+  @@id([idUser, idRecipe, idReview])
+}
+
+model role {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(50)
+  description String?    @db.VarChar(255)
+  userrole    UserRole[]
+}
+
+model step {
+  idRecipe      Int
+  id            Int
+  stepNumber    Int
+  instruction   String @db.Text
+  estimatedTime Int?
+  recipe        recipe @relation(fields: [idRecipe], references: [id], onDelete: Cascade, map: "fk_step_recipe")
+
+  @@id([idRecipe, id])
+}
+
+model userrecipe {
+  idUser   Int
+  idRecipe Int
+  isSaved  Boolean?  @default(false)
+  savedAt  DateTime? @db.DateTime(0)
+  review   review[]
+  recipe   recipe    @relation(fields: [idRecipe], references: [id], onDelete: Cascade, map: "fk_userrecipe_recipe")
+  user     User      @relation(fields: [idUser], references: [id], onDelete: Cascade, map: "fk_userrecipe_user")
+
+  @@id([idUser, idRecipe])
+  @@index([idRecipe], map: "fk_userrecipe_recipe")
+}

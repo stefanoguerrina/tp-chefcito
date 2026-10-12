@@ -1,0 +1,224 @@
+// Estilos de la última pantalla de la landing: la invitación a registrarse con las fotos
+// de platos flotando alrededor del texto.
+@use '../../../styles/abstracts' as *;
+
+// Sube y baja suave de las fotos. Lleva nombre propio (y no "float", el que usa el Hero)
+// porque en SASS los @keyframes son globales: dos con el mismo nombre se pisarían.
+@keyframes signupCtaFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.SignupCtaSection {
+  // Ocupa el alto que le deja la pantalla que la contiene (ver .LandingPage-screen) y
+  // centra su contenido en ese espacio.
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: $spacing-xl * 2 $spacing-gutter-mobile;
+  // En mobile la pantalla no mide una ventana (las secciones se apilan): sin un alto
+  // mínimo, la sección queda tan baja que las fotos de las esquinas se le vienen encima al
+  // texto. Desde md manda el alto de la pantalla y esto ya no hace falta.
+  min-height: 85svh;
+  background: $color-surface-container-low;
+  // Las fotos de los bordes se asoman a propósito: esto las recorta contra la pantalla en
+  // vez de dejar que agranden la página.
+  overflow: hidden;
+
+  @include respond-to(md) {
+    min-height: 0;
+  }
+
+  @include respond-to(lg) {
+    padding: $spacing-xl * 2 $spacing-gutter-desktop;
+  }
+
+  &-photos {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  // Cada foto flotante. La sombra las despega del fondo plano: vienen recortadas, sin
+  // fondo propio, y sin ella parecen calcomanías pegadas.
+  &-photo {
+    position: absolute;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18));
+    animation: signupCtaFloat 6s ease-in-out infinite;
+  }
+
+  // Las tres fotos grandes van en las esquinas, lejos del texto.
+  &-photo--burger {
+    top: 1%;
+    left: -10%;
+    width: 120px;
+
+    @include respond-to(md) {
+      top: 8%;
+      left: 1%;
+      width: 200px;
+    }
+
+    @include respond-to(lg) {
+      left: 5%;
+      width: 250px;
+    }
+  }
+
+  &-photo--dumplings {
+    top: 1%;
+    right: -10%;
+    width: 100px;
+
+    @include respond-to(md) {
+      top: 10%;
+      right: 2%;
+      width: 160px;
+    }
+
+    @include respond-to(lg) {
+      right: 6%;
+      width: 200px;
+    }
+  }
+
+  &-photo--pizza {
+    bottom: 1%;
+    right: -8%;
+    width: 110px;
+
+    @include respond-to(md) {
+      bottom: 8%;
+      right: 4%;
+      width: 170px;
+    }
+
+    @include respond-to(lg) {
+      right: 9%;
+      width: 210px;
+    }
+  }
+
+  // Las dos chicas (la hoja y el tomate) son el "relleno" del collage: van más cerca del
+  // centro, por detrás del texto.
+  &-photo--basil {
+    display: none;
+
+    @include respond-to(md) {
+      display: block;
+      top: 62%;
+      left: 23%;
+      width: 46px;
+    }
+  }
+
+  &-photo--tomato {
+    display: none;
+
+    @include respond-to(md) {
+      display: block;
+      top: 52%;
+      right: 14%;
+      width: 42px;
+    }
+  }
+
+  &-photo--tomatoSmall {
+    display: none;
+
+    @include respond-to(md) {
+      display: block;
+      top: 78%;
+      left: 16%;
+      width: 32px;
+    }
+  }
+
+  &-content {
+    position: relative;
+    // Por encima de los trazos y las fotos del fondo.
+    z-index: 1;
+    width: 100%;
+    // Se estira hasta 860px en un monitor grande, pero atado al ancho de la ventana: a
+    // 860px fijos, en una notebook el título se metía encima de las fotos de las esquinas.
+    max-width: clamp(640px, 55vw, 860px);
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  // Misma tipografía y mismo peso que el título del hero. El color lo pone el tema: negro
+  // en claro y blanco en oscuro (ver styles/_themes.scss).
+  &-title {
+    font-family: $font-body;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    color: $color-on-surface;
+    margin: 0;
+
+    @include respond-to(md) {
+      font-size: 42px;
+    }
+
+    @include respond-to(lg) {
+      font-size: 50px;
+    }
+  }
+
+  // La palabra destacada del título.
+  &-titleAccent {
+    color: $color-primary;
+  }
+
+  // Más angosta que el título: a lo ancho de los 860px del bloque los renglones quedarían
+  // demasiado largos para leer de un vistazo.
+  &-description {
+    font-family: $font-body;
+    font-size: 16px;
+    line-height: 1.6;
+    color: $color-on-surface-variant;
+    max-width: 700px;
+    margin: $spacing-lg auto 0;
+
+    @include respond-to(md) {
+      font-size: 18px;
+    }
+  }
+
+  // Mismo botón que el CTA del hero.
+  &-cta {
+    margin-top: $spacing-xl;
+    background: $color-primary;
+    color: $color-on-primary;
+    border: none;
+    font-family: $font-body;
+    font-weight: 600;
+    font-size: 18px;
+    padding: $spacing-md $spacing-xl;
+    border-radius: $radius-full;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    &:hover {
+      background: $color-primary-container;
+      transform: scale(1.05);
+    }
+  }
+}
+
+// Si el sistema pide reducir animaciones, las fotos se quedan quietas.
+@media (prefers-reduced-motion: reduce) {
+  .SignupCtaSection-photo {
+    animation: none;
+  }
+}

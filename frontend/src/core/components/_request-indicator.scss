@@ -1,0 +1,40 @@
+// Estilos del loader global RequestIndicator (core/components).
+@use '../../styles/abstracts' as *;
+
+.RequestIndicator {
+  position: fixed;
+  // Abajo y centrado: no tapa la barra superior de mobile ni el botón del asistente
+  // (abajo a la derecha). Por encima de los modales (z-index 300) y de los toasts.
+  bottom: $spacing-lg;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-full;
+  background: $color-surface-container-lowest;
+  box-shadow: $shadow-level-2;
+  font-family: $font-body;
+  font-size: 14px;
+  font-weight: 600;
+  color: $color-on-surface;
+  // Un clic que caiga encima pasa a lo que está debajo: el loader no bloquea la pantalla.
+  pointer-events: none;
+  animation: request-indicator-in 0.2s ease-out;
+}
+
+.RequestIndicator-spinner {
+  width: 20px;
+  height: 20px;
+  color: $color-primary;
+}
+
+@keyframes request-indicator-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, $spacing-sm);
+  }
+}

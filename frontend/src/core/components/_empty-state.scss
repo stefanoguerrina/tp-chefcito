@@ -1,0 +1,40 @@
+// Estilos del componente compartido EmptyState (core/components).
+@use '../../styles/abstracts' as *;
+
+.EmptyState {
+  text-align: center;
+  padding: $spacing-xl * 1.5 $spacing-md;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-md;
+
+  &-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: $color-surface-container;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto $spacing-md;
+    color: $color-on-surface-variant;
+
+    .material-symbols-outlined {
+      font-size: 24px;
+    }
+  }
+
+  &-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $color-on-surface;
+    margin: 0 0 $spacing-xs;
+  }
+
+  &-text {
+    font-size: 14px;
+    color: $color-on-surface-variant;
+    margin: 0;
+  }
+}

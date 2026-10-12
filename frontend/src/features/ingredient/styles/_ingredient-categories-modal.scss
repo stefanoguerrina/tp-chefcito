@@ -1,0 +1,142 @@
+// Estilos del modal de categorías de un ingrediente (features/ingredient/components/IngredientCategoriesModal).
+// Mismo lenguaje visual que RoleFormModal/IngredientFormModal (overlay + tarjeta clara)
+// con los chips togglables de UserRolesPanel.
+@use '../../../styles/abstracts' as *;
+
+.IngredientCategoriesModal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: $color-scrim;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.IngredientCategoriesModal-card {
+  width: 100%;
+  max-width: 420px;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-2;
+  padding: $spacing-lg;
+}
+
+.IngredientCategoriesModal-title {
+  font-family: $font-body;
+  font-size: 18px;
+  font-weight: 700;
+  color: $color-on-background;
+  margin: 0 0 $spacing-md;
+}
+
+.IngredientCategoriesModal-empty {
+  font-family: $font-body;
+  font-size: 13px;
+  color: $color-on-surface-variant;
+  margin: 0 0 $spacing-md;
+}
+
+.IngredientCategoriesModal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.IngredientCategoriesModal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px $spacing-md;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-full;
+  background: transparent;
+  color: $color-on-surface-variant;
+  font-family: $font-body;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: with-opacity($color-primary, 0.35);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &--assigned {
+    background: with-opacity($color-primary, 0.1);
+    border-color: with-opacity($color-primary, 0.3);
+    color: $color-primary;
+    font-weight: 700;
+  }
+}
+
+.IngredientCategoriesModal-error {
+  font-family: $font-body;
+  font-size: 13px;
+  color: $color-error;
+  margin: 0 0 $spacing-md;
+}
+
+.IngredientCategoriesModal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.IngredientCategoriesModal-confirm {
+  width: 100%;
+  border: none;
+  font-family: $font-body;
+  font-weight: 600;
+  padding: $spacing-md;
+  border-radius: $radius-full;
+  cursor: pointer;
+  background: $color-primary;
+  color: $color-on-primary;
+  transition: opacity 0.2s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+.IngredientCategoriesModal-cancel {
+  width: 100%;
+  background: transparent;
+  color: $color-on-surface-variant;
+  border: 2px solid $color-outline-variant;
+  font-family: $font-body;
+  font-weight: 600;
+  padding: calc(#{$spacing-md} - 2px);
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background: $color-surface-container-high;
+  }
+}

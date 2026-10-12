@@ -1,0 +1,90 @@
+// Estilos de los ingredientes del detalle de receta (components/RecipeIngredientsPanel).
+// La tarjeta base y su encabezado vienen de .RecipeDetailCard.
+@use '../../../styles/abstracts' as *;
+
+.RecipeIngredientsPanel {
+  // Una sola columna: la tarjeta comparte el ancho con los valores nutricionales.
+  &-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding: $spacing-sm;
+    border: 1px solid with-opacity($color-outline-variant, 0.6);
+    border-radius: $radius-md;
+    background: $color-surface-container-low;
+    font-size: 12px;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+
+    &:hover {
+      background: $color-surface-container;
+    }
+
+    // Ya tildado: se atenúa y se tacha el nombre.
+    &--checked {
+      opacity: 0.6;
+
+      .RecipeIngredientsPanel-name {
+        text-decoration: line-through;
+        color: $color-on-surface-variant;
+      }
+    }
+  }
+
+  // Todo el nombre es clickeable (el <label> envuelve al checkbox).
+  &-check {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+    cursor: pointer;
+    user-select: none;
+
+    input {
+      flex: none;
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: $color-primary;
+      cursor: pointer;
+    }
+  }
+
+  &-name {
+    font-weight: 500;
+    color: $color-on-surface;
+    overflow-wrap: anywhere;
+  }
+
+  &-right {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &-quantity {
+    font-weight: 700;
+    color: $color-primary;
+    white-space: nowrap;
+  }
+
+  // "Lo tenés": el usuario ya tiene este ingrediente en su inventario.
+  &-pantry {
+    padding: 1px 6px;
+    border-radius: $radius-full;
+    background: $color-secondary-container;
+    color: $color-on-secondary-container;
+    font-size: 9px;
+    font-weight: 600;
+  }
+}

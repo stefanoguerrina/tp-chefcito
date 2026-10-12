@@ -1,0 +1,642 @@
+-- =====================================================================
+-- Chefcito — Seed de datos de demo
+-- =====================================================================
+-- Para qué sirve: cargar de una sola pasada datos de prueba realistas
+-- (categorías, ingredientes con valores nutricionales, usuarios, un
+-- usuario administrador, recetas completas con pasos/ingredientes/imagen,
+-- guardados y reseñas) para poder mostrarle al profesor la app
+-- funcionando sin cargar todo a mano.
+--
+-- Cómo usarlo:
+--   1. Abrí MySQL Workbench, conectate a la base de Chefcito (la misma
+--      que usa tu backend/.env -> DATABASE_URL) y seleccionala como
+--      base activa (USE chefcito; o la que corresponda).
+--   2. Pegá este archivo completo en una pestaña de SQL y ejecutalo
+--      entero (el rayito de "Execute all", o Ctrl+Shift+Enter).
+--   3. Se ejecuta dentro de una transacción: si algo falla a mitad de
+--      camino, no queda la base a medio cargar — corré ROLLBACK; y
+--      fijate el error antes de reintentar.
+--
+-- Importante: username y email son UNIQUE en la tabla user, así que si
+-- corrés este script dos veces la segunda va a fallar ahí (a propósito:
+-- evita duplicar todos los usuarios/recetas de prueba sin darte cuenta).
+-- Si eso pasa y ya tenías estos datos de una corrida anterior, no hace
+-- falta correrlo de nuevo.
+--
+-- Contraseña de TODOS los usuarios de prueba, incluido el administrador: 123456
+-- (hasheada con bcrypt — 10 salt rounds —, igual que hace el backend al registrarse)
+-- =====================================================================
+
+-- Este archivo está en UTF-8: se le avisa a MySQL para que lo lea así sin importar
+-- cómo esté configurado el cliente que lo ejecuta. Sin esto, un cliente en latin1
+-- (ej. la consola de Windows) guarda "á" como "Ã¡" y la app muestra los acentos rotos.
+SET NAMES utf8mb4;
+
+START TRANSACTION;
+
+-- ---------------------------------------------------------------------
+-- 0. Roles "Usuario" y "Admin" (el backend crea "Usuario" solo al
+--    registrarse si no existe, pero como acá insertamos usuarios directo
+--    por SQL, sin pasar por el endpoint de registro, hace falta asegurar
+--    los dos antes).
+--
+--    OJO con el id del rol "Admin": backend/src/features/user/models/
+--    userModel.ts define ADMIN_ROLE_ID = 1 HARDCODEADO (el login decide
+--    isAdmin mirando si el usuario tiene el rol con id=1, no por nombre).
+--    Por eso acá se fuerza id=1 al crear "Admin": en una base recién
+--    creada con `prisma db push` la tabla role está vacía, así que es
+--    el primer id disponible. Si en algún momento cambiás el orden de
+--    este script o ADMIN_ROLE_ID deja de ser 1, hay que actualizar esto.
+-- ---------------------------------------------------------------------
+INSERT INTO role (id, name, description)
+SELECT 1, 'Admin', 'Administrador con acceso completo al manejo de usuario, ingredientes, categorias.'
+WHERE NOT EXISTS (SELECT 1 FROM role WHERE name = 'Admin');
+
+INSERT INTO role (name, description)
+SELECT 'Usuario', 'Rol asignado por defecto a todo usuario que se registra.'
+WHERE NOT EXISTS (SELECT 1 FROM role WHERE name = 'Usuario');
+
+SET @rol_admin   := (SELECT id FROM role WHERE name = 'Admin' LIMIT 1);
+SET @rol_usuario := (SELECT id FROM role WHERE name = 'Usuario' LIMIT 1);
+
+-- ---------------------------------------------------------------------
+-- 1. Categorías de ingredientes
+-- ---------------------------------------------------------------------
+INSERT INTO ingredientcategory (name, description) VALUES
+  ('Verduras y Hortalizas', 'Vegetales frescos de uso diario'),
+  ('Carnes', 'Carnes rojas, blancas y huevo'),
+  ('Lácteos', 'Leche, quesos y derivados'),
+  ('Cereales y Legumbres', 'Arroz, pastas, harinas y legumbres'),
+  ('Condimentos y Especias', 'Sal, especias, aceites y aderezos');
+
+SET @cat_verduras   := (SELECT id FROM ingredientcategory WHERE name = 'Verduras y Hortalizas' LIMIT 1);
+SET @cat_carnes     := (SELECT id FROM ingredientcategory WHERE name = 'Carnes' LIMIT 1);
+SET @cat_lacteos    := (SELECT id FROM ingredientcategory WHERE name = 'Lácteos' LIMIT 1);
+SET @cat_cereales   := (SELECT id FROM ingredientcategory WHERE name = 'Cereales y Legumbres' LIMIT 1);
+SET @cat_condimentos:= (SELECT id FROM ingredientcategory WHERE name = 'Condimentos y Especias' LIMIT 1);
+
+-- ---------------------------------------------------------------------
+-- 2. Ingredientes
+-- ---------------------------------------------------------------------
+INSERT INTO ingredient (name, description, unitOfMeasure) VALUES
+  ('Tomate', 'Tomate fresco', 'gr'),
+  ('Cebolla', 'Cebolla blanca', 'gr'),
+  ('Papa', 'Papa para puré o guiso', 'gr'),
+  ('Zanahoria', 'Zanahoria fresca', 'gr'),
+  ('Lechuga', 'Lechuga criolla', 'gr'),
+  ('Carne picada', 'Carne vacuna picada', 'gr'),
+  ('Pechuga de pollo', 'Pechuga de pollo sin piel', 'gr'),
+  ('Huevo', 'Huevo de gallina', 'ud.'),
+  ('Leche', 'Leche entera', 'ml'),
+  ('Queso cremoso', 'Queso cremoso para gratinar', 'gr'),
+  ('Manteca', 'Manteca sin sal', 'gr'),
+  ('Arroz', 'Arroz blanco', 'gr'),
+  ('Fideos', 'Fideos secos tipo spaghetti', 'gr'),
+  ('Harina', 'Harina de trigo 0000', 'gr'),
+  ('Lentejas', 'Lentejas secas', 'gr'),
+  ('Sal', 'Sal fina', 'gr'),
+  ('Pimienta negra', 'Pimienta negra molida', 'gr'),
+  ('Aceite de oliva', 'Aceite de oliva extra virgen', 'ml');
+
+SET @ing_tomate    := (SELECT id FROM ingredient WHERE name = 'Tomate' LIMIT 1);
+SET @ing_cebolla   := (SELECT id FROM ingredient WHERE name = 'Cebolla' LIMIT 1);
+SET @ing_papa      := (SELECT id FROM ingredient WHERE name = 'Papa' LIMIT 1);
+SET @ing_zanahoria := (SELECT id FROM ingredient WHERE name = 'Zanahoria' LIMIT 1);
+SET @ing_lechuga   := (SELECT id FROM ingredient WHERE name = 'Lechuga' LIMIT 1);
+SET @ing_carne     := (SELECT id FROM ingredient WHERE name = 'Carne picada' LIMIT 1);
+SET @ing_pollo     := (SELECT id FROM ingredient WHERE name = 'Pechuga de pollo' LIMIT 1);
+SET @ing_huevo     := (SELECT id FROM ingredient WHERE name = 'Huevo' LIMIT 1);
+SET @ing_leche     := (SELECT id FROM ingredient WHERE name = 'Leche' LIMIT 1);
+SET @ing_queso     := (SELECT id FROM ingredient WHERE name = 'Queso cremoso' LIMIT 1);
+SET @ing_manteca   := (SELECT id FROM ingredient WHERE name = 'Manteca' LIMIT 1);
+SET @ing_arroz     := (SELECT id FROM ingredient WHERE name = 'Arroz' LIMIT 1);
+SET @ing_fideos    := (SELECT id FROM ingredient WHERE name = 'Fideos' LIMIT 1);
+SET @ing_harina    := (SELECT id FROM ingredient WHERE name = 'Harina' LIMIT 1);
+SET @ing_lentejas  := (SELECT id FROM ingredient WHERE name = 'Lentejas' LIMIT 1);
+SET @ing_sal       := (SELECT id FROM ingredient WHERE name = 'Sal' LIMIT 1);
+SET @ing_pimienta  := (SELECT id FROM ingredient WHERE name = 'Pimienta negra' LIMIT 1);
+SET @ing_aceite    := (SELECT id FROM ingredient WHERE name = 'Aceite de oliva' LIMIT 1);
+
+-- Vínculo ingrediente <-> categoría
+INSERT INTO ingredientcategoryingredient (idIngredientCategory, idIngredient) VALUES
+  (@cat_verduras, @ing_tomate),
+  (@cat_verduras, @ing_cebolla),
+  (@cat_verduras, @ing_papa),
+  (@cat_verduras, @ing_zanahoria),
+  (@cat_verduras, @ing_lechuga),
+  (@cat_carnes, @ing_carne),
+  (@cat_carnes, @ing_pollo),
+  (@cat_carnes, @ing_huevo),
+  (@cat_lacteos, @ing_leche),
+  (@cat_lacteos, @ing_queso),
+  (@cat_lacteos, @ing_manteca),
+  (@cat_cereales, @ing_arroz),
+  (@cat_cereales, @ing_fideos),
+  (@cat_cereales, @ing_harina),
+  (@cat_cereales, @ing_lentejas),
+  (@cat_condimentos, @ing_sal),
+  (@cat_condimentos, @ing_pimienta),
+  (@cat_condimentos, @ing_aceite);
+
+-- Los valores nutricionales de estos ingredientes se cargan en la sección 9
+-- (al final), para poder volver a cargarlos solos en una base ya usada.
+
+-- ---------------------------------------------------------------------
+-- 3. Categorías de recetas
+-- ---------------------------------------------------------------------
+INSERT INTO category (name, description) VALUES
+  ('Carnes', 'Platos principales con carne o pollo'),
+  ('Pastas', 'Fideos, ñoquis y salsas'),
+  ('Ensaladas', 'Platos fríos y livianos'),
+  ('Postres', 'Dulces y postres caseros'),
+  ('Guisos y Sopas', 'Platos de cuchara');
+
+SET @rc_carnes    := (SELECT id FROM category WHERE name = 'Carnes' LIMIT 1);
+SET @rc_pastas    := (SELECT id FROM category WHERE name = 'Pastas' LIMIT 1);
+SET @rc_ensaladas := (SELECT id FROM category WHERE name = 'Ensaladas' LIMIT 1);
+SET @rc_postres   := (SELECT id FROM category WHERE name = 'Postres' LIMIT 1);
+SET @rc_guisos    := (SELECT id FROM category WHERE name = 'Guisos y Sopas' LIMIT 1);
+
+-- ---------------------------------------------------------------------
+-- 4. Usuarios de prueba (todos con contraseña: 123456)
+-- ---------------------------------------------------------------------
+INSERT INTO user (username, password, name, lastName, email, phone, bio, specialty, location, birthDate, createdAt) VALUES
+  ('juanperez', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Juan', 'Pérez', 'juan.perez.demo@chefcito.com', '+54 341 555-0101', 'Me encanta cocinar platos caseros de toda la vida.', 'Cocina casera', 'Rosario, Santa Fe', '1990-04-12', DATE_SUB(NOW(), INTERVAL 60 DAY)),
+  ('mariagomez', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'María', 'Gómez', 'maria.gomez.demo@chefcito.com', '+54 341 555-0102', 'Fan de las pastas caseras y las tartas.', 'Pastas caseras', 'Buenos Aires', '1995-08-23', DATE_SUB(NOW(), INTERVAL 45 DAY)),
+  ('carlosdiaz', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Carlos', 'Díaz', 'carlos.diaz.demo@chefcito.com', '+54 341 555-0103', 'Siempre con un guiso en el fuego.', 'Guisos y platos de cuchara', 'Córdoba', '1988-01-30', DATE_SUB(NOW(), INTERVAL 30 DAY)),
+  ('luciafernandez', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Lucía', 'Fernández', 'lucia.fernandez.demo@chefcito.com', '+54 341 555-0104', 'Amante de los postres caseros.', 'Repostería', 'Mendoza', '1998-11-05', DATE_SUB(NOW(), INTERVAL 20 DAY)),
+  ('martinlopez', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Martín', 'López', 'martin.lopez.demo@chefcito.com', '+54 341 555-0105', 'Cocino simple, rápido y sabroso.', 'Comidas rápidas', 'La Plata', '1992-06-17', DATE_SUB(NOW(), INTERVAL 10 DAY));
+
+SET @user_juan   := (SELECT id FROM user WHERE username = 'juanperez' LIMIT 1);
+SET @user_maria  := (SELECT id FROM user WHERE username = 'mariagomez' LIMIT 1);
+SET @user_carlos := (SELECT id FROM user WHERE username = 'carlosdiaz' LIMIT 1);
+SET @user_lucia  := (SELECT id FROM user WHERE username = 'luciafernandez' LIMIT 1);
+SET @user_martin := (SELECT id FROM user WHERE username = 'martinlopez' LIMIT 1);
+
+INSERT INTO userrole (UserId, RoleId) VALUES
+  (@user_juan, @rol_usuario),
+  (@user_maria, @rol_usuario),
+  (@user_carlos, @rol_usuario),
+  (@user_lucia, @rol_usuario),
+  (@user_martin, @rol_usuario);
+
+-- ---------------------------------------------------------------------
+-- 4.1 Usuario administrador de prueba (rol Admin): para que el profesor
+--     pueda entrar al panel de administración sin usar una cuenta real
+--     del equipo. Misma contraseña que el resto: 123456.
+-- ---------------------------------------------------------------------
+INSERT INTO user (username, password, name, lastName, email, phone, bio, specialty, location, birthDate, createdAt) VALUES
+  ('admindemo', '$2b$10$L7cNIFr5H4ymgg4sC2q9p.ZbgUNkBYXCcxGKKQVg10fLHXDUlV2vi', 'Admin', 'Chefcito', 'admin.demo@chefcito.com', '+54 341 555-0100', 'Cuenta de administrador para pruebas y demostración.', NULL, NULL, NULL, DATE_SUB(NOW(), INTERVAL 60 DAY));
+
+SET @user_admin := (SELECT id FROM user WHERE username = 'admindemo' LIMIT 1);
+
+INSERT INTO userrole (UserId, RoleId) VALUES
+  (@user_admin, @rol_admin);
+
+-- ---------------------------------------------------------------------
+-- 5. Recetas (con imagen de portada, categoría, ingredientes y pasos)
+-- ---------------------------------------------------------------------
+
+-- 5.1 Milanesas con puré (Juan · Carnes)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_juan, 'Milanesas con puré', 'Milanesas de carne clásicas acompañadas de puré de papas casero.', 40, 'Media', DATE_SUB(NOW(), INTERVAL 25 DAY));
+SET @recipe_milanesas := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_milanesas, @rc_carnes);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_milanesas, @ing_carne, 500), (@recipe_milanesas, @ing_huevo, 2), (@recipe_milanesas, @ing_papa, 600);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_milanesas, 1, 1, 'Pasar las milanesas por huevo batido y pan rallado.', 10),
+  (@recipe_milanesas, 2, 2, 'Freír en aceite caliente hasta dorar de ambos lados.', 15),
+  (@recipe_milanesas, 3, 3, 'Hervir las papas, hacer puré con manteca y leche.', 20);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_milanesas, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Milanesas+con+pur%C3%A9', 1);
+
+-- 5.2 Ensalada César (Juan · Ensaladas)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_juan, 'Ensalada César', 'Ensalada fresca con pollo grillado, lechuga y aderezo casero.', 15, 'Fácil', DATE_SUB(NOW(), INTERVAL 5 DAY));
+SET @recipe_cesar := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_cesar, @rc_ensaladas);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_cesar, @ing_lechuga, 200), (@recipe_cesar, @ing_pollo, 300), (@recipe_cesar, @ing_queso, 50);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_cesar, 1, 1, 'Grillar la pechuga de pollo y cortarla en tiras.', 10),
+  (@recipe_cesar, 2, 2, 'Mezclar la lechuga con el pollo y el queso en láminas.', 5);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_cesar, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Ensalada+Cesar', 1);
+
+-- 5.3 Fideos con tuco (María · Pastas)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_maria, 'Fideos con tuco', 'Fideos secos con salsa de tomate casera y cebolla.', 25, 'Fácil', DATE_SUB(NOW(), INTERVAL 18 DAY));
+SET @recipe_fideos := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_fideos, @rc_pastas);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_fideos, @ing_fideos, 500), (@recipe_fideos, @ing_tomate, 400), (@recipe_fideos, @ing_cebolla, 100);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_fideos, 1, 1, 'Rehogar la cebolla picada en aceite de oliva.', 5),
+  (@recipe_fideos, 2, 2, 'Agregar el tomate triturado y cocinar la salsa 15 minutos.', 15),
+  (@recipe_fideos, 3, 3, 'Hervir los fideos y mezclar con la salsa.', 10);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_fideos, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Fideos+con+tuco', 1);
+
+-- 5.4 Tarta de verduras (María · Ensaladas)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_maria, 'Tarta de verduras', 'Tarta casera de verduras con huevo y queso.', 45, 'Media', DATE_SUB(NOW(), INTERVAL 3 DAY));
+SET @recipe_tarta := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_tarta, @rc_ensaladas);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_tarta, @ing_zanahoria, 200), (@recipe_tarta, @ing_huevo, 3), (@recipe_tarta, @ing_queso, 150);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_tarta, 1, 1, 'Rallar la zanahoria y mezclar con los huevos batidos.', 10),
+  (@recipe_tarta, 2, 2, 'Agregar el queso y volcar en molde para tarta.', 5),
+  (@recipe_tarta, 3, 3, 'Hornear a 180° durante 30 minutos.', 30);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_tarta, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Tarta+de+verduras', 1);
+
+-- 5.5 Guiso de lentejas (Carlos · Guisos y Sopas)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_carlos, 'Guiso de lentejas', 'Guiso abundante de lentejas con verduras.', 50, 'Media', DATE_SUB(NOW(), INTERVAL 15 DAY));
+SET @recipe_guiso := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_guiso, @rc_guisos);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_guiso, @ing_lentejas, 400), (@recipe_guiso, @ing_zanahoria, 150), (@recipe_guiso, @ing_cebolla, 100), (@recipe_guiso, @ing_papa, 200);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_guiso, 1, 1, 'Remojar las lentejas la noche anterior.', 0),
+  (@recipe_guiso, 2, 2, 'Rehogar cebolla, zanahoria y papa en cubos.', 10),
+  (@recipe_guiso, 3, 3, 'Agregar las lentejas y agua, cocinar 40 minutos.', 40);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_guiso, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Guiso+de+lentejas', 1);
+
+-- 5.6 Arroz con pollo (Carlos · Carnes)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_carlos, 'Arroz con pollo', 'Arroz cremoso con pollo y verduras salteadas.', 35, 'Media', DATE_SUB(NOW(), INTERVAL 2 DAY));
+SET @recipe_arrozpollo := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_arrozpollo, @rc_carnes);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_arrozpollo, @ing_arroz, 300), (@recipe_arrozpollo, @ing_pollo, 400), (@recipe_arrozpollo, @ing_zanahoria, 100);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_arrozpollo, 1, 1, 'Saltear el pollo en cubos hasta dorar.', 10),
+  (@recipe_arrozpollo, 2, 2, 'Agregar el arroz y la zanahoria, cocinar con caldo.', 25);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_arrozpollo, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Arroz+con+pollo', 1);
+
+-- 5.7 Flan casero (Lucía · Postres)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_lucia, 'Flan casero', 'Flan casero con huevo y leche, bien cremoso.', 60, 'Media', DATE_SUB(NOW(), INTERVAL 12 DAY));
+SET @recipe_flan := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_flan, @rc_postres);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_flan, @ing_huevo, 4), (@recipe_flan, @ing_leche, 500);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_flan, 1, 1, 'Batir los huevos con la leche y el azúcar.', 10),
+  (@recipe_flan, 2, 2, 'Volcar en flanera acaramelada.', 5),
+  (@recipe_flan, 3, 3, 'Cocinar a baño María durante 45 minutos.', 45);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_flan, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Flan+casero', 1);
+
+-- 5.8 Ensalada de tomate y lechuga (Lucía · Ensaladas)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_lucia, 'Ensalada de tomate y lechuga', 'Ensalada simple y fresca para acompañar cualquier plato.', 10, 'Fácil', DATE_SUB(NOW(), INTERVAL 1 DAY));
+SET @recipe_ensaladasimple := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_ensaladasimple, @rc_ensaladas);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_ensaladasimple, @ing_tomate, 200), (@recipe_ensaladasimple, @ing_lechuga, 150), (@recipe_ensaladasimple, @ing_aceite, 20);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_ensaladasimple, 1, 1, 'Cortar el tomate y la lechuga.', 5),
+  (@recipe_ensaladasimple, 2, 2, 'Condimentar con sal, pimienta y aceite de oliva.', 2);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_ensaladasimple, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Ensalada+fresca', 1);
+
+-- 5.9 Sopa de verduras (Martín · Guisos y Sopas)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_martin, 'Sopa de verduras', 'Sopa liviana de verduras de estación.', 30, 'Fácil', DATE_SUB(NOW(), INTERVAL 8 DAY));
+SET @recipe_sopa := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_sopa, @rc_guisos);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_sopa, @ing_zanahoria, 150), (@recipe_sopa, @ing_papa, 200), (@recipe_sopa, @ing_cebolla, 80);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_sopa, 1, 1, 'Cortar todas las verduras en cubos chicos.', 10),
+  (@recipe_sopa, 2, 2, 'Hervir en agua con sal hasta que estén tiernas.', 20);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_sopa, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Sopa+de+verduras', 1);
+
+-- 5.10 Panqueques dulces (Martín · Postres)
+INSERT INTO recipe (idUser, name, description, preparationTime, difficulty, createdAt)
+VALUES (@user_martin, 'Panqueques dulces', 'Panqueques clásicos con dulce de leche.', 20, 'Fácil', DATE_SUB(NOW(), INTERVAL 4 DAY));
+SET @recipe_panqueques := LAST_INSERT_ID();
+INSERT INTO recipecategory (idRecipe, idCategory) VALUES (@recipe_panqueques, @rc_postres);
+INSERT INTO recipeingredient (idRecipe, idIngredient, requiredQuantity) VALUES
+  (@recipe_panqueques, @ing_harina, 200), (@recipe_panqueques, @ing_leche, 400), (@recipe_panqueques, @ing_huevo, 2);
+INSERT INTO step (idRecipe, id, stepNumber, instruction, estimatedTime) VALUES
+  (@recipe_panqueques, 1, 1, 'Mezclar la harina, la leche y los huevos hasta lograr una masa líquida.', 10),
+  (@recipe_panqueques, 2, 2, 'Cocinar de a poco en sartén caliente con manteca.', 15);
+INSERT INTO image (idRecipe, id, imageUrl, isMain) VALUES
+  (@recipe_panqueques, 1, 'https://placehold.co/600x400/f9f3eb/4b6400?text=Panqueques', 1);
+
+-- ---------------------------------------------------------------------
+-- 6. Recetas guardadas + reseñas (para métricas: valoración promedio,
+--    recetas destacadas en el perfil, orden "Más populares"). Una reseña necesita una
+--    fila en userrecipe primero (relación real del modelo: review depende
+--    de userrecipe, no de recipe directamente).
+-- ---------------------------------------------------------------------
+
+-- Milanesas con puré (Juan): guardada y reseñada por María y Carlos
+INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
+  (@user_maria, @recipe_milanesas, 1, DATE_SUB(NOW(), INTERVAL 20 DAY)),
+  (@user_carlos, @recipe_milanesas, 1, DATE_SUB(NOW(), INTERVAL 18 DAY));
+INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
+  (@user_maria, @recipe_milanesas, 1, 5.0, '¡Riquísimas, quedaron muy jugosas!', DATE_SUB(NOW(), INTERVAL 19 DAY)),
+  (@user_carlos, @recipe_milanesas, 1, 4.5, 'Muy buena receta, el puré quedó perfecto.', DATE_SUB(NOW(), INTERVAL 17 DAY));
+
+-- Fideos con tuco (María): guardada y reseñada por Juan y Lucía
+INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
+  (@user_juan, @recipe_fideos, 1, DATE_SUB(NOW(), INTERVAL 15 DAY)),
+  (@user_lucia, @recipe_fideos, 1, DATE_SUB(NOW(), INTERVAL 10 DAY));
+INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
+  (@user_juan, @recipe_fideos, 1, 4.0, 'Salsa muy casera, buenísima.', DATE_SUB(NOW(), INTERVAL 14 DAY)),
+  (@user_lucia, @recipe_fideos, 1, 5.0, 'La hice para toda la familia y encantó.', DATE_SUB(NOW(), INTERVAL 9 DAY));
+
+-- Guiso de lentejas (Carlos): guardada y reseñada por Martín
+INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
+  (@user_martin, @recipe_guiso, 1, DATE_SUB(NOW(), INTERVAL 12 DAY));
+INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
+  (@user_martin, @recipe_guiso, 1, 4.5, 'Ideal para un día de frío.', DATE_SUB(NOW(), INTERVAL 11 DAY));
+
+-- Flan casero (Lucía): guardada y reseñada por Juan y María
+INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
+  (@user_juan, @recipe_flan, 1, DATE_SUB(NOW(), INTERVAL 8 DAY)),
+  (@user_maria, @recipe_flan, 1, DATE_SUB(NOW(), INTERVAL 6 DAY));
+INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
+  (@user_juan, @recipe_flan, 1, 5.0, 'El mejor flan casero que probé.', DATE_SUB(NOW(), INTERVAL 7 DAY)),
+  (@user_maria, @recipe_flan, 1, 4.0, 'Muy cremoso, quedó perfecto.', DATE_SUB(NOW(), INTERVAL 5 DAY));
+
+-- Ensalada César (Juan): guardada (sin reseña) por Carlos, para ver el listón sin rating
+INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
+  (@user_carlos, @recipe_cesar, 1, DATE_SUB(NOW(), INTERVAL 2 DAY));
+
+-- ---------------------------------------------------------------------
+-- 7. Inventario de ejemplo para Juan (para probar "Mi inventario" y el
+--    filtro "Inventario" de los listados de recetas). Con esto le alcanza
+--    para 2 recetas completas (Ensalada de tomate y lechuga, Flan casero)
+--    y tiene parte de los ingredientes de varias más.
+-- ---------------------------------------------------------------------
+INSERT INTO inventory (idUser, idIngredient, unitOfMeasure, availableQuantity) VALUES
+  (@user_juan, @ing_tomate, 'gr', 500),
+  (@user_juan, @ing_cebolla, 'gr', 300),
+  (@user_juan, @ing_arroz, 'gr', 1000),
+  (@user_juan, @ing_huevo, 'ud.', 12),
+  (@user_juan, @ing_aceite, 'ml', 750),
+  (@user_juan, @ing_lechuga, 'gr', 300),
+  (@user_juan, @ing_leche, 'ml', 1000);
+
+-- ---------------------------------------------------------------------
+-- 8. Seguidos ("amigos") y reseñas de esta semana, para la home:
+--    "Recetas por amigos", "Top 10 de la semana" y "Reseñas de amigos".
+--
+--    Esta sección se puede correr SOLA sobre una base que ya tenía el
+--    seed anterior (sin la tabla follow): primero `npx prisma db push`
+--    desde backend/ y después seleccionar desde acá hasta el COMMIT y
+--    ejecutarlo. Por eso vuelve a buscar los ids por nombre en vez de
+--    depender de las variables de más arriba.
+--
+--    OJO: las fechas son relativas al momento en que se corre el script.
+--    El Top 10 cuenta solo las reseñas de los últimos 7 días, así que si
+--    pasa más de una semana, se va vaciando (es lo esperado).
+-- ---------------------------------------------------------------------
+-- Repetido acá por si esta sección se corre sola (ver el comienzo del archivo).
+SET NAMES utf8mb4;
+
+SET @user_juan   := (SELECT id FROM user WHERE username = 'juanperez' LIMIT 1);
+SET @user_maria  := (SELECT id FROM user WHERE username = 'mariagomez' LIMIT 1);
+SET @user_carlos := (SELECT id FROM user WHERE username = 'carlosdiaz' LIMIT 1);
+SET @user_lucia  := (SELECT id FROM user WHERE username = 'luciafernandez' LIMIT 1);
+SET @user_martin := (SELECT id FROM user WHERE username = 'martinlopez' LIMIT 1);
+
+SET @recipe_milanesas      := (SELECT id FROM recipe WHERE name = 'Milanesas con puré' LIMIT 1);
+SET @recipe_cesar          := (SELECT id FROM recipe WHERE name = 'Ensalada César' LIMIT 1);
+SET @recipe_fideos         := (SELECT id FROM recipe WHERE name = 'Fideos con tuco' LIMIT 1);
+SET @recipe_tarta          := (SELECT id FROM recipe WHERE name = 'Tarta de verduras' LIMIT 1);
+SET @recipe_guiso          := (SELECT id FROM recipe WHERE name = 'Guiso de lentejas' LIMIT 1);
+SET @recipe_arrozpollo     := (SELECT id FROM recipe WHERE name = 'Arroz con pollo' LIMIT 1);
+SET @recipe_flan           := (SELECT id FROM recipe WHERE name = 'Flan casero' LIMIT 1);
+SET @recipe_ensaladasimple := (SELECT id FROM recipe WHERE name = 'Ensalada de tomate y lechuga' LIMIT 1);
+SET @recipe_sopa           := (SELECT id FROM recipe WHERE name = 'Sopa de verduras' LIMIT 1);
+SET @recipe_panqueques     := (SELECT id FROM recipe WHERE name = 'Panqueques dulces' LIMIT 1);
+
+-- Quién sigue a quién. juanperez sigue a María, Carlos y Lucía, pero NO a
+-- Martín: así, entrando como juanperez, se puede probar "Seguir" desde el
+-- perfil de Martín y ver cómo sus recetas y reseñas aparecen en la home.
+INSERT INTO follow (idFollower, idFollowed, createdAt) VALUES
+  (@user_juan, @user_maria, DATE_SUB(NOW(), INTERVAL 30 DAY)),
+  (@user_juan, @user_carlos, DATE_SUB(NOW(), INTERVAL 25 DAY)),
+  (@user_juan, @user_lucia, DATE_SUB(NOW(), INTERVAL 15 DAY)),
+  (@user_maria, @user_juan, DATE_SUB(NOW(), INTERVAL 28 DAY)),
+  (@user_maria, @user_lucia, DATE_SUB(NOW(), INTERVAL 12 DAY)),
+  (@user_carlos, @user_juan, DATE_SUB(NOW(), INTERVAL 20 DAY)),
+  (@user_lucia, @user_maria, DATE_SUB(NOW(), INTERVAL 10 DAY)),
+  (@user_lucia, @user_martin, DATE_SUB(NOW(), INTERVAL 8 DAY)),
+  (@user_martin, @user_juan, DATE_SUB(NOW(), INTERVAL 6 DAY)),
+  (@user_martin, @user_carlos, DATE_SUB(NOW(), INTERVAL 5 DAY));
+
+-- Reseñas de los últimos días. Cada una necesita su fila en userrecipe
+-- (isSaved = 0: la reseñó sin guardarla), salvo Carlos con la Ensalada
+-- César, que ya la tenía guardada desde la sección 6. ON DUPLICATE KEY:
+-- si en una base ya usada alguien había guardado alguna de estas recetas,
+-- se deja esa fila como está (sigue guardada) en vez de fallar.
+INSERT INTO userrecipe (idUser, idRecipe, isSaved, savedAt) VALUES
+  (@user_lucia, @recipe_milanesas, 0, NULL),
+  (@user_martin, @recipe_fideos, 0, NULL),
+  (@user_juan, @recipe_tarta, 0, NULL),
+  (@user_maria, @recipe_arrozpollo, 0, NULL),
+  (@user_carlos, @recipe_panqueques, 0, NULL),
+  (@user_lucia, @recipe_sopa, 0, NULL),
+  (@user_martin, @recipe_flan, 0, NULL),
+  (@user_juan, @recipe_sopa, 0, NULL),
+  (@user_maria, @recipe_ensaladasimple, 0, NULL),
+  (@user_juan, @recipe_guiso, 0, NULL),
+  (@user_lucia, @recipe_panqueques, 0, NULL)
+ON DUPLICATE KEY UPDATE isSaved = isSaved;
+INSERT INTO review (idUser, idRecipe, idReview, rating, comment, createdAt) VALUES
+  (@user_lucia, @recipe_milanesas, 1, 5.0, 'Las hice para el domingo y no quedó ni una. El puré, una seda.', DATE_SUB(NOW(), INTERVAL 20 HOUR)),
+  (@user_martin, @recipe_flan, 1, 5.0, 'Salió perfecto al primer intento, el caramelo en su punto.', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+  (@user_martin, @recipe_fideos, 1, 4.5, 'Tuco casero de verdad, le sumé albahaca fresca.', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  (@user_carlos, @recipe_panqueques, 1, 5.0, 'Masa finita y suave, ideal con dulce de leche.', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  (@user_juan, @recipe_guiso, 1, 4.5, 'Abundante y rendidor, lo repito seguro.', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  (@user_carlos, @recipe_cesar, 1, 4.5, 'Fresca y rápida, el aderezo casero es la clave.', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+  (@user_lucia, @recipe_sopa, 1, 4.0, 'Liviana y rica, le agregué un poco de zapallo.', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+  (@user_juan, @recipe_tarta, 1, 4.0, 'Muy buena, la masa quedó crocante.', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  (@user_maria, @recipe_ensaladasimple, 1, 4.0, 'Simple pero siempre suma en la mesa.', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  (@user_maria, @recipe_arrozpollo, 1, 4.5, 'Cremoso como el de mi abuela.', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+  (@user_lucia, @recipe_panqueques, 1, 4.5, 'Los hice de merienda con los chicos, un éxito.', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+  (@user_juan, @recipe_sopa, 1, 3.5, 'Rica, aunque le faltaba un poco de sal para mi gusto.', DATE_SUB(NOW(), INTERVAL 6 DAY));
+
+
+-- ---------------------------------------------------------------------
+-- 9. Valores nutricionales y porciones de las recetas (para la tabla
+--    "Valores por porción" del detalle de receta y el filtro por
+--    necesidades nutricionales del buscador).
+--
+--    Se puede correr SOLA sobre una base ya cargada (desde "-- 9." hasta
+--    el COMMIT; final): vuelve a buscar los ids por nombre, reemplaza los
+--    valores nutricionales de los 18 ingredientes de demo (si los editaste
+--    desde el panel admin, se pisan) y les pone las porciones a las 10
+--    recetas de demo. Antes hay que correr "npx prisma db push" (columna
+--    nueva recipe.servings).
+--
+--    Valores aproximados de tablas nutricionales estándar. La porción de
+--    referencia está en la unidad de cada ingrediente: cada 100 gr / 100 ml,
+--    y el huevo por unidad. Arroz, fideos, harina y lentejas: en crudo/seco
+--    (así se pesan en las recetas).
+-- ---------------------------------------------------------------------
+-- Repetido acá por si esta sección se corre sola (ver el comienzo del archivo).
+SET NAMES utf8mb4;
+
+SET @ing_tomate    := (SELECT id FROM ingredient WHERE name = 'Tomate' LIMIT 1);
+SET @ing_cebolla   := (SELECT id FROM ingredient WHERE name = 'Cebolla' LIMIT 1);
+SET @ing_papa      := (SELECT id FROM ingredient WHERE name = 'Papa' LIMIT 1);
+SET @ing_zanahoria := (SELECT id FROM ingredient WHERE name = 'Zanahoria' LIMIT 1);
+SET @ing_lechuga   := (SELECT id FROM ingredient WHERE name = 'Lechuga' LIMIT 1);
+SET @ing_carne     := (SELECT id FROM ingredient WHERE name = 'Carne picada' LIMIT 1);
+SET @ing_pollo     := (SELECT id FROM ingredient WHERE name = 'Pechuga de pollo' LIMIT 1);
+SET @ing_huevo     := (SELECT id FROM ingredient WHERE name = 'Huevo' LIMIT 1);
+SET @ing_leche     := (SELECT id FROM ingredient WHERE name = 'Leche' LIMIT 1);
+SET @ing_queso     := (SELECT id FROM ingredient WHERE name = 'Queso cremoso' LIMIT 1);
+SET @ing_manteca   := (SELECT id FROM ingredient WHERE name = 'Manteca' LIMIT 1);
+SET @ing_arroz     := (SELECT id FROM ingredient WHERE name = 'Arroz' LIMIT 1);
+SET @ing_fideos    := (SELECT id FROM ingredient WHERE name = 'Fideos' LIMIT 1);
+SET @ing_harina    := (SELECT id FROM ingredient WHERE name = 'Harina' LIMIT 1);
+SET @ing_lentejas  := (SELECT id FROM ingredient WHERE name = 'Lentejas' LIMIT 1);
+SET @ing_sal       := (SELECT id FROM ingredient WHERE name = 'Sal' LIMIT 1);
+SET @ing_pimienta  := (SELECT id FROM ingredient WHERE name = 'Pimienta negra' LIMIT 1);
+SET @ing_aceite    := (SELECT id FROM ingredient WHERE name = 'Aceite de oliva' LIMIT 1);
+
+DELETE FROM nutritionalvalue WHERE idIngredient IN (
+  @ing_tomate, @ing_cebolla, @ing_papa, @ing_zanahoria, @ing_lechuga, @ing_carne,
+  @ing_pollo, @ing_huevo, @ing_leche, @ing_queso, @ing_manteca, @ing_arroz,
+  @ing_fideos, @ing_harina, @ing_lentejas, @ing_sal, @ing_pimienta, @ing_aceite
+);
+
+-- Una fila por nutriente: num 1 Calorías (kcal), 2 Proteínas (gr),
+-- 3 Carbohidratos (gr), 4 Grasas totales (gr), 5 Fibra (gr), 6 Sodio (mg).
+INSERT INTO nutritionalvalue (idIngredient, num, name, servingAmount, servingUnit, value) VALUES
+  (@ing_tomate, 1, 'Calorías', 100, 'gr', 18), (@ing_tomate, 2, 'Proteínas', 100, 'gr', 0.9), (@ing_tomate, 3, 'Carbohidratos', 100, 'gr', 3.9),
+  (@ing_tomate, 4, 'Grasas totales', 100, 'gr', 0.2), (@ing_tomate, 5, 'Fibra', 100, 'gr', 1.2), (@ing_tomate, 6, 'Sodio', 100, 'gr', 5),
+  (@ing_cebolla, 1, 'Calorías', 100, 'gr', 40), (@ing_cebolla, 2, 'Proteínas', 100, 'gr', 1.1), (@ing_cebolla, 3, 'Carbohidratos', 100, 'gr', 9.3),
+  (@ing_cebolla, 4, 'Grasas totales', 100, 'gr', 0.1), (@ing_cebolla, 5, 'Fibra', 100, 'gr', 1.7), (@ing_cebolla, 6, 'Sodio', 100, 'gr', 4),
+  (@ing_papa, 1, 'Calorías', 100, 'gr', 77), (@ing_papa, 2, 'Proteínas', 100, 'gr', 2), (@ing_papa, 3, 'Carbohidratos', 100, 'gr', 17),
+  (@ing_papa, 4, 'Grasas totales', 100, 'gr', 0.1), (@ing_papa, 5, 'Fibra', 100, 'gr', 2.2), (@ing_papa, 6, 'Sodio', 100, 'gr', 6),
+  (@ing_zanahoria, 1, 'Calorías', 100, 'gr', 41), (@ing_zanahoria, 2, 'Proteínas', 100, 'gr', 0.9), (@ing_zanahoria, 3, 'Carbohidratos', 100, 'gr', 9.6),
+  (@ing_zanahoria, 4, 'Grasas totales', 100, 'gr', 0.2), (@ing_zanahoria, 5, 'Fibra', 100, 'gr', 2.8), (@ing_zanahoria, 6, 'Sodio', 100, 'gr', 69),
+  (@ing_lechuga, 1, 'Calorías', 100, 'gr', 15), (@ing_lechuga, 2, 'Proteínas', 100, 'gr', 1.4), (@ing_lechuga, 3, 'Carbohidratos', 100, 'gr', 2.9),
+  (@ing_lechuga, 4, 'Grasas totales', 100, 'gr', 0.2), (@ing_lechuga, 5, 'Fibra', 100, 'gr', 1.3), (@ing_lechuga, 6, 'Sodio', 100, 'gr', 28),
+  (@ing_carne, 1, 'Calorías', 100, 'gr', 250), (@ing_carne, 2, 'Proteínas', 100, 'gr', 26), (@ing_carne, 3, 'Carbohidratos', 100, 'gr', 0),
+  (@ing_carne, 4, 'Grasas totales', 100, 'gr', 15), (@ing_carne, 5, 'Fibra', 100, 'gr', 0), (@ing_carne, 6, 'Sodio', 100, 'gr', 72),
+  (@ing_pollo, 1, 'Calorías', 100, 'gr', 165), (@ing_pollo, 2, 'Proteínas', 100, 'gr', 31), (@ing_pollo, 3, 'Carbohidratos', 100, 'gr', 0),
+  (@ing_pollo, 4, 'Grasas totales', 100, 'gr', 3.6), (@ing_pollo, 5, 'Fibra', 100, 'gr', 0), (@ing_pollo, 6, 'Sodio', 100, 'gr', 74),
+  (@ing_huevo, 1, 'Calorías', 1, 'ud.', 78), (@ing_huevo, 2, 'Proteínas', 1, 'ud.', 6.3), (@ing_huevo, 3, 'Carbohidratos', 1, 'ud.', 0.6),
+  (@ing_huevo, 4, 'Grasas totales', 1, 'ud.', 5.3), (@ing_huevo, 5, 'Fibra', 1, 'ud.', 0), (@ing_huevo, 6, 'Sodio', 1, 'ud.', 62),
+  (@ing_leche, 1, 'Calorías', 100, 'ml', 61), (@ing_leche, 2, 'Proteínas', 100, 'ml', 3.2), (@ing_leche, 3, 'Carbohidratos', 100, 'ml', 4.8),
+  (@ing_leche, 4, 'Grasas totales', 100, 'ml', 3.3), (@ing_leche, 5, 'Fibra', 100, 'ml', 0), (@ing_leche, 6, 'Sodio', 100, 'ml', 43),
+  (@ing_queso, 1, 'Calorías', 100, 'gr', 300), (@ing_queso, 2, 'Proteínas', 100, 'gr', 14), (@ing_queso, 3, 'Carbohidratos', 100, 'gr', 2),
+  (@ing_queso, 4, 'Grasas totales', 100, 'gr', 26), (@ing_queso, 5, 'Fibra', 100, 'gr', 0), (@ing_queso, 6, 'Sodio', 100, 'gr', 600),
+  (@ing_manteca, 1, 'Calorías', 100, 'gr', 717), (@ing_manteca, 2, 'Proteínas', 100, 'gr', 0.9), (@ing_manteca, 3, 'Carbohidratos', 100, 'gr', 0.1),
+  (@ing_manteca, 4, 'Grasas totales', 100, 'gr', 81), (@ing_manteca, 5, 'Fibra', 100, 'gr', 0), (@ing_manteca, 6, 'Sodio', 100, 'gr', 11),
+  (@ing_arroz, 1, 'Calorías', 100, 'gr', 360), (@ing_arroz, 2, 'Proteínas', 100, 'gr', 6.7), (@ing_arroz, 3, 'Carbohidratos', 100, 'gr', 79),
+  (@ing_arroz, 4, 'Grasas totales', 100, 'gr', 0.6), (@ing_arroz, 5, 'Fibra', 100, 'gr', 1.3), (@ing_arroz, 6, 'Sodio', 100, 'gr', 5),
+  (@ing_fideos, 1, 'Calorías', 100, 'gr', 371), (@ing_fideos, 2, 'Proteínas', 100, 'gr', 13), (@ing_fideos, 3, 'Carbohidratos', 100, 'gr', 75),
+  (@ing_fideos, 4, 'Grasas totales', 100, 'gr', 1.5), (@ing_fideos, 5, 'Fibra', 100, 'gr', 3.2), (@ing_fideos, 6, 'Sodio', 100, 'gr', 6),
+  (@ing_harina, 1, 'Calorías', 100, 'gr', 364), (@ing_harina, 2, 'Proteínas', 100, 'gr', 10), (@ing_harina, 3, 'Carbohidratos', 100, 'gr', 76),
+  (@ing_harina, 4, 'Grasas totales', 100, 'gr', 1), (@ing_harina, 5, 'Fibra', 100, 'gr', 2.7), (@ing_harina, 6, 'Sodio', 100, 'gr', 2),
+  (@ing_lentejas, 1, 'Calorías', 100, 'gr', 352), (@ing_lentejas, 2, 'Proteínas', 100, 'gr', 25), (@ing_lentejas, 3, 'Carbohidratos', 100, 'gr', 60),
+  (@ing_lentejas, 4, 'Grasas totales', 100, 'gr', 1.1), (@ing_lentejas, 5, 'Fibra', 100, 'gr', 11), (@ing_lentejas, 6, 'Sodio', 100, 'gr', 6),
+  (@ing_sal, 1, 'Calorías', 100, 'gr', 0), (@ing_sal, 2, 'Proteínas', 100, 'gr', 0), (@ing_sal, 3, 'Carbohidratos', 100, 'gr', 0),
+  (@ing_sal, 4, 'Grasas totales', 100, 'gr', 0), (@ing_sal, 5, 'Fibra', 100, 'gr', 0), (@ing_sal, 6, 'Sodio', 100, 'gr', 38758),
+  (@ing_pimienta, 1, 'Calorías', 100, 'gr', 251), (@ing_pimienta, 2, 'Proteínas', 100, 'gr', 10), (@ing_pimienta, 3, 'Carbohidratos', 100, 'gr', 64),
+  (@ing_pimienta, 4, 'Grasas totales', 100, 'gr', 3.3), (@ing_pimienta, 5, 'Fibra', 100, 'gr', 25), (@ing_pimienta, 6, 'Sodio', 100, 'gr', 20),
+  (@ing_aceite, 1, 'Calorías', 100, 'ml', 810), (@ing_aceite, 2, 'Proteínas', 100, 'ml', 0), (@ing_aceite, 3, 'Carbohidratos', 100, 'ml', 0),
+  (@ing_aceite, 4, 'Grasas totales', 100, 'ml', 91), (@ing_aceite, 5, 'Fibra', 100, 'ml', 0), (@ing_aceite, 6, 'Sodio', 100, 'ml', 2);
+
+-- Porciones que rinde cada receta de demo.
+UPDATE recipe SET servings = 4 WHERE name = 'Milanesas con puré';
+UPDATE recipe SET servings = 2 WHERE name = 'Ensalada César';
+UPDATE recipe SET servings = 4 WHERE name = 'Fideos con tuco';
+UPDATE recipe SET servings = 6 WHERE name = 'Tarta de verduras';
+UPDATE recipe SET servings = 4 WHERE name = 'Guiso de lentejas';
+UPDATE recipe SET servings = 4 WHERE name = 'Arroz con pollo';
+UPDATE recipe SET servings = 6 WHERE name = 'Flan casero';
+UPDATE recipe SET servings = 2 WHERE name = 'Ensalada de tomate y lechuga';
+UPDATE recipe SET servings = 3 WHERE name = 'Sopa de verduras';
+UPDATE recipe SET servings = 4 WHERE name = 'Panqueques dulces';
+
+-- ---------------------------------------------------------------------
+-- 10. Donaciones de ejemplo (para la página "Donaciones": totales, gráfico
+--     de quiénes más donaron y actividad reciente).
+--
+--     Se puede correr SOLA sobre una base ya cargada (desde "-- 10." hasta
+--     el COMMIT; final): vuelve a buscar los ids por nombre y primero borra
+--     las donaciones de demo (transactionRef 'demo-...'), así se puede
+--     repetir sin duplicar. Las donaciones reales hechas con Mercado Pago
+--     no se tocan.
+--
+--     Son registros inventados: no existen en Mercado Pago. Por eso no hay
+--     ninguna 'pending' (el backend las revisaría contra Mercado Pago y las
+--     pasaría a 'expired'). Montos = los fijos de donationModel.ts.
+--     juanperez es el indicado para verlas: tiene recibidas de 4 personas
+--     y realizadas en los distintos estados (completada, rechazada, vencida).
+-- ---------------------------------------------------------------------
+SET NAMES utf8mb4;
+
+SET @user_juan   := (SELECT id FROM user WHERE username = 'juanperez' LIMIT 1);
+SET @user_maria  := (SELECT id FROM user WHERE username = 'mariagomez' LIMIT 1);
+SET @user_carlos := (SELECT id FROM user WHERE username = 'carlosdiaz' LIMIT 1);
+SET @user_lucia  := (SELECT id FROM user WHERE username = 'luciafernandez' LIMIT 1);
+SET @user_martin := (SELECT id FROM user WHERE username = 'martinlopez' LIMIT 1);
+
+DELETE FROM donation WHERE transactionRef LIKE 'demo-%';
+
+INSERT INTO donation (idDonor, idGrantee, transactionRef, createdAt, amount, currency, status) VALUES
+  -- Recibidas por Juan (todas completadas)
+  (@user_maria,  @user_juan, 'demo-01', DATE_SUB(NOW(), INTERVAL 20 DAY), 1000.00,  'ARS', 'completed'),
+  (@user_maria,  @user_juan, 'demo-02', DATE_SUB(NOW(), INTERVAL 9 DAY),  2500.00,  'ARS', 'completed'),
+  (@user_carlos, @user_juan, 'demo-03', DATE_SUB(NOW(), INTERVAL 8 DAY),  10000.00, 'ARS', 'completed'),
+  (@user_lucia,  @user_juan, 'demo-04', DATE_SUB(NOW(), INTERVAL 3 DAY),  5000.00,  'ARS', 'completed'),
+  (@user_martin, @user_juan, 'demo-05', DATE_SUB(NOW(), INTERVAL 1 DAY),  1000.00,  'ARS', 'completed'),
+  (@user_martin, @user_juan, 'demo-06', DATE_SUB(NOW(), INTERVAL 5 HOUR), 2500.00,  'ARS', 'completed'),
+  -- Realizadas por Juan (en distintos estados: solo las completadas suman en los totales)
+  (@user_juan, @user_maria,  'demo-07', DATE_SUB(NOW(), INTERVAL 12 DAY), 2500.00, 'ARS', 'completed'),
+  (@user_juan, @user_carlos, 'demo-08', DATE_SUB(NOW(), INTERVAL 6 DAY),  5000.00, 'ARS', 'completed'),
+  (@user_juan, @user_lucia,  'demo-09', DATE_SUB(NOW(), INTERVAL 4 DAY),  1000.00, 'ARS', 'rejected'),
+  (@user_juan, @user_maria,  'demo-10', DATE_SUB(NOW(), INTERVAL 2 DAY),  1000.00, 'ARS', 'expired'),
+  -- Entre otros usuarios, para que sus páginas tampoco estén vacías
+  (@user_lucia,  @user_maria,  'demo-11', DATE_SUB(NOW(), INTERVAL 10 DAY), 5000.00, 'ARS', 'completed'),
+  (@user_carlos, @user_lucia,  'demo-12', DATE_SUB(NOW(), INTERVAL 7 DAY),  2500.00, 'ARS', 'completed'),
+  (@user_martin, @user_carlos, 'demo-13', DATE_SUB(NOW(), INTERVAL 2 DAY),  1000.00, 'ARS', 'completed');
+
+COMMIT;
+
+-- =====================================================================
+-- Listo. Quedaron cargados:
+--   - 5 categorías de ingredientes + 18 ingredientes (con vínculo y
+--     valores nutricionales: calorías, proteínas, carbohidratos, grasas,
+--     fibra y sodio)
+--   - 5 categorías de recetas
+--   - 5 usuarios comunes de prueba (contraseña 123456 para todos):
+--       juanperez, mariagomez, carlosdiaz, luciafernandez, martinlopez
+--   - 1 usuario administrador de prueba (contraseña 123456 también):
+--       admindemo
+--   - 10 recetas completas (imagen, categoría, ingredientes, pasos y
+--     porciones), repartidas entre los 5 usuarios comunes
+--   - Guardados + reseñas cruzadas entre usuarios, para ver valoraciones,
+--     "recetas destacadas" y métricas del perfil con datos reales
+--   - Inventario de ejemplo para juanperez
+--   - Seguidos entre usuarios + reseñas de los últimos días, para que la
+--     home muestre "Recetas por amigos", "Top 10 de la semana" y
+--     "Reseñas de amigos" (juanperez sigue a María, Carlos y Lucía)
+--
+-- Iniciá sesión como cualquiera de los usuarios comunes para recorrer la
+-- home (con el buscador de recetas, categorías y usuarios), "Mis recetas",
+-- "Recetas guardadas", el perfil propio y el de otro usuario (tocando su
+-- nombre desde el detalle de una receta o buscándolo), o como admindemo
+-- (contraseña 123456) para entrar al panel de admin y ver usuarios,
+-- ingredientes, categorías y roles. El filtro "Inventario" de los listados
+-- de recetas se prueba mejor con juanperez, que es quien tiene inventario.
+-- =====================================================================

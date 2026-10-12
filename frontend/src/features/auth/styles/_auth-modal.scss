@@ -1,0 +1,409 @@
+// Estilos compartidos por LoginForm y RegisterForm: overlay + tarjeta de modal.
+// Ambos componentes usan las mismas clases "AuthModal-*" para no duplicar CSS.
+@use '../../../styles/abstracts' as *;
+
+.AuthModal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: $color-scrim;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  // flex-start + margin auto en la tarjeta (y no align-items: center): si el modal es más
+  // alto que la pantalla, con center se corta arriba y no se puede scrollear hasta el título.
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: $spacing-lg;
+}
+
+.AuthModal-card {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-outline-variant;
+  border-radius: 24px;
+  box-shadow: $shadow-level-2;
+  padding: $spacing-xl $spacing-lg;
+  // Centrada en el alto cuando entra; si no entra, arranca arriba (ver el overlay).
+  margin-block: auto;
+
+  @include respond-to(md) {
+    padding: $spacing-xl;
+  }
+
+  // Formularios con campos de a dos por fila (registro): más ancha para que entren.
+  &--wide {
+    @include respond-to(md) {
+      max-width: 640px;
+    }
+  }
+}
+
+.AuthModal-closeButton {
+  position: absolute;
+  top: $spacing-md;
+  right: $spacing-md;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: $radius-full;
+  background: transparent;
+  color: $color-on-surface-variant;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: $color-surface-container-high;
+  }
+}
+
+.AuthModal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: $spacing-lg;
+}
+
+// Logo de Chefcito arriba del título del login, del registro y del aviso de "necesitás una cuenta".
+.AuthModal-logo {
+  height: 56px;
+  margin-bottom: $spacing-md;
+}
+
+.AuthModal-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-full;
+  background: $color-primary;
+  color: $color-on-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $spacing-md;
+}
+
+.AuthModal-title {
+  font-family: $font-body;
+  font-size: 28px;
+  color: $color-on-background;
+  margin: 0 0 $spacing-xs;
+}
+
+.AuthModal-subtitle {
+  font-family: $font-body;
+  font-size: 14px;
+  color: $color-on-surface-variant;
+  margin: 0;
+}
+
+.AuthModal-form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+// Un campo: label arriba, el control y debajo su error o ayuda (ver AuthField).
+.AuthModal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.AuthModal-label {
+  font-family: $font-body;
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-on-background;
+}
+
+.AuthModal-row {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  @include respond-to(sm) {
+    flex-direction: row;
+    // Cada campo arranca arriba: si solo uno muestra error, el otro no se estira.
+    align-items: flex-start;
+
+    .AuthModal-field {
+      flex: 1;
+    }
+  }
+}
+
+.AuthModal-input {
+  width: 100%;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  // Misma altura que el botón de fecha (que lleva ícono), así las filas quedan parejas.
+  min-height: 44px;
+  padding: $spacing-sm + 4px $spacing-md;
+  font-family: $font-body;
+  font-size: 14px;
+  color: $color-on-background;
+  background: $color-surface;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $color-on-surface-variant;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+    box-shadow: 0 0 0 2px with-opacity($color-primary, 0.2);
+  }
+}
+
+// Campo con error: el borde rojo de inputs y botones sale de core (_form-feedback.scss, por
+// aria-invalid). El teléfono marca su contenedor, porque el input no tiene borde propio.
+.AuthModal-phoneWrapper--invalid {
+  border-color: $color-error;
+
+  &:focus,
+  &:focus-within {
+    border-color: $color-error;
+    box-shadow: 0 0 0 2px with-opacity($color-error, 0.2);
+  }
+}
+
+.AuthModal-phoneWrapper {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  background: $color-surface;
+
+  &:focus-within {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 2px with-opacity($color-primary, 0.2);
+  }
+}
+
+// Prefijo fijo "+54" con bandera argentina: no es un desplegable, Chefcito por ahora
+// solo opera en Argentina (ver PHONE_COUNTRY_PREFIX en registerModel.js).
+.AuthModal-phonePrefix {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: 0 $spacing-md;
+  background: $color-surface-container-low;
+  border-right: 1px solid $color-outline-variant;
+  font-family: $font-body;
+  font-size: 14px;
+  font-weight: 600;
+  color: $color-on-background;
+  white-space: nowrap;
+}
+
+.AuthModal-phoneFlag {
+  width: 20px;
+  height: auto;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.AuthModal-phoneInput.AuthModal-input {
+  border: none;
+  border-radius: 0;
+  flex: 1;
+  min-width: 0;
+  // El borde lo pone el contenedor (2px): así el total da los mismos 44px que los demás.
+  min-height: 42px;
+
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+// Botón que abre el DatePickerModal: mismo aspecto que un AuthModal-input,
+// pero es un <button> (el usuario no tipea la fecha a mano).
+.AuthModal-dateButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  border: 1px solid $color-outline-variant;
+  border-radius: $radius-lg;
+  min-height: 44px;
+  // Un poco menos de padding que los inputs: el ícono (20px) es más alto que el texto.
+  padding: $spacing-sm + 2px $spacing-md;
+  font-family: $font-body;
+  font-size: 14px;
+  color: $color-on-background;
+  background: $color-surface;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  .material-symbols-outlined {
+    color: $color-on-surface-variant;
+    font-size: 20px;
+  }
+
+  &:hover {
+    border-color: $color-primary;
+  }
+
+  &--placeholder {
+    color: $color-on-surface-variant;
+  }
+}
+
+.AuthModal-passwordWrapper {
+  position: relative;
+
+  .AuthModal-input {
+    padding-right: 44px;
+  }
+}
+
+.AuthModal-toggleVisibility {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 44px;
+  border: none;
+  background: transparent;
+  color: $color-on-surface-variant;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover {
+    color: $color-on-background;
+  }
+}
+
+.AuthModal-hint {
+  font-size: 11px;
+  color: $color-on-surface-variant;
+  margin: 0;
+}
+
+.AuthModal-error {
+  font-size: 13px;
+  color: $color-error;
+  margin: 0;
+}
+
+.AuthModal-submit {
+  width: 100%;
+  background: $color-primary;
+  color: $color-on-primary;
+  border: none;
+  font-family: $font-body;
+  font-weight: 600;
+  padding: $spacing-md;
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: $spacing-xs;
+
+  &:hover {
+    background: $color-primary-container;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+}
+
+// Mensaje de "cuenta creada" (RegisterSuccess): reemplaza al formulario en el mismo modal.
+.AuthModal-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $spacing-sm;
+  padding-top: $spacing-md;
+
+  .AuthModal-subtitle {
+    margin-bottom: $spacing-md;
+  }
+}
+
+.AuthModal-icon--success {
+  width: 64px;
+  height: 64px;
+
+  .material-symbols-outlined {
+    font-size: 36px;
+  }
+
+  // Pequeño "pop" al aparecer; sin animación si el usuario la tiene desactivada.
+  @media (prefers-reduced-motion: no-preference) {
+    animation: auth-success-pop 0.35s ease-out;
+  }
+}
+
+@keyframes auth-success-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.AuthModal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.AuthModal-outlineButton {
+  width: 100%;
+  background: transparent;
+  color: $color-primary;
+  border: 2px solid $color-primary;
+  font-family: $font-body;
+  font-weight: 600;
+  padding: calc(#{$spacing-md} - 2px);
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: $color-primary;
+    color: $color-on-primary;
+  }
+}
+
+.AuthModal-footer {
+  text-align: center;
+  font-size: 14px;
+  color: $color-on-background;
+  margin-top: $spacing-lg;
+}
+
+.AuthModal-switchButton {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: $color-on-background;
+  text-decoration: underline;
+  text-decoration-color: $color-primary;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}

@@ -1,0 +1,33 @@
+// Estilos del spinner compartido SwirlingLoader (core/components).
+// Dos animaciones a la vez sobre el círculo: una lo hace girar y la otra estira y achica
+// el trazo (stroke-dasharray), que es lo que da el efecto de "remolino".
+
+$swirling-duration: 1.5s;
+
+.SwirlingLoader-circle {
+  transform-origin: center;
+  animation:
+    swirling-dash $swirling-duration ease-in-out infinite alternate,
+    swirling-spin ($swirling-duration * 1.333333) linear infinite;
+}
+
+@keyframes swirling-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes swirling-dash {
+  0% {
+    stroke-dasharray: 1, 800;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 400, 400;
+    stroke-dashoffset: -200px;
+  }
+  100% {
+    stroke-dasharray: 800, 1;
+    stroke-dashoffset: -800px;
+  }
+}

@@ -1,0 +1,156 @@
+// Estilos de la página de detalle de receta (RecipeDetailPage): el layout de dos columnas,
+// el botón "Volver", el aviso flotante y la base compartida de todas sus tarjetas
+// (.RecipeDetailCard: galería, cabecera, ingredientes, valores nutricionales y pasos; cada
+// una suma lo suyo en su propio partial). Mobile-first: una columna; desde lg, dos
+// columnas iguales.
+@use '../../../styles/abstracts' as *;
+
+.RecipeDetailPage {
+  max-width: 1720px;
+  margin: 0 auto;
+  text-align: left;
+  font-family: $font-body;
+  color: $color-on-surface;
+
+  &-backBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    margin-bottom: $spacing-lg;
+    border-radius: $radius-full;
+    border: 1px solid $color-outline-variant;
+    background: transparent;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-on-surface-variant;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    &:hover {
+      background: $color-surface-container-low;
+      color: $color-on-surface;
+    }
+  }
+
+  // Dos columnas iguales en desktop. align-items: start para que cada columna tenga su
+  // propio alto (si no, la más corta se estiraría y dejaría huecos adentro de las cards).
+  &-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: $spacing-lg;
+    align-items: start;
+
+    @include respond-to(lg) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &-column {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+    min-width: 0;
+  }
+
+  // Ingredientes y valores nutricionales, lado a lado cuando entran (cada uno necesita
+  // ~260px); si no, uno debajo del otro. auto-fit decide solo según el ancho disponible,
+  // sin media queries: la columna izquierda cambia mucho de ancho según la pantalla.
+  &-pair {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: $spacing-lg;
+    align-items: start;
+  }
+
+  // Aviso flotante (ej. "¡Enlace copiado!"): abajo a la derecha, arriba de todo.
+  &-toast {
+    position: fixed;
+    right: $spacing-lg;
+    bottom: $spacing-lg;
+    left: $spacing-lg;
+    z-index: 250;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: 10px $spacing-md;
+    border-radius: $radius-lg;
+    background: $color-inverse-surface;
+    color: $color-inverse-on-surface;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: $shadow-level-2;
+    animation: recipe-toast-in 0.25s ease;
+
+    @include respond-to(sm) {
+      left: auto;
+    }
+
+    .material-symbols-outlined {
+      font-size: 18px;
+      color: $color-primary-container;
+    }
+  }
+}
+
+@keyframes recipe-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+// --- Base de todas las tarjetas del detalle ---
+.RecipeDetailCard {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding: 20px;
+  background: $color-surface-container-lowest;
+  border: 1px solid $color-surface-container-highest;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-level-1;
+
+  // Encabezado de cada tarjeta: título (y bajada) a la izquierda, controles a la derecha,
+  // con una línea abajo.
+  &-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm $spacing-md;
+    padding-bottom: 10px;
+    border-bottom: 1px solid $color-surface-container-high;
+  }
+
+  &-title {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: normal;
+    color: $color-on-surface;
+  }
+
+  &-subtitle {
+    margin: 2px 0 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: $color-on-surface-variant;
+  }
+
+  &-empty {
+    margin: 0;
+    padding: $spacing-lg 0;
+    text-align: center;
+    font-size: 14px;
+    color: $color-on-surface-variant;
+  }
+}

@@ -1,0 +1,21 @@
+// Estilos del componente compartido StarRating (core/components). Las estrellas son de
+// RatingStars (_rating-stars.scss): acá solo el número y la cantidad de reseñas.
+@use '../../styles/abstracts' as *;
+
+.StarRating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  &-value {
+    font-weight: 700;
+    color: $color-on-surface;
+    margin-left: $spacing-xs;
+  }
+
+  &-count {
+    color: $color-on-surface-variant;
+    font-size: 0.85em;
+    margin-left: 2px;
+  }
+}

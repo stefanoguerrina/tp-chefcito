@@ -1,0 +1,267 @@
+// Controller de usuario — maneja las rutas GET, POST, PATCH y DELETE de /api/users.
+// Delega toda la lógica de negocio al userService; solo se encarga de leer la request
+// y armar la response HTTP correcta.
+import { Request, Response } from 'express';
+import * as userService from '../services/userService.js';
+import { toPublicProfile, type UserImageField } from '../models/userModel.js';
+import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
+import { deleteUploadedImage, saveUploadedImage } from '../../../core/fileStorage.js';
+import { USER_IMAGES_FOLDER } from '../middleware/userImageUploadMiddleware.js';
+
+// Devuelve la lista de usuarios sin sus contraseñas.
+// Cualquier usuario autenticado puede consultar los activos.
+// Con ?inactive=true devuelve usuarios dados de baja (solo admins).
+// GET /api/users
+export const handleSearchUsers = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const showInactive = req.query.inactive === 'true';
+
+    // Solo un admin puede ver los usuarios inactivos.
+    if (showInactive && !req.user?.isAdmin) {
+      res.status(403).json({ message: 'Acceso denegado. Se requiere rol de administrador.' });
+      return;
+    }
+
+    const users = showInactive
+      ? await userService.getDeletedUsers()
+      : await userService.getAllUsers();
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('[handleSearchUsers] Error inesperado:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+// Devuelve un usuario activo por su ID sin su contraseña.
+// Cualquier usuario autenticado puede consultar el perfil público de cualquier
+// otro (ver ProfilePage: tocar el nombre del creador de una receta abre su
+// perfil de solo lectura) — pero solo ve los campos públicos (toPublicProfile).
+// El propio usuario o un admin ven además los campos privados (email, phone, birthDate).
+// GET /api/users/:id
+export const handleGetUserById = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = Number(req.params.id);
+
+    if (isNaN(userId) || userId <= 0) {
+      res.status(400).json({ message: 'El ID de usuario no es válido.' });
+      return;
+    }
+
+    const user = await userService.getUserById(userId);
+    if (!user) {
+      res.status(404).json({ message: 'Usuario no encontrado.' });
+      return;
+    }
+
+    const isOwnerOrAdmin = req.user?.id === userId || req.user?.isAdmin === true;
+    res.status(200).json(isOwnerOrAdmin ? user : toPublicProfile(user));
+  } catch (error) {
+    console.error('[handleGetUserById] Error inesperado:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+// Crea un nuevo usuario desde el panel de administración.
+// Permite opcionalmente asignarle el rol admin (makeAdmin=true).
+// POST /api/users
+export const handleCreateUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username, password, name, lastName, email, phone, birthDate, makeAdmin } = req.body;
+
+    const result = await userService.createUserByAdmin({
+      username,
+      password,
+      name,
+      lastName,
+      email,
+      phone: phone ?? null,
+      birthDate: birthDate ? new Date(birthDate) : null,
+      makeAdmin: makeAdmin === true,
+    });
+
+    if (!result.ok) {
+      // El campo va también en `errors` (mismo formato que los 422 de este controller) para
+      // que el formulario de alta muestre el error debajo del campo que corresponde.
+      if (result.reason === 'username_taken') {
+        const mensaje = 'El nombre de usuario ya está en uso.';
+        res.status(409).json({ message: mensaje, errors: [{ campo: 'username', mensaje }] });
+        return;
+      }
+      if (result.reason === 'email_taken') {
+        const mensaje = 'El email ingresado ya está registrado.';
+        res.status(409).json({ message: mensaje, errors: [{ campo: 'email', mensaje }] });
+        return;
+      }
+    }
+
+    res.status(201).json(result.ok ? result.user : {});
+  } catch (error) {
+    console.error('[handleCreateUser] Error inesperado:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+// Realiza la baja lógica de un usuario por ID (setea deletedAt, no borra el registro).
+// Recibe el ID como parámetro en la URL.
+// Devuelve 200 con los datos del usuario dado de baja, 404 si no existe, 400 si el ID es inválido.
+// DELETE /api/users/:id
+export const handleDeleteUserById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = Number(req.params.id);
+
+    if (isNaN(userId) || userId <= 0) {
+      res.status(400).json({ message: 'El ID de usuario no es válido.' });
+      return;
+    }
+
+    const deletedUser = await userService.softDeleteUser(userId);
+    if (!deletedUser) {
+      res.status(404).json({ message: 'Usuario no encontrado.' });
+      return;
+    }
+
+    res.status(200).json(deletedUser);
+  } catch (error) {
+    console.error('[handleDeleteUserById] Error inesperado:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+// Actualiza los datos editables de un usuario (name, lastName, phone, avatarUrl, birthDate).
+// Solo el propio usuario o un admin puede realizar esta acción (controlado por verifyOwnerOrAdmin).
+// Devuelve 200 con los datos actualizados, 404 si no existe, 422 si los datos son inválidos.
+// PATCH /api/users/:id
+export const handleUpdateUserById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = Number(req.params.id);
+    const { name, lastName, phone, avatarUrl, bio, specialty, location, birthDate } = req.body;
+
+    const updated = await userService.updateUser(userId, {
+      name,
+      lastName,
+      phone,
+      avatarUrl,
+      bio,
+      specialty,
+      location,
+      birthDate: birthDate !== undefined ? (birthDate ? new Date(birthDate) : null) : undefined,
+    });
+    if (!updated) {
+      res.status(404).json({ message: 'Usuario no encontrado.' });
+      return;
+    }
+
+    res.status(200).json(updated);
+  } catch (error) {
+    console.error('[handleUpdateUserById] Error inesperado:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+// Arma el handler que sube (o reemplaza) una foto del perfil. Se usa dos veces en el router:
+// una para el avatar y otra para la portada, que funcionan exactamente igual.
+// Recibe: field ('avatarUrl' | 'coverUrl'). Body: multipart con el archivo en "image".
+// PATCH /api/users/:id/avatar  y  PATCH /api/users/:id/cover
+export const handleUploadUserImage = (field: UserImageField) =>
+  async (req: Request, res: Response): Promise<void> => {
+    if (!req.file) {
+      res.status(422).json({
+        message: 'Error de validación. Revisá los campos enviados.',
+        errors: [{ campo: 'image', mensaje: 'Tenés que enviar una imagen.' }],
+      });
+      return;
+    }
+
+    let imageUrl: string | undefined;
+    try {
+      imageUrl = await saveUploadedImage(req.file, USER_IMAGES_FOLDER, `user-${req.params.id}`);
+      const result = await userService.setUserImage(Number(req.params.id), field, imageUrl);
+      if (!result.ok) {
+        // No se guardó en la BD: se borra para no dejar una foto huérfana.
+        await deleteUploadedImage(imageUrl);
+        res.status(404).json({ message: 'Usuario no encontrado.' });
+        return;
+      }
+      res.status(200).json(result.user);
+    } catch (error) {
+      await deleteUploadedImage(imageUrl);
+      console.error(`[uploadUserImage:${field}] Error inesperado:`, error);
+      res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+  };
+
+// Arma el handler que quita una foto del perfil (deja el avatar o la portada vacíos).
+// Recibe: field ('avatarUrl' | 'coverUrl').
+// DELETE /api/users/:id/avatar  y  DELETE /api/users/:id/cover
+export const handleDeleteUserImage = (field: UserImageField) =>
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await userService.removeUserImage(Number(req.params.id), field);
+      if (!result.ok) {
+        res.status(404).json({ message: 'Usuario no encontrado.' });
+        return;
+      }
+      res.status(200).json(result.user);
+    } catch (error) {
+      console.error(`[deleteUserImage:${field}] Error inesperado:`, error);
+      res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+  };
+
+// Cambia la contraseña de un usuario, verificando primero la contraseña actual.
+// Solo el propio usuario o un admin puede realizar esta acción (controlado por verifyOwnerOrAdmin).
+// Body: { currentPassword, newPassword }
+// PATCH /api/users/:id/password
+export const handleChangeUserPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = Number(req.params.id);
+    const { currentPassword, newPassword } = req.body;
+
+    const result = await userService.changePassword(userId, currentPassword, newPassword);
+
+    if (!result.ok) {
+      if (result.reason === 'not_found') {
+        res.status(404).json({ message: 'Usuario no encontrado.' });
+        return;
+      }
+      // La contraseña actual no coincide con la almacenada. Va como 400 con el error en
+      // su campo, no como 401: un 401 significa "token inválido" y el frontend cierra la
+      // sesión al recibirlo.
+      const message = 'La contraseña actual ingresada es incorrecta.';
+      res.status(400).json({ message, errors: [{ campo: 'currentPassword', mensaje: message }] });
+      return;
+    }
+
+    res.status(200).json({ message: 'Contraseña actualizada correctamente.' });
+  } catch (error) {
+    console.error('[handleChangeUserPassword] Error inesperado:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+// Reactiva (da de alta) a un usuario que tenía baja lógica.
+// Solo un administrador puede realizar esta acción.
+// Devuelve 200 con los datos del usuario reactivado, 404 si no existía como inactivo.
+// PATCH /api/users/:id/restore
+export const handleRestoreUserById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = Number(req.params.id);
+
+    if (isNaN(userId) || userId <= 0) {
+      res.status(400).json({ message: 'El ID de usuario no es válido.' });
+      return;
+    }
+
+    const restoredUser = await userService.restoreUser(userId);
+    if (!restoredUser) {
+      res.status(404).json({ message: 'Usuario inactivo no encontrado.' });
+      return;
+    }
+
+    res.status(200).json(restoredUser);
+  } catch (error) {
+    console.error('[handleRestoreUserById] Error inesperado:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};

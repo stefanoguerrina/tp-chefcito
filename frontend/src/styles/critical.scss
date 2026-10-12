@@ -1,0 +1,9 @@
+// Estilos "críticos": los que tienen que estar listos ANTES de que cargue el JS de la app.
+// Se enlazan con un <link> desde index.html (no con un import desde un componente): así el
+// navegador los baja junto con el HTML y la pantalla de carga se ve con su fondo y su
+// spinner verde desde el primer instante, también con una conexión lenta y en
+// `npm run dev` (donde los estilos importados desde el JS recién llegan con el JS).
+// Por eso LoadingScreen y SwirlingLoader no importan su propio .scss.
+@use 'themes';
+@use '../core/components/swirling-loader';
+@use '../core/components/loading-screen';

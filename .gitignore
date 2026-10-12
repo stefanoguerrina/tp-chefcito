@@ -12,9 +12,13 @@ yarn-error.log*
 **/.env
 **/.env.local
 **/.env.development.local
+**/.env.test
 **/.env.test.local
 **/.env.production.local
 
 # Sistemas operativos
 .DS_Store
 Thumbs.db
+
+# Imágenes subidas por los usuarios (se generan al usar la app, no son código)
+backend/uploads/

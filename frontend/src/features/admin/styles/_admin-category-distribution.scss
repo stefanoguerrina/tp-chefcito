@@ -1,0 +1,75 @@
+// Distribución del catálogo de ingredientes por categoría (features/admin/components/AdminCategoryDistribution).
+@use '../../../styles/abstracts' as *;
+@use 'sass:list';
+
+// Paleta de hasta 5 franjas (4 categorías propias + "Otros"/"Sin categoría"), fija para
+// que buildCategoryDistribution (como mucho 5 elementos) siempre tenga color disponible.
+// La usan tanto la barra/leyenda de acá como los badges de categoría de AdminIngredientsTable
+// (a través de getIngredientColorIndex), para que la misma categoría se vea del mismo color
+// en los dos lugares.
+$admin-category-palette: $color-primary, $color-secondary, $color-tertiary, $color-tertiary-fixed-dim, $color-outline;
+
+.AdminCategoryDistribution {
+  &-empty {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 13px;
+    color: $color-on-surface-variant;
+  }
+
+  &-bar {
+    display: flex;
+    height: 8px;
+    width: 100%;
+    border-radius: $radius-full;
+    overflow: hidden;
+    background: $color-surface-container-high;
+  }
+
+  &-segment {
+    height: 100%;
+
+    @for $i from 0 through 4 {
+      &--#{$i} {
+        background: list.nth($admin-category-palette, $i + 1);
+      }
+    }
+  }
+
+  &-legend {
+    list-style: none;
+    margin: $spacing-sm 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm $spacing-md;
+  }
+
+  &-legendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: $font-body;
+    font-size: 12px;
+    color: $color-on-surface-variant;
+  }
+
+  // Cantidad de ingredientes de esa franja, al costado del nombre (ej. "Lácteos (1)").
+  &-count {
+    color: $color-on-surface-variant;
+    font-weight: 600;
+  }
+
+  &-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: $radius-full;
+    flex-shrink: 0;
+
+    @for $i from 0 through 4 {
+      &--#{$i} {
+        background: list.nth($admin-category-palette, $i + 1);
+      }
+    }
+  }
+}
