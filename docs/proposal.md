@@ -64,7 +64,9 @@ Adicionales para Aprobación:
 |Otros | 1. Brindar asistencia personalizada mediante un ChatBot implementado con IA<br>2. Cálculo de valores nutricionales por porción de cada receta<br>3. Panel de administración con resumen de la aplicación y gestión de usuarios, roles, ingredientes y categorías<br>4. Pagos reales con Mercado Pago (modo prueba) para las donaciones<br>5. Fotos de perfil, portada, recetas e ingredientes subidas desde la app (a Cloudinary en el deploy)<br>6. Perfil con métricas del usuario y cambio de contraseña<br>7. Modo claro y oscuro |
 
 ## Pull Requests
-Al ser un monorepo, cada PR puede incluir cambios de backend y de frontend. Todos se integraron a `develop`.
+Al ser un monorepo, cada PR puede incluir cambios de backend y de frontend. Todos se integraron a `develop`, y `develop` se integra a `main` al cerrar cada entrega.
+
+La aplicación está publicada en https://chefcito-gold.vercel.app (links y credenciales en [deploy.md](deploy.md#12-links-y-credenciales)).
 
 |PR|Integrante|Detalle|
 |:-|:-|:-|
@@ -100,3 +102,8 @@ Al ser un monorepo, cada PR puede incluir cambios de backend y de frontend. Todo
 |[#32](https://github.com/stefanoguerrina/tp-chefcito/pull/32)|Guerrina, Stéfano|Documentación para la aprobación directa: README, API, metodología, tracking, minutas y propuesta actualizada (T-6.3)|
 |[#33](https://github.com/stefanoguerrina/tp-chefcito/pull/33)|Schujman, Gastón|Validaciones en los formularios de registro|
 |[#34](https://github.com/stefanoguerrina/tp-chefcito/pull/34)|Guerrina, Stéfano|Tests automatizados de backend y frontend con base de test aparte, y el rol administrador creado con id 1 en una base vacía (T-6.1, T-6.2)|
+|[#35](https://github.com/stefanoguerrina/tp-chefcito/pull/35)|Guerrina, Stéfano|Logo de la aplicación actualizado|
+|[#36](https://github.com/stefanoguerrina/tp-chefcito/pull/36)|Guerrina, Stéfano|Preparación del deploy: fotos en Cloudinary y documento de deploy (T-6.4)|
+|[#37](https://github.com/stefanoguerrina/tp-chefcito/pull/37)|Guerrina, Stéfano|`develop` → `main` para publicar el deploy (T-6.6)|
+|[#38](https://github.com/stefanoguerrina/tp-chefcito/pull/38)|Guerrina, Stéfano|Deploy publicado y documentado (links, pasos reales, prueba y mantenimiento) y barra de la landing con "Iniciar sesión" en celular (T-6.4)|
+|[#39](https://github.com/stefanoguerrina/tp-chefcito/pull/39)|Guerrina, Stéfano|`develop` → `main` con la documentación del deploy y la corrección de la landing (T-6.6)|

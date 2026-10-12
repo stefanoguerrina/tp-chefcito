@@ -6,10 +6,11 @@ las credenciales de la aplicación publicada.
 
 ## 1. Qué es hacer el deploy
 
-Hoy Chefcito funciona solo en la computadora de cada uno: MySQL local, el backend en
+En desarrollo, Chefcito funciona en la computadora de cada uno: MySQL local, el backend en
 `localhost:3000` y el frontend en `localhost:5173`. Hacer el deploy es poner esas mismas piezas
 en servidores de internet, para que cualquiera (los profesores) entre desde un link, sin
-instalar nada.
+instalar nada. **Está publicado desde el 12/10/2026**: los links están en la
+[sección 12](#12-links-y-credenciales).
 
 El código casi no cambia: cambia **dónde corre** cada parte y **cómo se configura**. Lo que en
 local está en los `.env`, en el deploy se carga como variables de entorno en el panel de cada
@@ -66,9 +67,11 @@ Conviene crear las cuentas con un mail del equipo al que tengan acceso todos (o 
 GitHub de quien haga el deploy) y guardar las contraseñas en un lugar compartido del grupo,
 fuera del repositorio.
 
-Desde qué rama se publica: **`main`**. Primero se hace el PR `develop` → `main` y se conectan
-Render y Vercel a `main`. Así lo publicado es exactamente lo entregado, y cada merge a `main`
-vuelve a publicar solo.
+Desde qué rama se publica: **`main`**. Render y Vercel están conectados a `main` (después del PR
+`develop` → `main`, [#37](https://github.com/stefanoguerrina/tp-chefcito/pull/37); la
+documentación del deploy llegó a `main` con [#38](https://github.com/stefanoguerrina/tp-chefcito/pull/38) y [#39](https://github.com/stefanoguerrina/tp-chefcito/pull/39)). Así lo
+publicado es exactamente lo entregado, y cada merge a `main` vuelve a publicar solo (ver
+[sección 10](#10-mantenimiento)).
 
 ## 4. Las fotos: por qué Cloudinary
 
@@ -175,7 +178,8 @@ Cómo se llama a Cloudinary sin SDK (su API de subida firmada):
 
 El orden importa: el backend necesita la URL de la base y las claves de Cloudinary, el frontend
 la URL del backend, y el backend a su vez la del frontend (CORS y Mercado Pago). Por eso el
-backend se configura dos veces.
+backend se configura dos veces. Así se hizo el 12/10/2026; las notas "En la práctica" son lo
+que no estaba previsto en el plan.
 
 ### 6.1 Cloudinary
 
@@ -202,6 +206,9 @@ backend se configura dos veces.
    `utf8mb4_0900_ai_ci`. Si no, `ALTER DATABASE defaultdb CHARACTER SET utf8mb4 COLLATE
    utf8mb4_0900_ai_ci;` **antes** de crear las tablas. Sin esto el buscador distingue tildes y
    mayúsculas, y pueden romperse los acentos.
+   En la práctica: Aiven dio MySQL 8.4 ya en `utf8mb4_0900_ai_ci`, así que no hubo que
+   cambiarla. Aiven además exige clave primaria en todas las tablas
+   (`sql_require_primary_key`); todas las del esquema la tienen.
 5. Crear las tablas desde una PC del equipo, sin guardar la URL en ningún archivo del
    repositorio:
 
@@ -213,8 +220,14 @@ backend se configura dos veces.
    Una variable ya definida en la terminal tiene prioridad sobre el `backend/.env` (el mismo
    mecanismo que usa `npm run test:db`), así que la base local no se toca. Cerrar esa terminal
    al terminar.
-6. Cargar [demo-seed.sql](demo-seed.sql) en esa base (MySQL Workbench conectado a Aiven, con
-   SSL activado, o `mysql ... < docs/demo-seed.sql`).
+6. Cargar [demo-seed.sql](demo-seed.sql) en esa base. No hace falta el cliente `mysql` ni
+   Workbench: Prisma ejecuta el archivo, en la misma terminal del paso anterior:
+
+   ```powershell
+   npx prisma db execute --file ../docs/demo-seed.sql --schema prisma/schema.prisma
+   ```
+
+   (También sirve MySQL Workbench conectado a Aiven, con SSL activado.)
 
 ### 6.3 Backend (Render)
 
@@ -223,6 +236,9 @@ backend se configura dos veces.
    - **Root Directory:** `backend`
    - **Build Command:** `npm install && npm run build`
    - **Start Command:** `npm start`
+
+   En la práctica: Render propone `yarn` y `yarn start`; hay que reemplazarlos por los de npm
+   (el proyecto usa `package-lock.json`).
 2. Cargar las variables (sección 7). `CORS_ORIGINS` y `FRONTEND_URL` se completan en el paso
    6.5.
 3. Opcional: en **Settings → Health Check Path**, poner `/api/database/health`, así Render
@@ -234,15 +250,21 @@ backend se configura dos veces.
 
 1. En Vercel, importar el repositorio con **Root Directory `frontend`**. Detecta Vite solo:
    build `npm run build`, carpeta de salida `dist`.
+   En la práctica: Vercel detecta las dos aplicaciones del monorepo y ofrece importarlas juntas
+   ("multi-service project"). No va: en la fila `frontend` se elige **Import single
+   project**, porque el backend está en Render.
 2. Variable `VITE_API_BASE_URL=https://<backend>.onrender.com/api`. Vite la **copia dentro del
    build**: si se cambia, hay que volver a publicar el frontend para que tome efecto.
 3. Elegir un nombre de proyecto claro (por ejemplo `chefcito`), que define la URL
-   `https://chefcito.vercel.app` (o la que quede libre).
+   `https://chefcito.vercel.app` (o la que quede libre). En la práctica: `chefcito.vercel.app`
+   estaba tomado y Vercel asignó `https://chefcito-gold.vercel.app`.
 
 ### 6.5 Cerrar el círculo
 
 1. En Render: `CORS_ORIGINS=https://<frontend>` y `FRONTEND_URL=https://<frontend>`, sin barra
-   al final. Render vuelve a publicar el backend al guardar.
+   al final, y guardar con **Save, rebuild, and deploy**. Las variables recién valen cuando el
+   deploy nuevo está *live* (en el log, `Server listening`): si solo se guardan, el servidor
+   sigue con las anteriores (**Manual Deploy → Deploy latest commit** lo resuelve).
 2. Probar todo con la lista de la sección 9.
 
 ## 7. Variables de entorno
@@ -271,6 +293,7 @@ No definir `NODE_ENV=production` en Render antes del build: npm saltearía las
 
 | Riesgo | Qué pasa | Cómo se cubre |
 |---|---|---|
+| Contraseña de la base expuesta | Quien la tenga puede leer o borrar la base del deploy | No va en el repo ni en archivos. Si se compartió fuera del panel (por ejemplo en un chat), cambiarla en Aiven después de la defensa y actualizar `DATABASE_URL` en Render |
 | Backend apagado por falta de uso (Render gratis) | El primer pedido después de 15 minutos sin uso tarda hasta 1 minuto | Avisarlo junto a las credenciales del formulario. Abrir la app unos minutos antes de la defensa y del video |
 | Variables `CLOUDINARY_*` sin cargar en Render | Las fotos se guardan en el disco temporal de Render y desaparecen al reiniciar | Cargar las 3 variables. Comprobarlo con la lista de la sección 9 (el link de la foto tiene que ser de `res.cloudinary.com`) |
 | Base apagada por falta de uso (Aiven gratis) | El backend responde error de base: `GET /api/database/health` falla | Revisar el mail de Aiven y encenderla desde el panel. Entrar a la app cada tanto hasta cerrar la nota |
@@ -287,32 +310,51 @@ No definir `NODE_ENV=production` en Render antes del build: npm saltearía las
 
 ## 9. Lista de prueba después del deploy
 
-Probar en la URL de producción, desde la computadora **y desde un celular**:
+Probar en la URL de producción, desde la computadora **y desde un celular**. Estado de la
+prueba del 12/10/2026, hecha con Playwright en Chromium de escritorio (1366 px) y de celular
+(Pixel 7), más pedidos directos a la API para los servicios externos:
 
-- [ ] La landing muestra el top de recetas (pedido público al backend).
-- [ ] Login con `juanperez` y con `admindemo`; el admin entra a `/admin`.
-- [ ] Recargar la página estando en `/admin` y en el detalle de una receta: no da 404.
-- [ ] Buscar "fideos": aparecen resultados (los acentos se ven bien).
-- [ ] Crear una receta con foto: la foto se ve y su link (clic derecho → abrir imagen) es de
-      `res.cloudinary.com`.
+- [x] La landing muestra el top de recetas (pedido público al backend).
+- [x] Login con `juanperez` y con `admindemo`; el admin entra a `/admin`.
+- [x] Recargar la página estando en `/admin` y en el detalle de una receta: no da 404.
+- [x] Buscar "fideos": aparecen resultados (los acentos se ven bien).
+- [x] Inventario y donaciones cargan; ningún pedido falla ni hay errores en la consola.
+- [x] Subir una foto de receta: su link es de `res.cloudinary.com`. Al borrar la receta, la
+      foto se borra de Cloudinary (el link original puede verse un rato más por la caché de su
+      CDN; con otro tamaño, `/w_3/...`, Cloudinary ya responde "Resource not found").
 - [ ] Reiniciar el backend desde Render (**Manual Deploy → Restart service**) y verificar que
       la foto sigue.
 - [ ] Cambiar la foto de perfil y la de un ingrediente: la anterior desaparece de la Media
       Library de Cloudinary.
-- [ ] Una donación con el comprador de prueba de Mercado Pago: vuelve sola al sitio y queda completada.
-- [ ] Chefcito Bot responde (una sola consulta, para no gastar la cuota).
-- [ ] La sesión se mantiene al recargar y el logout funciona.
+- [x] Mercado Pago crea el link de pago con el token de prueba (`POST /api/donations/checkout`
+      → 201).
+- [x] Una donación pagada con el comprador de prueba de Mercado Pago: vuelve sola al sitio y
+      queda completada (12/10, `juanperez` → `luciafernandez`, $1.000).
+- [x] Chefcito Bot responde (una sola consulta, para no gastar la cuota) y usa el inventario.
+- [x] La sesión se mantiene al recargar y el logout funciona.
 
 ## 10. Mantenimiento
 
 - **Publicar cambios:** con Render y Vercel conectados a `main`, cada merge a `main` vuelve a
   publicar backend y frontend. Si un cambio toca `schema.prisma`, correr también
   `npx prisma db push` contra la base de Aiven (paso 6.2.5).
-- **Recargar los datos de demo** (antes del video, de la entrega y de la defensa): con la URL de
-  Aiven, `npx prisma db push --force-reset` (borra todos los datos y vuelve a crear las tablas)
-  y después cargar `demo-seed.sql` de nuevo. Se pierde todo lo que se haya cargado a mano en el
-  deploy. Las fotos que se habían subido quedan en Cloudinary sin uso: se pueden borrar desde
-  la Media Library (buscando `chefcito`).
+- **Qué publica cada push a `main`:** Vercel vuelve a compilar el frontend en cada push (1 o 2
+  minutos, sin cortes: cambia a la versión nueva cuando está lista). Render solo vuelve a
+  publicar el backend si el push cambia algo dentro de `backend/` (su Root Directory). La base
+  nunca cambia con un push.
+- **Recargar los datos de demo** (antes del video, de la entrega y de la defensa). Borra todos
+  los datos, vuelve a crear las tablas y carga el seed. Se pierde todo lo que se haya cargado a
+  mano en el deploy:
+
+  ```powershell
+  cd backend
+  $env:DATABASE_URL="mysql://avnadmin:contraseña@host:puerto/defaultdb?sslaccept=accept_invalid_certs"
+  npx prisma db push --force-reset --skip-generate
+  npx prisma db execute --file ../docs/demo-seed.sql --schema prisma/schema.prisma
+  ```
+
+  Las fotos que se habían subido quedan en Cloudinary sin uso: se pueden borrar desde la Media
+  Library (buscando `chefcito`).
 - **Logs:** si algo falla, los paneles de Render y Vercel muestran la salida del build y del
   servidor. Los errores del backend responden siempre JSON sin detalles internos, así que el
   motivo real está en esos logs.
@@ -339,12 +381,10 @@ Probar en la URL de producción, desde la computadora **y desde un celular**:
 
 ## 12. Links y credenciales
 
-A completar cuando el deploy esté funcionando.
-
 | | Link |
 |---|---|
-| Aplicación (frontend) | _pendiente_ |
-| API (backend) | _pendiente_ |
+| Aplicación (frontend) | https://chefcito-gold.vercel.app |
+| API (backend) | https://chefcito-api.onrender.com/api (estado: [`/api/database/health`](https://chefcito-api.onrender.com/api/database/health)) |
 
 El primer ingreso después de un rato sin uso puede tardar hasta 1 minuto (el backend se
 enciende); después responde normal.
@@ -356,10 +396,9 @@ Usuarios de la aplicación (cargados por `demo-seed.sql`):
 | `admindemo` | `123456` | Administrador | Panel de administración |
 | `juanperez` | `123456` | Usuario | El más completo: inventario, seguidos y donaciones recibidas y realizadas |
 
-Para probar una donación (Mercado Pago en modo prueba, sin dinero real):
-
-| Dato | Valor |
-|---|---|
-| Usuario comprador de prueba de Mercado Pago | _pendiente_ |
-| Contraseña | _pendiente_ |
-| Tarjeta de prueba | _pendiente_ (titular `APRO` para aprobar el pago) |
+Donaciones: usan Mercado Pago en modo prueba, sin dinero real (se probó una pagada el 12/10).
+Para pagar hay que iniciar sesión en Mercado Pago con un usuario comprador de prueba. Por
+seguridad, sus credenciales **no se publican en el repositorio**: el equipo muestra una donación
+en la defensa o se las pasa a los profesores si las piden. Las
+[tarjetas de prueba](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro/additional-content/your-integrations/test/cards)
+son públicas: el titular `APRO` aprueba el pago y `OTHE` lo rechaza.

@@ -116,6 +116,11 @@ API REST. Cada uno tiene su `package.json` y su `.env`.
 [demo-seed.sql](demo-seed.sql) → `npm run dev` en `backend/` y en `frontend/` (este con
 `VITE_API_BASE_URL=http://localhost:3000/api`).
 
+**Dónde está publicada:** https://chefcito-gold.vercel.app (frontend en Vercel), backend en
+Render, MySQL en Aiven y fotos en Cloudinary, todo gratis. Las preguntas del deploy (por qué
+Cloudinary, CORS, por qué tarda el primer ingreso) están en
+[deploy.md, sección 11](deploy.md#11-cómo-explicarlo-en-la-defensa).
+
 ### 1.2 Arquitectura del backend: capas por feature
 
 > **Lo explica en profundidad:** Parte D.

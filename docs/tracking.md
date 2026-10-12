@@ -62,9 +62,9 @@ Estados: **Hecha**, **En curso**, **Pendiente**.
 | T-6.1 | Tests: 1 unitario por integrante y 1 de integración en el backend, con base de test aparte ([#34](https://github.com/stefanoguerrina/tp-chefcito/pull/34)) | Todos | Hecha |
 | T-6.2 | Tests del frontend: 1 de componente y 1 end-to-end ([#34](https://github.com/stefanoguerrina/tp-chefcito/pull/34)) | Juan, Gastón | Hecha |
 | T-6.3 | Documentación: README, API, metodología, tracking y minutas ([#32](https://github.com/stefanoguerrina/tp-chefcito/pull/32)) | Stéfano | Hecha |
-| T-6.4 | Deploy de backend, frontend y base de datos | Gastón | Pendiente |
+| T-6.4 | Deploy de backend (Render), frontend (Vercel), base de datos (Aiven) y fotos (Cloudinary), publicado y probado el 12/10, con links y usuarios en [deploy.md](deploy.md) ([#36](https://github.com/stefanoguerrina/tp-chefcito/pull/36), [#38](https://github.com/stefanoguerrina/tp-chefcito/pull/38), Stéfano) | Gastón | Hecha |
 | T-6.5 | Video de la aplicación | Juan | Pendiente |
-| T-6.6 | Pull request de `develop` a `main` y formulario de entrega | Stéfano | Pendiente |
+| T-6.6 | Pull request de `develop` a `main` ([#37](https://github.com/stefanoguerrina/tp-chefcito/pull/37), [#39](https://github.com/stefanoguerrina/tp-chefcito/pull/39); repetirlo con lo último antes de entregar) y formulario de entrega | Stéfano | En curso |
 
 ## Bugs corregidos
 
@@ -80,11 +80,12 @@ Estados: **Hecha**, **En curso**, **Pendiente**.
 | Páginas sin indicador mientras cargaban datos | Estado de carga en todas las secciones y aviso global para pedidos lentos | [#28](https://github.com/stefanoguerrina/tp-chefcito/pull/28), [#29](https://github.com/stefanoguerrina/tp-chefcito/pull/29) |
 | El panel de administración volvía a cargar todo al cambiar de sección | Las secciones abiertas quedan montadas y se actualizan en segundo plano | [#29](https://github.com/stefanoguerrina/tp-chefcito/pull/29) |
 | En una base vacía, el primer registro creaba el rol "Usuario" con el id 1 (el de administrador) y todo usuario nuevo quedaba como admin | Al registrar, primero se crea el rol "Admin" con id 1 si no existe | [#34](https://github.com/stefanoguerrina/tp-chefcito/pull/34) |
+| Las fotos subidas se perdían en el deploy, porque el disco de Render gratis se borra en cada reinicio | Las fotos se suben a Cloudinary cuando están sus variables (en local, al disco como antes) | [#36](https://github.com/stefanoguerrina/tp-chefcito/pull/36) |
+| En celular la landing no mostraba "Iniciar sesión" (solo "Registrarse"), y entre 768 y 1024 px el buscador de la barra tapaba el logo | En celular el logo queda solo con el gorro y se ven los dos botones; el buscador aparece desde 1024 px y nunca achica el logo | [#38](https://github.com/stefanoguerrina/tp-chefcito/pull/38) |
 
 ## Issues abiertos
 
 | Issue | Detalle |
 |---|---|
-| Sin deploy | Plan en [deploy.md](deploy.md), todo gratis (Vercel, Render, Aiven y Cloudinary). El código ya está listo (fotos en Cloudinary, `vercel.json`, `engines`); falta crear los servicios y publicar |
 | Sin webhook de Mercado Pago | El pago se confirma consultando a Mercado Pago; con el deploy en https se podría sumar el webhook |
-| Recorrido visual pendiente | Revisar las pantallas en 375 px y 768 px y en modo claro |
+| Recorrido visual pendiente | Revisar las pantallas en 375 px y 768 px y en modo claro (la barra de la landing ya está revisada de 320 a 1366 px) |
