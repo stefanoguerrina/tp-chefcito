@@ -63,6 +63,7 @@ JWT_SECRET=cualquier-texto
 | `JWT_SECRET` | Sí | Clave con la que se firman las sesiones. Puede ser cualquier texto. |
 | `GEMINI_API_KEY` | No | Clave de Google Gemini para Chefcito Bot. Se obtiene gratis en [Google AI Studio](https://aistudio.google.com/apikey). Sin ella el chat avisa que no está disponible. |
 | `MERCADOPAGO_ACCESS_TOKEN` | No | Access Token de prueba de Mercado Pago para las donaciones (ver [Donaciones](#donaciones-opcional)). Sin él no se puede donar. |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | No | Cuenta de [Cloudinary](https://cloudinary.com) para guardar las fotos subidas. Se usan en el deploy; sin ellas las fotos se guardan en `backend/uploads/`. |
 | `PORT`, `CORS_ORIGINS`, `FRONTEND_URL` | No | Solo para el deploy. En local se usan los valores por defecto. |
 
 El resto de la aplicación funciona sin las variables opcionales.

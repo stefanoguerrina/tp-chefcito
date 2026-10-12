@@ -3,7 +3,7 @@
 // Solo el dueño de la receta (o un admin) puede agregar, modificar o borrar sus imágenes.
 import { imageRepository } from '../repository/imageRepository.js';
 import type { CreateImageData, UpdateImageData } from '../models/imageModel.js';
-import { deleteLocalUpload } from '../../../core/fileStorage.js';
+import { deleteUploadedImage } from '../../../core/fileStorage.js';
 
 // Devuelve las imágenes de una receta. Devuelve 'recipe_not_found' si la receta no existe.
 export async function getImagesByRecipe(idRecipe: number) {
@@ -50,9 +50,9 @@ export async function updateImage(
 
   const image = await imageRepository.update(idRecipe, id, data);
 
-  // Si se reemplazó la foto, el archivo anterior ya no lo usa nadie: se borra del disco.
+  // Si se reemplazó la foto, la anterior ya no la usa nadie: se borra (de Cloudinary o del disco).
   if (data.imageUrl !== undefined && data.imageUrl !== existing.imageUrl) {
-    await deleteLocalUpload(existing.imageUrl);
+    await deleteUploadedImage(existing.imageUrl);
   }
   return { ok: true, image };
 }
@@ -72,6 +72,6 @@ export async function deleteImage(
   if (!existing) return { ok: false, reason: 'not_found' };
 
   await imageRepository.delete(idRecipe, id);
-  await deleteLocalUpload(existing.imageUrl);
+  await deleteUploadedImage(existing.imageUrl);
   return { ok: true };
 }

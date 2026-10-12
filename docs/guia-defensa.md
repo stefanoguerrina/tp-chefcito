@@ -179,8 +179,12 @@ Ejemplo real: [recipeService.ts](../backend/src/features/recipe/services/recipeS
   `/recipes/:idRecipe/steps`, `/users/:userId/inventory`, `/ingredients/:idIngredient/nutritional-values`.
 - [prismaClient.ts](../backend/src/core/prismaClient.ts): **una sola instancia** de
   `PrismaClient` (Singleton).
-- [fileStorage.ts](../backend/src/core/fileStorage.ts): carpeta `backend/uploads/`, arma la ruta
-  pública y **borra archivos huérfanos** (con protección contra rutas tipo `../.env`).
+- [fileStorage.ts](../backend/src/core/fileStorage.ts): guarda cada foto subida en
+  **Cloudinary** si están las variables `CLOUDINARY_*` (el deploy: el disco de Render gratis se
+  borra en cada reinicio) o en `backend/uploads/` si no (local), y **borra fotos huérfanas** de
+  donde estén (con protección contra rutas tipo `../.env`). Cloudinary se llama con `fetch` desde
+  [cloudinaryClient.ts](../backend/src/core/cloudinaryClient.ts), firmando cada pedido con SHA-1
+  y el `API Secret`, sin SDK (igual que Mercado Pago).
 
 ### 1.3 Seguridad (todos)
 
@@ -199,7 +203,7 @@ Ejemplo real: [recipeService.ts](../backend/src/features/recipe/services/recipeS
 | SQL injection | Prisma parametriza todo (`contains` → `LIKE ?`). No hay SQL concatenado. |
 | Baja de usuarios | **Lógica** (`deletedAt`): los repositorios filtran `deletedAt: null`; un usuario dado de baja no puede loguearse y sus recetas se ocultan. |
 | Validación | En el back con `express-validator` (422 `{ message, errors: [{ campo, mensaje }] }`) **y** en el front antes de enviar (`noValidate` + errores por campo). |
-| Archivos | `multer`: solo JPG/PNG/WEBP/GIF, máx. 2 MB, nombre generado (la extensión sale del tipo, no del nombre que manda el usuario). En la BD solo se guarda la **ruta**, nunca el binario. |
+| Archivos | `multer`: solo JPG/PNG/WEBP/GIF, máx. 2 MB, nombre generado (la extensión sale del tipo, no del nombre que manda el usuario). En la BD solo se guarda la **ruta o el link** de Cloudinary, nunca el binario. |
 
 ### 1.4 Modelo de datos (resumen)
 
@@ -393,7 +397,7 @@ alguien manipule el `localStorage`, la API rechaza sin un token válido firmado)
 | `PATCH /api/users/:id/password` | Dueño/Admin | Cambiar contraseña (verifica la actual con `bcrypt.compare`; si no coincide, 400 con el error en `currentPassword`, no 401: un 401 haría que el front cierre la sesión) |
 | `DELETE /api/users/:id` | Dueño/Admin | **Baja lógica** (`deletedAt = now`) |
 | `PATCH /api/users/:id/restore` | Admin | Reactivar (`deletedAt = null`) |
-| `PATCH`/`DELETE /api/users/:id/avatar\|cover` | Dueño/Admin | Foto de perfil / portada (multer → `uploads/users/`); reemplazar o quitar **borra el archivo viejo** |
+| `PATCH`/`DELETE /api/users/:id/avatar\|cover` | Dueño/Admin | Foto de perfil / portada (multer → Cloudinary o `uploads/users/`); reemplazar o quitar **borra la foto vieja** |
 
 En el front, la edición del perfil (`EditProfileModal` + `EditProfileImages`, con el estado en
 `useEditProfileForm`) llama a estos endpoints y después a `updateCurrentUser` para que las
@@ -508,7 +512,7 @@ comunes) · landing · estructura del panel admin.
 | `GET /api/recipes` (`?userId=`) | Pública | Con `averageRating` y `reviewCount` (un `groupBy`, sin N+1) |
 | `GET /api/recipes/:id` | Pública (+ token opcional) | Receta completa + `nutrition` + `viewer: { isSaved, pantryIngredientIds }` en **un solo pedido** (3 consultas en paralelo) |
 | `POST /api/recipes` | Token | El dueño es el del token |
-| `PATCH`/`DELETE /api/recipes/:id` | Dueño/Admin (en el service) | Borrar también limpia las fotos del disco |
+| `PATCH`/`DELETE /api/recipes/:id` | Dueño/Admin (en el service) | Borrar también borra sus fotos (de Cloudinary o del disco) |
 | `PUT /api/recipes/:id/steps` | Dueño/Admin | **Reemplaza la lista entera** en una transacción, numera 1..N; mínimo 1 paso |
 | `PUT /api/recipes/:id/ingredients` | Dueño/Admin | Reemplaza la lista; mínimo 1, sin repetidos, todos existentes |
 | `POST/PATCH/DELETE /api/recipes/:id/images[/:id]` | Dueño/Admin | Archivo (multipart `image`) o link externo (`imageUrl`); una marcada `isMain` |
@@ -596,8 +600,8 @@ usuario**: es la suma del tiempo de cada paso.
   Usuario → Receta es una relación 1 a N, la PK del usuario pasa a Receta como clave foránea
   (`idUser`), y las categorías se asignan en la tabla intermedia `recipecategory`.
 - **¿Quién puede editar una receta?** Su dueño o un admin.
-- **¿Qué pasa con las fotos al borrar una receta?** Las filas se van por `Cascade` y los archivos
-  los borra el service del disco.
+- **¿Qué pasa con las fotos al borrar una receta?** Las filas se van por `Cascade` y las fotos
+  las borra el service de donde estén (Cloudinary en el deploy, el disco en local).
 - **¿Qué es mobile-first y cómo se ve en el código?** Los estilos base son los de mobile y se
   agregan reglas con `min-width` a medida que la pantalla crece (`respond-to`).
 - **¿Cómo funciona el modo oscuro?** Variables CSS que cambian según `data-theme` en `<html>`.

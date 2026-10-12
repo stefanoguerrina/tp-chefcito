@@ -3,7 +3,7 @@
 import bcrypt from 'bcrypt';
 import { userRepository } from '../repository/userRepository.js';
 import { toPublic, type UpdateUserData, type UserImageField, ADMIN_ROLE_ID } from '../models/userModel.js';
-import { deleteLocalUpload } from '../../../core/fileStorage.js';
+import { deleteUploadedImage } from '../../../core/fileStorage.js';
 import { ensureDefaultUserRole } from '../../rol/services/roleService.js';
 
 const SALT_ROUNDS = 10;
@@ -67,7 +67,7 @@ export async function setUserImage(
   if (!existing) return { ok: false, reason: 'not_found' };
 
   const updated = await userRepository.update(id, { [field]: imageUrl });
-  await deleteLocalUpload(existing[field]);
+  await deleteUploadedImage(existing[field]);
   return { ok: true, user: toPublic(updated) };
 }
 
@@ -81,7 +81,7 @@ export async function removeUserImage(
   if (!existing) return { ok: false, reason: 'not_found' };
 
   const updated = await userRepository.update(id, { [field]: null });
-  await deleteLocalUpload(existing[field]);
+  await deleteUploadedImage(existing[field]);
   return { ok: true, user: toPublic(updated) };
 }
 

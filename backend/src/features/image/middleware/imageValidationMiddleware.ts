@@ -1,9 +1,6 @@
 // Middlewares de validación para las rutas de image, usando express-validator.
 // Se ejecutan antes del controller para rechazar datos inválidos con mensajes claros.
-import { body, validationResult } from 'express-validator';
-import { Request, Response, NextFunction } from 'express';
-import { RECIPE_IMAGES_FOLDER } from './imageUploadMiddleware.js';
-import { deleteLocalUpload, toPublicPath } from '../../../core/fileStorage.js';
+import { body } from 'express-validator';
 
 // La imagen puede llegar de dos formas: como archivo (multipart, campo "image", lo
 // procesa imageUploadMiddleware y queda en req.file) o como link externo en imageUrl.
@@ -56,13 +53,3 @@ export const validateUpdateImage = [
       return true;
     }),
 ];
-
-// Va entre las reglas y handleValidationErrors (el de core, que responde el 422). Multer guarda
-// el archivo ANTES de validar, así que si los datos no son válidos la foto ya está en disco y
-// la request no va a seguir: se borra acá para no dejar archivos huérfanos.
-export const discardUploadIfInvalid = (req: Request, _res: Response, next: NextFunction): void => {
-  if (req.file && !validationResult(req).isEmpty()) {
-    void deleteLocalUpload(toPublicPath(RECIPE_IMAGES_FOLDER, req.file.filename));
-  }
-  next();
-};

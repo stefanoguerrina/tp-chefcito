@@ -47,8 +47,8 @@ userRouter.patch('/:id', verifyToken, verifyOwnerOrAdmin, validateUpdateUser, ha
 userRouter.patch('/:id/password', verifyToken, verifyOwnerOrAdmin, validateChangePassword, handleValidationErrors, handleChangeUserPassword);
 
 // Fotos del perfil: una sola de cada una por usuario, subida como archivo (multipart,
-// campo "image") y guardada en backend/uploads/users/. Reemplazar o quitar una foto borra
-// el archivo anterior del disco. Solo el propio usuario o un admin.
+// campo "image") y guardada en Cloudinary (deploy) o en backend/uploads/users/ (local).
+// Reemplazar o quitar una foto borra la anterior. Solo el propio usuario o un admin.
 // PATCH  /api/users/:id/avatar — sube o reemplaza la foto de perfil
 // DELETE /api/users/:id/avatar — quita la foto de perfil
 // PATCH  /api/users/:id/cover  — sube o reemplaza la foto de portada

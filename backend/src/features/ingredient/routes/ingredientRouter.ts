@@ -52,8 +52,8 @@ ingredientRouter.patch(
 ingredientRouter.delete('/:id', verifyToken, verifyAdmin, handleDeleteIngredientById);
 
 // Foto del ingrediente: una sola por ingrediente, subida como archivo (multipart, campo
-// "image") y guardada en backend/uploads/ingredients/. Reemplazarla o quitarla borra el
-// archivo anterior del disco. Solo admin.
+// "image") y guardada en Cloudinary (deploy) o en backend/uploads/ingredients/ (local).
+// Reemplazarla o quitarla borra la anterior. Solo admin.
 // PATCH  /api/ingredients/:id/image — sube o reemplaza la foto
 // DELETE /api/ingredients/:id/image — quita la foto
 ingredientRouter.patch('/:id/image', verifyToken, verifyAdmin, uploadIngredientImage, handleUploadIngredientImage);
