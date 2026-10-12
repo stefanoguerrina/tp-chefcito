@@ -63,7 +63,7 @@
   // sin media queries: la columna izquierda cambia mucho de ancho según la pantalla.
   &-pair {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
     gap: $spacing-lg;
     align-items: start;
   }

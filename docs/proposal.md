@@ -107,3 +107,5 @@ La aplicación está publicada en https://chefcito-gold.vercel.app (links y cred
 |[#37](https://github.com/stefanoguerrina/tp-chefcito/pull/37)|Guerrina, Stéfano|`develop` → `main` para publicar el deploy (T-6.6)|
 |[#38](https://github.com/stefanoguerrina/tp-chefcito/pull/38)|Guerrina, Stéfano|Deploy publicado y documentado (links, pasos reales, prueba y mantenimiento) y barra de la landing con "Iniciar sesión" en celular (T-6.4)|
 |[#39](https://github.com/stefanoguerrina/tp-chefcito/pull/39)|Guerrina, Stéfano|`develop` → `main` con la documentación del deploy y la corrección de la landing (T-6.6)|
+|[#40](https://github.com/stefanoguerrina/tp-chefcito/pull/40)|Guerrina, Stéfano|Correcciones de la app en celular (zoom al tocar los campos, teclado del login, scroll detrás de los modales, calendario del registro y pantallas que se salían del ancho) y CORS del frontend limitado a su dominio|
+|[#41](https://github.com/stefanoguerrina/tp-chefcito/pull/41)|Guerrina, Stéfano|`develop` → `main` con las correcciones de celular y de CORS (T-6.6)|

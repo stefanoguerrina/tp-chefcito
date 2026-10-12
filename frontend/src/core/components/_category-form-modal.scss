@@ -19,6 +19,11 @@
 .CategoryFormModal-card {
   width: 100%;
   max-width: 420px;
+  // Si no entra en la pantalla (celular apaisado o con el teclado abierto), scrollea adentro
+  // en vez de quedar cortada: la página de atrás no se mueve con un modal abierto.
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
   background: $color-surface-container-lowest;
   border: 1px solid $color-outline-variant;
   border-radius: $radius-lg;

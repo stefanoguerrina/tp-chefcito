@@ -1,6 +1,6 @@
 # Análisis del estado del proyecto
 
-Última actualización: 12/10/2026, con el deploy publicado y documentado (hasta el PR #39).
+Última actualización: 12/10/2026, con el deploy publicado y documentado y las correcciones de celular y de CORS (hasta el PR #41).
 
 Para qué sirve: saber qué falta para la Aprobación Directa (AD) según la
 [consigna de la cátedra](consigna-catedra.md) (partes 1 a 3)
@@ -42,7 +42,7 @@ deploy también están:**
 |:-:|:-:|---|:-:|---|
 | 1 | 🔴 | **Minutas** de las reuniones a partir de ahora | 3.1 | Quien coordine cada reunión |
 | 2 | 🟠 | **Video** mostrando el funcionamiento | 3.4 | Juan + todos |
-| 3 | 🔴 | **Último PR `develop` → `main`** antes de entregar (con el video y las minutas) y sumarlo a la tabla de la propuesta, que hoy llega al #39 | 3.5 | Stéfano |
+| 3 | 🔴 | **Último PR `develop` → `main`** antes de entregar (con el video y las minutas) y sumarlo a la tabla de la propuesta, que hoy llega al #41 | 3.5 | Stéfano |
 | 4 | 🔴 | **Formulario** de entrega con todo lo anterior + contacto para la defensa | 3.5 | Stéfano |
 | 5 | 🔴 | **Recargar el seed** en la base del deploy antes del video y de la entrega | 3.3 | Quien grabe el video |
 | 6 | 🟡 | Recorrido visual en 375 / 768 px y modo claro (la barra de la landing ya está) | 4 | Juan |
@@ -72,7 +72,7 @@ front, React + SASS mobile-first con 3 breakpoints, servicios, modelos, 1 CU por
 
 | Entregable | Reg | AD | Estado |
 |---|:-:|:-:|---|
-| Propuesta actualizada con links a los PRs | X | X | ✅ Hecho hasta el #39; sumar los PRs nuevos hasta la entrega |
+| Propuesta actualizada con links a los PRs | X | X | ✅ Hecho hasta el #41; sumar los PRs nuevos hasta la entrega |
 | Instrucciones de instalación en el README | X | X | ✅ Hecho |
 | Documentación en `docs/` con índice | X | X | ✅ Hecho |
 | Minutas de reunión y avance | X | X | ✅ Avance por fase hecho; ❌ faltan las minutas de las próximas reuniones |
@@ -163,9 +163,9 @@ consultas por día y por modelo: no gastarlas probando el mismo día.
 ### 3.5 Entrega 🔴
 
 1. ✅ PRs `develop` → `main` del deploy ([#37](https://github.com/stefanoguerrina/tp-chefcito/pull/37)
-   y [#39](https://github.com/stefanoguerrina/tp-chefcito/pull/39)). Antes de entregar, uno más con lo que entre después (video, minutas). Cada merge
+   y [#39](https://github.com/stefanoguerrina/tp-chefcito/pull/39)) y de las correcciones de celular y CORS ([#41](https://github.com/stefanoguerrina/tp-chefcito/pull/41)). Antes de entregar, uno más con lo que entre después (video, minutas). Cada merge
    a `main` vuelve a publicar el frontend solo.
-2. Sumar esos PRs a la tabla de [proposal.md](proposal.md#pull-requests) (hoy llega al #39).
+2. Sumar esos PRs a la tabla de [proposal.md](proposal.md#pull-requests) (hoy llega al #41).
 3. Formulario: https://kutt.to/DSWEntregaSistemaFinal, con la propuesta, el README, el video, la
    documentación de la API, la evidencia de tests, los links de deploy, las credenciales y el
    contacto.
@@ -174,7 +174,7 @@ consultas por día y por modelo: no gastarlas probando el mismo día.
 
 | Qué | Por qué o cómo |
 |---|---|
-| Recorrido visual en 375 / 768 px y modo claro | Lo último se ajustó en escritorio y modo oscuro. Ya está revisada la barra de la landing (de 320 a 1366 px). Falta revisar modales de categorías y de contraseña, lista de seguidores, desplegables de orden y del calendario, modal de editar cantidad del inventario y el panel de administración. Probar también en el navegador de la defensa (se usan `:has()` y `@container`). |
+| Recorrido visual en 375 / 768 px y modo claro | Revisado en celular (320, 360 y 390 px, modo claro): pantallas de usuario, panel admin, login, registro y calendario, sin desbordes; zoom de los campos, scroll detrás de los modales y calendario corregidos (rama `fix/mobile`). Falta 768 px, el modo oscuro en celular y probar en un iPhone real. Probar también en el navegador de la defensa (se usan `:has()`, `@container` y `dvh`). |
 | Migraciones de Prisma | Hoy se usa `db push`. Pasar a `migrate` obliga a cada uno a marcar la migración inicial como aplicada en su base: decidirlo en grupo y, mientras tanto, avisar en cada PR que toque `schema.prisma`. |
 | Webhook de Mercado Pago | Con el deploy en https permitiría confirmar el pago al instante aunque el usuario cierre todo. Solo si sobra tiempo. |
 
@@ -208,6 +208,6 @@ aunque no los haya programado. Los tests están en [tests.md](tests.md). La "Par
 - [ ] Recorrido visual en 375 / 768 px y modo claro
 - [ ] Seed recargado justo antes del video y de la entrega
 - [ ] Video
-- [x] PRs `develop` → `main` del deploy (#37, #39) y tabla de PRs de la propuesta hasta el #39
+- [x] PRs `develop` → `main` del deploy (#37, #39) y de las correcciones (#41), y tabla de PRs de la propuesta hasta el #41
 - [ ] Último PR `develop` → `main` antes de entregar y tabla de PRs al día
 - [ ] Formulario enviado y defensa coordinada

@@ -37,6 +37,26 @@ html {
   overflow-x: hidden;
 }
 
+/* Con un modal abierto (todos llevan aria-modal="true") la página de atrás no scrollea: así
+   la rueda del mouse o el dedo solo mueven el modal. scrollbar-gutter guarda el lugar de la
+   barra de scroll que desaparece, para que en la compu la página no salte de costado. */
+html:has([aria-modal='true']) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+/* Sin el zoom del doble toque: tocar rápido dos veces un botón (ej. las flechas del
+   calendario o el +/- de una cantidad) no agranda la página. El zoom con dos dedos sigue. */
+html,
+a,
+button,
+input,
+label,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
 body {
   margin: 0;
   background: var(--color-background);
@@ -52,6 +72,18 @@ input,
 select,
 textarea {
   font-family: inherit;
+}
+
+/* En pantallas táctiles el navegador del iPhone hace zoom al tocar un campo con letra de
+   menos de 16px (y no lo deshace al salir). Por eso ahí los campos de texto van a 16px como
+   mínimo. !important porque cada componente define el tamaño de sus inputs con su clase;
+   con mouse (compu) se siguen viendo con el tamaño de su diseño. */
+@media (pointer: coarse) {
+  input:not([type='checkbox'], [type='radio'], [type='range'], [type='file']),
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
 }
 
 /* Ícono de Google (Material Symbols): configuración base requerida por la fuente. */
