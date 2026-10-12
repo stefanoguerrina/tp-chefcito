@@ -5,7 +5,7 @@ Aplicación web de Chefcito, hecha con **React 19 + Vite**. Se comunica con el b
 
 ## Requisitos
 
-- Node.js 20 o superior (con npm).
+- Node.js 22 o superior (con npm).
 - El backend de Chefcito corriendo (ver [`../backend/README.md`](../backend/README.md)).
 
 ## Instalación y ejecución
@@ -82,6 +82,7 @@ src/
 | `/perfil`, `/usuarios/:id` | Perfil propio y perfil de otro usuario |
 | `/inventario` | Ingredientes disponibles del usuario |
 | `/guardadas` | Recetas guardadas |
+| `/donaciones` (`?tipo=realizadas`) | Donaciones recibidas y realizadas: totales, top 5 y actividad |
 | `/buscar?q=`, `/buscar/recetas`, `/buscar/categorias`, `/buscar/usuarios` | Buscador y listados con filtros (los filtros van en la URL) |
 | `/admin/:seccion?` | Panel de administración (solo rol administrador) |
 
@@ -107,5 +108,14 @@ de validación del backend, la falta de conexión y la sesión vencida). En la i
 ## Imágenes de recetas
 
 La foto de portada se comprime en el navegador (WebP, máximo 1280px) antes de subirse
-al backend, que la guarda en disco. En la base de datos solo se guarda la ruta del
-archivo, no la imagen. También se puede pegar el link de una imagen externa.
+al backend, que la guarda en Cloudinary (en el deploy) o en disco (en local). En la base de
+datos solo se guarda el link o la ruta, no la imagen, y `resolveImageUrl`
+(`shared/utils/imageUrl.js`) arma la URL completa. También se puede pegar el link de una
+imagen externa.
+
+## Deploy
+
+Publicado en Vercel (https://chefcito-gold.vercel.app), con `VITE_API_BASE_URL` apuntando al
+backend en Render. `vercel.json` manda todas las rutas a `index.html` para que React Router
+las resuelva. Cada push a `main` lo vuelve a publicar. Ver
+[docs/deploy.md](../docs/deploy.md).

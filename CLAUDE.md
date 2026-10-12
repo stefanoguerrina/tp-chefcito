@@ -102,8 +102,11 @@ Ingredient photos too: one per ingredient (`ingredient.imagePath`), uploaded via
 admin only) into `backend/uploads/ingredients/`; deleting the ingredient removes its file.
 Profile and ingredient photos go through the same `saveUploadedImage`; `deleteUploadedImage`
 removes an old or orphaned photo from Cloudinary or disk depending on the stored URL (and never
-throws). See [docs/deploy.md](docs/deploy.md) for the free hosting plan (Vercel, Render, Aiven,
-Cloudinary).
+throws). See [docs/deploy.md](docs/deploy.md) for the free hosting setup (Vercel, Render, Aiven,
+Cloudinary). It is live since 12/10/2026: front https://chefcito-gold.vercel.app, API
+https://chefcito-api.onrender.com/api. Render and Vercel deploy from `main` on every push
+(Render only when `backend/` changes); a `schema.prisma` change also needs `prisma db push`
+against the Aiven DB, and reloading the demo data is in deploy.md section 10.
 
 Each feature under `src/features/<name>/` follows the same internal layering — new features should
 mirror this shape:

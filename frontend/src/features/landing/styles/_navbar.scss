@@ -14,14 +14,19 @@
     margin: 0 auto;
     height: 88px;
     padding: 0 $spacing-gutter-mobile;
-    // Grid de 3 columnas en vez de un flex row: así el buscador (columna del medio)
-    // queda centrado en la barra sin importar cuánto midan logo+links o los botones.
-    display: grid;
-    grid-template-columns: 1fr minmax(0, 480px) 1fr;
+    // Mobile: logo a la izquierda y botones a la derecha (el buscador no se muestra).
+    display: flex;
     align-items: center;
-    gap: $spacing-lg;
+    justify-content: space-between;
+    gap: $spacing-sm;
 
+    // Desde lg aparece el buscador (en md no entra junto al logo y los botones): grid de 3
+    // columnas en vez de un flex row, así queda centrado en la barra sin importar cuánto
+    // midan logo+links o los botones. Las columnas de los costados nunca son más chicas que
+    // su contenido: si falta espacio se achica el buscador, no el logo.
     @include respond-to(lg) {
+      display: grid;
+      grid-template-columns: minmax(max-content, 1fr) minmax(0, 480px) minmax(max-content, 1fr);
       padding: 0 $spacing-gutter-desktop;
       gap: $spacing-xl;
     }
@@ -46,10 +51,19 @@
     flex-shrink: 0;
   }
 
+  // En mobile solo queda el gorro, para que entren "Iniciar sesión" y "Registrarse".
+  &-logoText {
+    display: none;
+
+    @include respond-to(sm) {
+      display: inline;
+    }
+  }
+
   &-search {
     display: none;
 
-    @include respond-to(md) {
+    @include respond-to(lg) {
       // El ancho ya lo da la columna del medio del grid (minmax(0, 480px));
       // acá solo hace falta que ocupe toda esa columna.
       width: 100%;
@@ -102,23 +116,24 @@
     }
   }
 
+  // En mobile los dos botones van con menos relleno para que entren junto al logo.
   &-loginButton {
-    display: none;
     background: transparent;
     border: none;
     font-weight: 600;
     font-size: 14px;
-    padding: 10px $spacing-md;
+    padding: 10px $spacing-sm;
     border-radius: $radius-md;
     cursor: pointer;
     color: $color-on-background;
+    white-space: nowrap;
 
     &:hover {
       background: $color-surface-container-low;
     }
 
     @include respond-to(sm) {
-      display: block;
+      padding: 10px $spacing-md;
     }
   }
 
@@ -128,14 +143,19 @@
     border: none;
     font-weight: 600;
     font-size: 14px;
-    padding: 10px $spacing-lg;
+    padding: 10px $spacing-md;
     border-radius: $radius-md;
     cursor: pointer;
+    white-space: nowrap;
     transition: background-color 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     &:hover {
       background: $color-primary-container;
       transform: scale(1.05);
+    }
+
+    @include respond-to(sm) {
+      padding: 10px $spacing-lg;
     }
   }
 }
