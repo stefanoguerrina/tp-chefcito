@@ -70,9 +70,10 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister, initialIdentif
                         id="login-password"
                         name="passwordLogIn"
                         autoComplete="current-password"
+                        // Sin autoFocus aunque venga el usuario recién registrado: el foco
+                        // automático sacaba el readOnly al instante y en el celular dejaba el
+                        // campo enfocado pero sin teclado (no se abría ni al tocarlo).
                         {...unlockProps}
-                        // Si ya viene el usuario (recién registrado), el cursor arranca acá.
-                        autoFocus={Boolean(initialIdentifier)}
                         value={form.password}
                         onChange={(event) => handleInputChange(event, "password")}
                         {...getFieldAriaProps("login-password", { error: fieldErrors.password, isRequired: true })}

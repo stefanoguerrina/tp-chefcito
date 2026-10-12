@@ -66,7 +66,8 @@
   --color-footer-border: transparent;
   --color-footer-text: #eef6e9;
   --color-footer-muted: #d7ddd0;
-  --color-footer-accent: #adefc2;
+  // Mismo verde claro que el logo del footer (siempre va esa versión, el fondo es oscuro).
+  --color-footer-accent: #b0d266;
   --color-footer-hover: #ffffff;
 
   // Fondo de la pantalla de carga (LoadingScreen): blanco puro en claro, negro en oscuro.
@@ -148,7 +149,7 @@
   --color-footer-border: #354035;
   --color-footer-text: #e4e9e1;
   --color-footer-muted: #a6b1a2;
-  --color-footer-accent: #95d4a9;
+  --color-footer-accent: #b0d266;
   --color-footer-hover: #ffffff;
 
   --color-loading-background: #000000;
