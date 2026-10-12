@@ -2,7 +2,7 @@
 // Orquesta el repositorio, aplica reglas y transforma datos para el controller.
 import { ingredientRepository } from '../repository/ingredientRepository.js';
 import type { CreateIngredientData, UpdateIngredientData } from '../models/ingredientModel.js';
-import { deleteLocalUpload } from '../../../core/fileStorage.js';
+import { deleteUploadedImage } from '../../../core/fileStorage.js';
 
 // Devuelve todos los ingredientes con sus categorías.
 export async function getAllIngredients() {
@@ -72,7 +72,7 @@ export async function deleteIngredient(
     await ingredientRepository.delete(id);
     // Recién con el ingrediente borrado se borra su foto: si el borrado fallaba (en uso),
     // la foto tenía que seguir estando.
-    await deleteLocalUpload(existing.imagePath);
+    await deleteUploadedImage(existing.imagePath);
     return { ok: true };
   } catch (error: any) {
     // Prisma lanza P2003/P2014 cuando hay filas relacionadas.
@@ -98,7 +98,7 @@ export async function setIngredientImage(
   if (!existing) return { ok: false, reason: 'not_found' };
 
   const ingredient = await ingredientRepository.update(id, { imagePath });
-  await deleteLocalUpload(existing.imagePath);
+  await deleteUploadedImage(existing.imagePath);
   return { ok: true, ingredient };
 }
 
@@ -114,6 +114,6 @@ export async function removeIngredientImage(
   if (!existing) return { ok: false, reason: 'not_found' };
 
   const ingredient = await ingredientRepository.update(id, { imagePath: null });
-  await deleteLocalUpload(existing.imagePath);
+  await deleteUploadedImage(existing.imagePath);
   return { ok: true, ingredient };
 }

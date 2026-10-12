@@ -27,10 +27,10 @@ Aplicación web orientada a facilitar la planificación y elección de comidas a
 |Persistencia|MySQL, con Prisma como ORM|
 |Autenticación|JWT propio (jsonwebtoken) y contraseñas hasheadas con bcrypt|
 |Validación|express-validator|
-|Archivos|multer (fotos de recetas, ingredientes y perfiles)|
+|Archivos|multer (fotos de recetas, ingredientes y perfiles), guardadas en Cloudinary en el deploy y en el disco del servidor en local|
 |Frontend|React 19 + Vite, React Router, Context API + useReducer|
 |Estilos|SASS, mobile-first|
-|Servicios externos|Mercado Pago Checkout Pro (donaciones, en modo prueba) y Google Gemini (ChatBot), llamados desde el backend con fetch, sin SDK|
+|Servicios externos|Mercado Pago Checkout Pro (donaciones, en modo prueba), Google Gemini (ChatBot) y Cloudinary (fotos), llamados desde el backend con fetch, sin SDK|
 
 Respecto a las tecnologías dadas en la cátedra (NodeJS, Express y Angular), el frontend se desarrolló con React + Vite en lugar de Angular. El resto del cuadro se suma a esa base.
 
@@ -61,7 +61,7 @@ Adicionales para Aprobación:
 |CRUD | 1. CRUD Rol y asignación de roles a usuarios<br>2. CRUD Inventario {depende de} CRUD Usuario y CRUD Ingrediente<br>3. CRUD Valor nutricional {depende de} CRUD Ingrediente<br>4. Pasos, ingredientes e imágenes de una receta {dependen de} CRUD Receta<br>5. CRUD Receta guardada {depende de} CRUD Usuario y CRUD Receta<br>6. Seguir usuarios {depende de} CRUD Usuario<br>7. Donación {depende de} CRUD Usuario. Se crea y se consulta; no se edita ni se borra porque su estado lo actualiza Mercado Pago y un pago registrado no se elimina, para no alterar el historial |
 |Listados | 1. Listado de recetas filtrado por tiempo de preparación. Muestra nombre y descripción de receta => Detalle CRUD Receta<br> 2.  Listado semanal de las diez recetas mejor valoradas. Muestra nombre, descripción, valoración de la receta y nombre del creador de la receta => Detalle muestra datos completos de la receta y del creador<br> 3. Listado de recetas filtrado por necesidades nutricionales. Muestra nombre y descripción de receta => Detalle CRUD Receta<br> 4. Listados de recetas, categorías y usuarios filtrables por nombre, ingredientes, autor, inventario y recetas guardadas. Muestra nombre, descripción y valoración => Detalle CRUD Receta o perfil del usuario<br> 5. Historial de donaciones recibidas y realizadas. Muestra usuario, monto, fecha y estado, con totales y los 5 principales donantes |
 |CUU/Epic | 1. Consultar recetas disponibles según categoría<br>2. Consultar las recetas mejor valoradas de la semana<br>3. Seguir a otros usuarios y ver en el inicio sus recetas y reseñas |
-|Otros | 1. Brindar asistencia personalizada mediante un ChatBot implementado con IA<br>2. Cálculo de valores nutricionales por porción de cada receta<br>3. Panel de administración con resumen de la aplicación y gestión de usuarios, roles, ingredientes y categorías<br>4. Pagos reales con Mercado Pago (modo prueba) para las donaciones<br>5. Fotos de perfil, portada, recetas e ingredientes subidas al servidor<br>6. Perfil con métricas del usuario y cambio de contraseña<br>7. Modo claro y oscuro |
+|Otros | 1. Brindar asistencia personalizada mediante un ChatBot implementado con IA<br>2. Cálculo de valores nutricionales por porción de cada receta<br>3. Panel de administración con resumen de la aplicación y gestión de usuarios, roles, ingredientes y categorías<br>4. Pagos reales con Mercado Pago (modo prueba) para las donaciones<br>5. Fotos de perfil, portada, recetas e ingredientes subidas desde la app (a Cloudinary en el deploy)<br>6. Perfil con métricas del usuario y cambio de contraseña<br>7. Modo claro y oscuro |
 
 ## Pull Requests
 Al ser un monorepo, cada PR puede incluir cambios de backend y de frontend. Todos se integraron a `develop`.

@@ -3,7 +3,7 @@
 // la request y armar la response HTTP correcta.
 import { Request, Response } from 'express';
 import * as ingredientService from '../services/ingredientService.js';
-import { toPublicPath, deleteLocalUpload } from '../../../core/fileStorage.js';
+import { saveUploadedImage, deleteUploadedImage } from '../../../core/fileStorage.js';
 import { INGREDIENT_IMAGES_FOLDER } from '../middleware/ingredientImageUploadMiddleware.js';
 import type { CreateNutritionalValueData } from '../../nutritionalValue/models/nutritionalValueModel.js';
 
@@ -161,7 +161,7 @@ export const handleDeleteIngredientById = async (req: Request, res: Response): P
 };
 
 // Sube (o reemplaza) la foto de un ingrediente. Body: multipart con el archivo en "image"
-// (ya guardado en disco por uploadIngredientImage).
+// (multer lo deja en memoria y acá se guarda en Cloudinary o en disco).
 // PATCH /api/ingredients/:id/image
 export const handleUploadIngredientImage = async (req: Request, res: Response): Promise<void> => {
   if (!req.file) {
@@ -172,18 +172,19 @@ export const handleUploadIngredientImage = async (req: Request, res: Response): 
     return;
   }
 
-  const imagePath = toPublicPath(INGREDIENT_IMAGES_FOLDER, req.file.filename);
+  let imagePath: string | undefined;
   try {
+    imagePath = await saveUploadedImage(req.file, INGREDIENT_IMAGES_FOLDER, `ingredient-${req.params.id}`);
     const result = await ingredientService.setIngredientImage(Number(req.params.id), imagePath);
     if (!result.ok) {
-      // No se guardó en ningún lado: se borra para no dejar un archivo huérfano.
-      await deleteLocalUpload(imagePath);
+      // No se guardó en la BD: se borra para no dejar una foto huérfana.
+      await deleteUploadedImage(imagePath);
       res.status(404).json({ message: 'Ingrediente no encontrado.' });
       return;
     }
     res.status(200).json(result.ingredient);
   } catch (error) {
-    await deleteLocalUpload(imagePath);
+    await deleteUploadedImage(imagePath);
     console.error('[uploadIngredientImage] Error inesperado:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }

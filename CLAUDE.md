@@ -86,9 +86,13 @@ JSON: `handleNotFound` (unknown route → 404 `{ message }`) and `handleUnexpect
 (malformed/oversized body → 400/413, uncaught error → 500 without internal details). Keep them
 last; controllers still catch their own expected errors.
 
-Recipe images are uploaded as files with `multer` (`features/image/middleware/imageUploadMiddleware.ts`)
-into `backend/uploads/recipes/` (gitignored, served statically at `/uploads`); the DB column
-`image.imageUrl` stores only the public path or an external http(s) link — never base64.
+Recipe images are uploaded as files with `multer` (`features/image/middleware/imageUploadMiddleware.ts`,
+`memoryStorage`) and the controller stores them with `saveUploadedImage` (`core/fileStorage.ts`):
+to Cloudinary when `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET` are set (the deploy, since Render's
+free disk is wiped on every restart; `core/cloudinaryClient.ts`, plain `fetch` + SHA-1 signature,
+no SDK), otherwise into `backend/uploads/recipes/` (gitignored, served statically at `/uploads`).
+The DB column `image.imageUrl` stores only the Cloudinary https link, the `/uploads/...` path or
+an external http(s) link — never base64.
 User profile photos follow the same scheme: one avatar and one cover per user
 (`User.avatarUrl` / `User.coverUrl`), uploaded via `PATCH /api/users/:id/avatar|cover`
 (`features/user/middleware/userImageUploadMiddleware.ts`) into `backend/uploads/users/`;
@@ -96,7 +100,10 @@ replacing or deleting one removes the old file.
 Ingredient photos too: one per ingredient (`ingredient.imagePath`), uploaded via
 `PATCH /api/ingredients/:id/image` (`features/ingredient/middleware/ingredientImageUploadMiddleware.ts`,
 admin only) into `backend/uploads/ingredients/`; deleting the ingredient removes its file.
-`core/fileStorage.ts` resolves upload paths and deletes orphaned files.
+Profile and ingredient photos go through the same `saveUploadedImage`; `deleteUploadedImage`
+removes an old or orphaned photo from Cloudinary or disk depending on the stored URL (and never
+throws). See [docs/deploy.md](docs/deploy.md) for the free hosting plan (Vercel, Render, Aiven,
+Cloudinary).
 
 Each feature under `src/features/<name>/` follows the same internal layering — new features should
 mirror this shape:

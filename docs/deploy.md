@@ -13,7 +13,7 @@ instalar nada.
 
 El código casi no cambia: cambia **dónde corre** cada parte y **cómo se configura**. Lo que en
 local está en los `.env`, en el deploy se carga como variables de entorno en el panel de cada
-servicio. El único cambio de código es dónde se guardan las fotos (sección 4).
+servicio. El único cambio de código fue dónde se guardan las fotos (sección 4).
 
 ```mermaid
 flowchart LR
@@ -131,52 +131,45 @@ Alternativas que se descartaron:
 | Guardar las fotos dentro de la base | La base gratis tiene 1 GB, y va contra lo que ya se decidió: en la base se guarda la ruta, no la imagen |
 | Un servidor propio gratis (Oracle Cloud) | Pide tarjeta y hay que administrar un servidor Linux (https, reinicios, actualizaciones) |
 
-### 4.3 Qué cambia en el código
+### 4.3 Qué cambió en el código
 
-Va en el PR de deploy, solo en el backend:
+Solo el backend. El frontend y la base quedaron igual.
 
-| Archivo | Cambio |
+| Archivo | Qué hace |
 |---|---|
-| [fileStorage.ts](../backend/src/core/fileStorage.ts) | Dos funciones nuevas. **Subir**: si hay credenciales de Cloudinary, manda el archivo a Cloudinary y devuelve su link `https`; si no, lo escribe en `backend/uploads/<carpeta>/` y devuelve `/uploads/...` como hoy. **Borrar**: si el link es de Cloudinary, le pide a Cloudinary que la borre; si es `/uploads/...`, borra el archivo del disco como hoy; cualquier otro link se ignora |
-| `imageUploadMiddleware.ts`, `ingredientImageUploadMiddleware.ts`, `userImageUploadMiddleware.ts` | multer pasa de `diskStorage` a `memoryStorage`: valida igual que ahora, pero deja el archivo en memoria (`req.file.buffer`) en vez de escribirlo en el disco |
-| `imageController.ts`, `ingredientController.ts`, `userController.ts` | En lugar de armar la ruta con `toPublicPath`, llaman a la función de subir y guardan el link que devuelve. Si la operación falla después de subir, borran la foto (como hoy borran el archivo huérfano) |
-| Services que hoy llaman a `deleteLocalUpload` (receta, imagen, ingrediente, usuario) | Llaman a la función de borrar, que entiende los dos tipos de link |
-| `backend/.env.example` | Las 3 variables nuevas, comentadas como opcionales |
+| [cloudinaryClient.ts](../backend/src/core/cloudinaryClient.ts) | Cliente mínimo de Cloudinary con `fetch` (como el de Mercado Pago): sube una foto, la borra y reconoce si un link es de nuestra cuenta |
+| [fileStorage.ts](../backend/src/core/fileStorage.ts) | `saveUploadedImage`: con las variables `CLOUDINARY_*` sube la foto a Cloudinary y devuelve su link `https`; sin ellas la escribe en `backend/uploads/<carpeta>/` y devuelve `/uploads/...`. `deleteUploadedImage`: borra de Cloudinary o del disco según el link guardado; ignora los links externos y nunca lanza errores |
+| `imageUploadMiddleware.ts`, `ingredientImageUploadMiddleware.ts`, `userImageUploadMiddleware.ts` | multer usa `memoryStorage`: valida tipo y tamaño igual que antes, pero deja el archivo en memoria (`req.file.buffer`) en vez de escribirlo en el disco |
+| `imageController.ts`, `ingredientController.ts`, `userController.ts` | Guardan la foto con `saveUploadedImage` y pasan el link al service. Si la operación falla después (receta inexistente, sin permiso), borran la foto recién guardada |
+| Services de receta, imagen, ingrediente y usuario | Al reemplazar o borrar, llaman a `deleteUploadedImage` |
+| `imageValidationMiddleware.ts` | Se quitó `discardUploadIfInvalid`: como la foto se guarda recién en el controller, si la validación falla no queda nada que limpiar |
 
 Cómo se llama a Cloudinary sin SDK (su API de subida firmada):
 
 - **Subir:** `POST https://api.cloudinary.com/v1_1/<cloud_name>/image/upload`, un `FormData`
-  con `file`, `folder` (por ejemplo `chefcito/recipes`), `timestamp`, `api_key` y `signature`.
-  Responde `secure_url` (el link que se guarda) y `public_id`.
+  con `file`, `public_id` (por ejemplo `chefcito/recipes/recipe-7-1712345678-ab12cd`),
+  `timestamp`, `api_key` y `signature`. Responde `secure_url`, el link que se guarda en la base.
 - **Borrar:** `POST https://api.cloudinary.com/v1_1/<cloud_name>/image/destroy` con
   `public_id`, `timestamp`, `api_key` y `signature`. El `public_id` se saca del link guardado
   (lo que sigue a `/upload/v<número>/`, sin la extensión).
 - **Firma:** SHA-1 (módulo `crypto`, que viene con Node) de los parámetros ordenados
-  alfabéticamente (`folder=...&timestamp=...`) seguidos del `API Secret`. Así Cloudinary sabe
-  que el pedido viene del backend sin que el secreto viaje nunca.
+  alfabéticamente (`public_id=...&timestamp=...`) seguidos del `API Secret`. Así Cloudinary
+  sabe que el pedido viene del backend sin que el secreto viaje nunca.
 
-## 5. Qué más falta agregar al repositorio
+## 5. Qué tiene el repositorio para el deploy
 
-El resto del código ya está preparado para el deploy:
-
-| Ya está | Dónde |
+| Qué | Dónde |
 |---|---|
 | `npm run build` y `npm start` en el backend (incluye `prisma generate`) | `backend/package.json` |
+| Node 22 o más nuevo (`engines`), para que Render y Vercel no usen uno viejo: Vite 8 y TypeScript 6 lo piden | `backend/package.json`, `frontend/package.json` |
 | El puerto se toma de `PORT` (lo define Render) | `backend/src/server.ts` |
 | Orígenes permitidos por CORS configurables con `CORS_ORIGINS` | `backend/src/app.ts` |
 | La vuelta desde Mercado Pago usa `FRONTEND_URL`; con `https` vuelve sola al sitio (`auto_return`) | `features/donation` |
 | La revisión de donaciones vencidas corre al arrancar y cada 10 minutos, así que se pone al día cada vez que Render enciende el backend | `backend/src/server.ts` |
-| El frontend lee la URL del backend de `VITE_API_BASE_URL` | `frontend/src/shared/config/config.js` |
+| Fotos en Cloudinary si están las variables `CLOUDINARY_*` (sección 4) | `backend/src/core/` |
 | Chequeo de salud con la base: `GET /api/database/health` | `features/database` |
-
-Lo que **falta**, en el mismo PR de deploy que las fotos:
-
-| Falta | Por qué |
-|---|---|
-| Subida de fotos a Cloudinary | Sección 4.3 |
-| `frontend/vercel.json` con una regla que mande todas las rutas a `/index.html` | React Router resuelve las rutas en el navegador. Sin la regla, entrar directo a `/admin` o recargar `/recetas/3` le pide ese archivo a Vercel, que no existe, y da 404 |
-| `"engines": { "node": ">=22" }` en los dos `package.json` | Vite 8 y TypeScript 6 piden un Node reciente; así Render y Vercel no usan uno viejo |
-| Variables `CLOUDINARY_*` en el [README.md](../README.md) raíz y en este documento | Para que quede documentado qué se carga en cada ambiente |
+| El frontend lee la URL del backend de `VITE_API_BASE_URL` | `frontend/src/shared/config/config.js` |
+| Regla que manda todas las rutas a `/index.html`. React Router resuelve las rutas en el navegador: sin la regla, entrar directo a `/admin` o recargar `/recetas/3` le pide ese archivo a Vercel, que no existe, y da 404 | `frontend/vercel.json` |
 
 ## 6. Paso a paso
 
@@ -189,8 +182,12 @@ backend se configura dos veces.
 1. Crear la cuenta en Cloudinary (gratis, se puede entrar con GitHub o Google).
 2. En el panel (**Dashboard** o **Settings → API Keys**) copiar **Cloud name**, **API Key** y
    **API Secret**. Las tres van a variables del backend (sección 7); el `API Secret` es secreto.
-3. No hace falta crear carpetas: Cloudinary crea `chefcito/recipes`, `chefcito/users` y
-   `chefcito/ingredients` con la primera foto de cada tipo.
+3. No hace falta crear carpetas: cada foto se sube con un nombre que empieza con
+   `chefcito/recipes/`, `chefcito/users/` o `chefcito/ingredients/`.
+4. Opcional, para probarlo antes del deploy: cargar las tres variables en el `backend/.env`
+   local, subir una foto desde la app y verificar que aparece en la Media Library de Cloudinary
+   y que su link es de `res.cloudinary.com`. Después borrarlas del `.env` si no se quieren usar
+   en local.
 
 ### 6.2 Base de datos (Aiven)
 
@@ -277,7 +274,7 @@ No definir `NODE_ENV=production` en Render antes del build: npm saltearía las
 | Backend apagado por falta de uso (Render gratis) | El primer pedido después de 15 minutos sin uso tarda hasta 1 minuto | Avisarlo junto a las credenciales del formulario. Abrir la app unos minutos antes de la defensa y del video |
 | Variables `CLOUDINARY_*` sin cargar en Render | Las fotos se guardan en el disco temporal de Render y desaparecen al reiniciar | Cargar las 3 variables. Comprobarlo con la lista de la sección 9 (el link de la foto tiene que ser de `res.cloudinary.com`) |
 | Base apagada por falta de uso (Aiven gratis) | El backend responde error de base: `GET /api/database/health` falla | Revisar el mail de Aiven y encenderla desde el panel. Entrar a la app cada tanto hasta cerrar la nota |
-| Rutas del frontend sin redirigir | Recargar o entrar directo a `/admin` da 404 | `frontend/vercel.json` (sección 5) |
+| Rutas del frontend sin redirigir | Recargar o entrar directo a `/admin` da 404 | `frontend/vercel.json` (ya está): el Root Directory de Vercel tiene que ser `frontend` para que lo lea |
 | CORS mal configurado | El frontend carga pero ningún dato: "error de conexión" | `CORS_ORIGINS` igual a la URL del frontend, con `https` y sin barra final. Las URLs de vista previa de Vercel son otras: probar siempre en la de producción |
 | URL del backend con `http` | El navegador bloquea los pedidos desde una página `https` | Usar siempre la URL `https` de Render |
 | `VITE_API_BASE_URL` cambiada sin volver a publicar | El frontend sigue llamando a la URL vieja | Redeploy del frontend después de cambiarla |
@@ -315,7 +312,7 @@ Probar en la URL de producción, desde la computadora **y desde un celular**:
   Aiven, `npx prisma db push --force-reset` (borra todos los datos y vuelve a crear las tablas)
   y después cargar `demo-seed.sql` de nuevo. Se pierde todo lo que se haya cargado a mano en el
   deploy. Las fotos que se habían subido quedan en Cloudinary sin uso: se pueden borrar desde
-  la Media Library (carpeta `chefcito`).
+  la Media Library (buscando `chefcito`).
 - **Logs:** si algo falla, los paneles de Render y Vercel muestran la salida del build y del
   servidor. Los errores del backend responden siempre JSON sin detalles internos, así que el
   motivo real está en esos logs.

@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import * as userService from '../services/userService.js';
 import { toPublicProfile, type UserImageField } from '../models/userModel.js';
 import type { AuthRequest } from '../../../core/middleware/authMiddleware.js';
-import { deleteLocalUpload, toPublicPath } from '../../../core/fileStorage.js';
+import { deleteUploadedImage, saveUploadedImage } from '../../../core/fileStorage.js';
 import { USER_IMAGES_FOLDER } from '../middleware/userImageUploadMiddleware.js';
 
 // Devuelve la lista de usuarios sin sus contraseñas.
@@ -173,18 +173,19 @@ export const handleUploadUserImage = (field: UserImageField) =>
       return;
     }
 
-    const imageUrl = toPublicPath(USER_IMAGES_FOLDER, req.file.filename);
+    let imageUrl: string | undefined;
     try {
+      imageUrl = await saveUploadedImage(req.file, USER_IMAGES_FOLDER, `user-${req.params.id}`);
       const result = await userService.setUserImage(Number(req.params.id), field, imageUrl);
       if (!result.ok) {
-        // No se guardó en ningún lado: se borra para no dejar un archivo huérfano.
-        await deleteLocalUpload(imageUrl);
+        // No se guardó en la BD: se borra para no dejar una foto huérfana.
+        await deleteUploadedImage(imageUrl);
         res.status(404).json({ message: 'Usuario no encontrado.' });
         return;
       }
       res.status(200).json(result.user);
     } catch (error) {
-      await deleteLocalUpload(imageUrl);
+      await deleteUploadedImage(imageUrl);
       console.error(`[uploadUserImage:${field}] Error inesperado:`, error);
       res.status(500).json({ message: 'Error interno del servidor.' });
     }

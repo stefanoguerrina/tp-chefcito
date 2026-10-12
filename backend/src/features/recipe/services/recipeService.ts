@@ -5,7 +5,7 @@
 // pero solo su dueño o un admin puede modificarlas o eliminarlas.
 import { recipeRepository } from '../repository/recipeRepository.js';
 import type { CreateRecipeData, UpdateRecipeData } from '../models/recipeModel.js';
-import { deleteLocalUpload } from '../../../core/fileStorage.js';
+import { deleteUploadedImage } from '../../../core/fileStorage.js';
 import { computeRecipeNutrition } from './recipeNutritionService.js';
 import { withReviewStats } from '../../review/services/reviewService.js';
 
@@ -113,8 +113,8 @@ export async function deleteRecipe(
 
   await recipeRepository.delete(id);
 
-  // Las filas de image se borran en cascada, pero los archivos subidos quedan en disco:
-  // se limpian acá para no acumular fotos de recetas que ya no existen.
-  await Promise.all(existing.image.map((img) => deleteLocalUpload(img.imageUrl)));
+  // Las filas de image se borran en cascada, pero las fotos subidas siguen guardadas (en
+  // Cloudinary o en disco): se borran acá para no acumular fotos de recetas que ya no existen.
+  await Promise.all(existing.image.map((img) => deleteUploadedImage(img.imageUrl)));
   return { ok: true };
 }

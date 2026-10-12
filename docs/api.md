@@ -48,7 +48,8 @@ además indican el campo:
 - Los listados responden `200 []` cuando están vacíos (nunca 404).
 - Los listados paginados (`/search/...`) responden `{ items, total, page, pageSize, totalPages }`.
 - Las fotos se suben como archivo en el campo `image` (JPG, PNG, WEBP o GIF, hasta 2 MB). En la
-  base solo se guarda la ruta pública (`/uploads/...`), que el backend sirve fuera de `/api`:
+  base solo se guarda dónde quedó: con Cloudinary configurado (el deploy), su link `https`; si
+  no (en local), la ruta pública (`/uploads/...`), que el backend sirve fuera de `/api`:
   `GET /uploads/recipes|users|ingredients/<archivo>`.
 - Los números decimales aceptan coma o punto (`1,5` o `1.5`).
 
