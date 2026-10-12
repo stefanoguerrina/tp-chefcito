@@ -28,8 +28,17 @@ function DropdownSelect({ id, value, options, placeholder = 'Elegí una opción'
 
   // La lista siempre abre hacia abajo. Si queda tapada por el borde del modal (ej. en la
   // última fila), se desplaza lo justo para que se vea entera, en vez de abrirla hacia arriba.
+  // Además, la lista arranca mostrando la opción elegida en el medio (ej. en la lista de años
+  // del calendario, el año elegido y no siempre el primero). Se mueve solo el scroll de la
+  // lista (scrollTop), no el de la página.
   useEffect(() => {
-    if (isOpen) listRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (!isOpen) return;
+    const list = listRef.current;
+    list?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    const selectedItem = list?.querySelector('[aria-selected="true"]');
+    if (selectedItem) {
+      list.scrollTop = selectedItem.offsetTop - (list.clientHeight - selectedItem.offsetHeight) / 2;
+    }
   }, [isOpen]);
 
   const handleSelect = (optionValue) => {

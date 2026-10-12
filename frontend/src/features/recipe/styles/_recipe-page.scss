@@ -5,8 +5,12 @@
 @use '../../../styles/abstracts' as *;
 
 .RecipePage {
-  padding: $spacing-lg $spacing-xl;
+  padding: $spacing-lg $spacing-gutter-mobile;
   font-family: $font-body;
+
+  @include respond-to(md) {
+    padding: $spacing-lg $spacing-xl;
+  }
 
   // ---- Header ----
   &-header {
@@ -136,8 +140,14 @@
   &-grid {
     margin-top: $spacing-lg;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-    gap: $spacing-xl;
+    // min(100%, 360px): en un celular más angosto que 360px la columna ocupa todo el ancho
+    // (sin el min, la tarjeta se salía de la pantalla y el navegador achicaba la página).
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+    gap: $spacing-lg;
+
+    @include respond-to(md) {
+      gap: $spacing-xl;
+    }
   }
 }
 

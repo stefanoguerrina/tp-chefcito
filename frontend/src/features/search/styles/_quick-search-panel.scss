@@ -13,7 +13,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  max-height: 70vh;
+  max-height: 70dvh;
   padding: $spacing-md;
   background: $color-surface-container-lowest;
   border: 1px solid $color-outline-variant;
@@ -22,7 +22,7 @@
   text-align: left;
 
   @include respond-to(md) {
-    max-height: min(75vh, 680px);
+    max-height: min(75dvh, 680px);
     padding: $spacing-lg;
   }
 

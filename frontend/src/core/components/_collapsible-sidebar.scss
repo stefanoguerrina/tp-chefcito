@@ -5,6 +5,12 @@
 // se reacomoda cada vez que el mouse pasa por la sidebar.
 @use '../../styles/abstracts' as *;
 
+// Con el panel abierto en mobile (el fondo oscuro solo existe mientras está abierto), la
+// página de atrás no scrollea, igual que con un modal (ver index.css).
+html:has(.CollapsibleSidebar-backdrop) {
+  overflow: hidden;
+}
+
 .CollapsibleSidebar {
   // --- Barra superior (solo mobile) ---
   &-topbar {
