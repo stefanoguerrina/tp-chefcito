@@ -14,9 +14,11 @@ function Navbar({ onLoginClick, onRegisterClick, onRequireAuth }) {
         {/* Agrupados en un solo item de grid para que la barra de búsqueda pueda quedar
             centrada en la columna del medio, sin importar cuánto midan logo+links. */}
         <div className="Navbar-start">
-          <a className="Navbar-logo" href="#top">
+          {/* aria-label: en mobile el texto se oculta para que entren los dos botones, y el
+              link sigue teniendo nombre para los lectores de pantalla. */}
+          <a className="Navbar-logo" href="#top" aria-label="Chefcito">
             <ChefcitoLogo />
-            Chefcito
+            <span className="Navbar-logoText">Chefcito</span>
           </a>
         </div>
 

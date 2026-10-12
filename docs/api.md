@@ -1,8 +1,8 @@
 # API de Chefcito
 
 API REST del backend (`backend/`). Todas las rutas están bajo `/api` (en local,
-`http://localhost:3000/api`) y reciben y devuelven JSON, salvo las subidas de fotos, que usan
-`multipart/form-data`.
+`http://localhost:3000/api`; en el deploy, `https://chefcito-api.onrender.com/api`) y reciben
+y devuelven JSON, salvo las subidas de fotos, que usan `multipart/form-data`.
 
 ## Convenciones
 

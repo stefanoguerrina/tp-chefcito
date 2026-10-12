@@ -17,6 +17,14 @@ Trabajo práctico de la materia Desarrollo de Software, comisión 3K02.
 La documentación del proyecto (propuesta, API, metodología, tracking, minutas, tests y deploy) está en
 [docs/README.md](docs/README.md).
 
+## Aplicación publicada
+
+Se puede usar sin instalar nada en **https://chefcito-gold.vercel.app**, con los
+[usuarios de prueba](#usuarios-de-prueba) (por ejemplo `juanperez` / `123456`). La API está en
+https://chefcito-api.onrender.com/api. El primer ingreso después de un rato sin uso puede tardar
+hasta 1 minuto, mientras se enciende el backend. Detalle del deploy y credenciales en
+[docs/deploy.md](docs/deploy.md).
+
 ## Estructura
 
 El repositorio tiene dos partes independientes que se comunican por una API REST:
@@ -30,7 +38,7 @@ Cada una tiene su propio `package.json` y su propio archivo `.env`, y se ejecuta
 
 ## Requisitos
 
-- Node.js 20 o superior (incluye npm).
+- Node.js 22 o superior (incluye npm).
 - Un servidor MySQL 8 al que se pueda conectar.
 - Un navegador actualizado (Chrome, Edge o Firefox).
 

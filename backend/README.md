@@ -13,10 +13,11 @@
 | Framework web | Express 5 |
 | Lenguaje | TypeScript (compilado a CommonJS con `tsc`) |
 | ORM | Prisma 5 (`@prisma/client`) |
-| Base de datos | MySQL (servidor local, puerto 3306) |
+| Base de datos | MySQL 8 (local en desarrollo, Aiven en el deploy) |
 | Autenticación | JWT (`jsonwebtoken`) + contraseñas hasheadas con `bcrypt` |
 | Validación de entrada | `express-validator` |
 | Variables de entorno | `dotenv` |
+| Fotos subidas | `multer` en memoria → Cloudinary (deploy) o `uploads/` (local) |
 | Dev server | `tsc-watch` → reconstruye y reinicia en cada cambio |
 
 ### Scripts disponibles
@@ -47,9 +48,13 @@ El archivo `.env` debe existir en `backend/` y **nunca se commitea**. Se crea co
 | `JWT_SECRET` | Sí | Clave para firmar los JWT |
 | `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_FALLBACK_MODEL` | No | Chefcito Bot (sin la clave, `/api/assistant/chat` responde 503) |
 | `MERCADOPAGO_ACCESS_TOKEN` | No | Donaciones (sin él, `/api/donations/checkout` responde 503) |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | No | Fotos en Cloudinary (con las tres; sin ellas, en `uploads/`) |
 | `PORT`, `CORS_ORIGINS`, `FRONTEND_URL` | No | Deploy: puerto, orígenes permitidos y URL pública del front |
 
 > ⚠️ Nunca hardcodear URLs ni credenciales en el código. Siempre usar `process.env`.
+
+En el deploy (Render, https://chefcito-api.onrender.com/api) estas variables se cargan en el
+panel del servicio, no en un `.env`. Ver [docs/deploy.md](../docs/deploy.md).
 
 ---
 
@@ -67,7 +72,8 @@ backend/
 │   ├── app.ts                 # Arma y exporta la app: CORS, rutas y manejo de errores (sin listen)
 │   ├── core/
 │   │   ├── prismaClient.ts    # Singleton de PrismaClient — importar desde acá siempre
-│   │   ├── fileStorage.ts     # Carpeta uploads/: rutas públicas y borrado de archivos subidos
+│   │   ├── fileStorage.ts     # Guarda y borra fotos subidas: Cloudinary (deploy) o uploads/ (local)
+│   │   ├── cloudinaryClient.ts # Subida y borrado en Cloudinary con fetch y firma SHA-1 (sin SDK)
 │   │   └── middleware/
 │   │       ├── authMiddleware.ts        # verifyToken / verifyAdmin / verifyOwnerOrAdmin
 │   │       ├── validationMiddleware.ts  # handleValidationErrors: el único, lo usan todas las rutas
@@ -76,7 +82,8 @@ backend/
 │   │   └── apiRouter.ts       # Router central que monta todos los sub-routers
 │   └── features/
 │       ├── auth/              # Login y registro
-│       ├── user/              # CRUD de usuarios + panel admin
+│       ├── user/              # CRUD de usuarios, fotos de perfil y portada
+│       ├── admin/             # Panel admin: resumen y tabla paginada de usuarios
 │       ├── rol/               # CRUD de roles y asignación a usuarios
 │       ├── ingredient/        # CRUD de ingredientes
 │       ├── ingredientCategory/ # CRUD de categorías de ingredientes
@@ -93,8 +100,9 @@ backend/
 │       ├── follow/            # "Seguir" a otros usuarios (sus "amigos" en la home)
 │       ├── feed/              # Home: recetas y reseñas de amigos, top de recetas de la semana
 │       ├── assistant/         # Chefcito Bot: chat con IA (Google Gemini)
+│       ├── donation/          # Donaciones con Mercado Pago Checkout Pro
 │       └── database/          # Health check de la conexión a la base
-├── uploads/                   # Imágenes subidas (se crea sola, no se commitea)
+├── uploads/                   # Imágenes subidas en local (se crea sola, no se commitea)
 ```
 
 ### Estructura interna de cada feature
@@ -308,14 +316,18 @@ Las fotos **no se guardan en la base de datos**. `POST/PATCH /api/recipes/:idRec
 aceptan dos formatos:
 
 - **Archivo** (`multipart/form-data`, campo `image`): lo procesa `multer`
-  (`features/image/middleware/imageUploadMiddleware.ts`), que valida tipo (JPG, PNG, WEBP,
-  GIF) y tamaño (máx. 2 MB) y lo guarda en `backend/uploads/recipes/` con un nombre único.
+  (`features/image/middleware/imageUploadMiddleware.ts`, en memoria), que valida tipo (JPG,
+  PNG, WEBP, GIF) y tamaño (máx. 2 MB). El controller lo guarda con `saveUploadedImage`
+  (`core/fileStorage.ts`) con un nombre único: en Cloudinary si están las variables
+  `CLOUDINARY_*` (el deploy) o en `backend/uploads/recipes/` si no (local).
 - **Link externo** (JSON, campo `imageUrl`): debe empezar con `http://` o `https://`.
   Ya no se aceptan data URLs en base64.
 
-En la columna `image.imageUrl` (`VARCHAR(500)`) queda solo la ruta pública
-(ej. `/uploads/recipes/recipe-123.webp`) o el link. Express sirve la carpeta en `/uploads`.
-Al reemplazar o borrar una imagen, o al borrar la receta, el archivo se elimina del disco.
+En la columna `image.imageUrl` (`VARCHAR(500)`) queda solo el link de Cloudinary, la ruta
+pública (ej. `/uploads/recipes/recipe-123.webp`) o el link externo. Express sirve la carpeta en
+`/uploads`. Al reemplazar o borrar una imagen, o al borrar la receta, la foto se elimina de
+Cloudinary o del disco (`deleteUploadedImage`). Las fotos de perfil e ingredientes siguen el
+mismo esquema.
 El frontend comprime la foto (WebP, máx. 1280px) antes de subirla.
 
 ---
@@ -369,7 +381,7 @@ Esto evita abrir múltiples conexiones innecesarias a la BD.
 - [x] Validación de entrada con mensajes de error apropiados
 - [x] Dependencias registradas en `package.json`
 
-### Aprobación ⬜
+### Aprobación ✅
 - [x] Login con autenticación propia (JWT + bcrypt)
 - [x] Al menos 2 niveles de acceso (USER / ADMIN)
 - [x] Rutas protegidas por nivel de acceso
