@@ -85,6 +85,6 @@ Estados: **Hecha**, **En curso**, **Pendiente**.
 
 | Issue | Detalle |
 |---|---|
-| Sin deploy | Las fotos se guardan en el disco del servidor: el hosting elegido tiene que conservarlas entre deploys |
+| Sin deploy | Plan en [deploy.md](deploy.md), todo gratis (Vercel, Render, Aiven y Cloudinary). Como Render gratis borra el disco en cada reinicio, falta pasar la subida de fotos a Cloudinary |
 | Sin webhook de Mercado Pago | El pago se confirma consultando a Mercado Pago; con el deploy en https se podría sumar el webhook |
 | Recorrido visual pendiente | Revisar las pantallas en 375 px y 768 px y en modo claro |

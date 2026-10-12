@@ -96,7 +96,7 @@ y confirmar con los profesores si la ventana es para enviar el formulario o para
 | Días | Objetivo | Qué entra |
 |---|---|---|
 | ✅ 10/10 | Tests | Los 7 tests, la base de test y `docs/tests.md`. |
-| 11/10 a 12/10 | Decisiones y deploy | Primera minuta (fecha, hosting, quién defiende cada CU). Base, backend y frontend deployados. |
+| 11/10 a 12/10 | Decisiones y deploy | Primera minuta (fecha, deploy gratis con Cloudinary, quién defiende cada CU). Fotos en Cloudinary; base, backend y frontend deployados. |
 | 13/10 a 14/10 | Deploy probado | Probado desde un celular, con una donación de prueba. `docs/deploy.md` con links y credenciales. Recorrido visual. |
 | 15/10 | Entrega | Recargar el seed en la base del deploy, grabar el video, PR `develop` → `main`, tabla de PRs de la propuesta y formulario. |
 | 16/10 | Margen | Por si algo falla. Coordinar la defensa. |
@@ -106,8 +106,9 @@ y confirmar con los profesores si la ventana es para enviar el formulario o para
 1. Fecha de entrega.
 2. ✅ Dependencias de test: Vitest (back y front), Supertest (integración), Testing Library +
    jsdom (componente) y Playwright (E2E). Ya están agregadas: contarlo en la primera minuta.
-3. Hosting y fotos: las fotos se guardan en `backend/uploads/`. En Render gratis se borran en
-   cada redeploy; Railway con volumen persistente las conserva.
+3. Hosting y fotos: propuesto en [deploy.md](deploy.md), todo con planes gratis (Vercel,
+   Render, Aiven y Cloudinary). Como Render gratis borra el disco en cada reinicio, las fotos
+   pasan a subirse a Cloudinary en el PR de deploy. Confirmarlo en la primera minuta.
 4. Quién defiende cada CU (fila "Integrante" de [guia-defensa.md](guia-defensa.md)).
 
 ## 3. Detalle de cada pendiente
@@ -135,15 +136,15 @@ instrucciones para correrlos están en la sección "Tests" del [README.md](../RE
 
 ### 3.3 Deploy y credenciales 🟠
 
-El plan completo (opción de hosting recomendada, pasos en orden, variables, riesgos y lista de
-prueba) está en [deploy.md](deploy.md). Resumen:
+El plan completo (servicios gratis, cambio de las fotos, pasos en orden, variables, riesgos y
+lista de prueba) está en [deploy.md](deploy.md). Todo se hace con planes gratis. Resumen:
 
-| Parte | Opciones | A tener en cuenta |
+| Parte | Servicio | A tener en cuenta |
 |---|---|---|
-| Base de datos | Railway, Aiven, Clever Cloud o TiDB (MySQL gestionado) | `npx prisma db push` contra esa URL y cargar `demo-seed.sql`. Las secciones 8 y 10 del seed usan fechas relativas (Top 10 de los últimos 7 días, donaciones): recargarlas antes del video y de la entrega. La intercalación tiene que ignorar mayúsculas y tildes (`utf8mb4_0900_ai_ci`). |
-| Backend | Render o Railway | `build`, `start`, `PORT` y `CORS_ORIGINS` ya están. Variables: `DATABASE_URL`, un `JWT_SECRET` nuevo, `CORS_ORIGINS` y `FRONTEND_URL` (la URL del front), `GEMINI_API_KEY` y `MERCADOPAGO_ACCESS_TOKEN`, nunca en el repo. |
-| Frontend | Vercel o Netlify | `VITE_API_BASE_URL` apuntando al backend. Redirigir todas las rutas a `/index.html` (`vercel.json` o `public/_redirects`): sin eso, recargar `/admin` da 404. |
-| Fotos | | Ver la decisión 3 de 2.3 antes de elegir hosting. |
+| Base de datos | Aiven (MySQL gratis) | `npx prisma db push` contra esa URL y cargar `demo-seed.sql`. Las secciones 8 y 10 del seed usan fechas relativas (Top 10 de los últimos 7 días, donaciones): recargarlas antes del video y de la entrega. La intercalación tiene que ignorar mayúsculas y tildes (`utf8mb4_0900_ai_ci`). |
+| Backend | Render (plan gratis) | `build`, `start`, `PORT` y `CORS_ORIGINS` ya están. Variables: `DATABASE_URL`, un `JWT_SECRET` nuevo, `CORS_ORIGINS` y `FRONTEND_URL` (la URL del front), las 3 `CLOUDINARY_*`, `GEMINI_API_KEY` y `MERCADOPAGO_ACCESS_TOKEN`, nunca en el repo. Se apaga a los 15 minutos sin uso: el primer ingreso tarda hasta 1 minuto (avisarlo con las credenciales). |
+| Frontend | Vercel | `VITE_API_BASE_URL` apuntando al backend. Redirigir todas las rutas a `/index.html` (`frontend/vercel.json`): sin eso, recargar `/admin` da 404. |
+| Fotos | Cloudinary (gratis) | Falta el cambio de código ([deploy.md](deploy.md), sección 4.3): el backend sube cada foto a Cloudinary y guarda el link. Sin las variables `CLOUDINARY_*` (en local) se siguen guardando en `backend/uploads/`. |
 
 Después, completar la sección "Links y credenciales" de [deploy.md](deploy.md) (ya está en el
 índice): links, admin (`admindemo`), un usuario común (`juanperez`) y el comprador de prueba de
