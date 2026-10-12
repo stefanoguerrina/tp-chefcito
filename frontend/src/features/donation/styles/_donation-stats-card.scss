@@ -58,7 +58,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $spacing-md;
+  // Si el texto y el monto no entran en una línea (celular angosto), el monto baja.
+  flex-wrap: wrap;
+  gap: $spacing-xs $spacing-md;
   padding: $spacing-sm + 2px $spacing-md;
   border-radius: $radius-md;
   background: $color-surface-container;

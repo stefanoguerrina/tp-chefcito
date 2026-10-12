@@ -173,6 +173,7 @@ Cómo se llama a Cloudinary sin SDK (su API de subida firmada):
 | Chequeo de salud con la base: `GET /api/database/health` | `features/database` |
 | El frontend lee la URL del backend de `VITE_API_BASE_URL` | `frontend/src/shared/config/config.js` |
 | Regla que manda todas las rutas a `/index.html`. React Router resuelve las rutas en el navegador: sin la regla, entrar directo a `/admin` o recargar `/recetas/3` le pide ese archivo a Vercel, que no existe, y da 404 | `frontend/vercel.json` |
+| CORS del frontend: Vercel responde por defecto `Access-Control-Allow-Origin: *` (cualquier sitio puede leer sus archivos), y una auditoría lo marcó como hallazgo medio (OWASP A05). La regla `headers` lo reemplaza por el dominio del frontend. La app no se entera: el navegador no revisa CORS en los pedidos a su propio dominio, y las vistas previas de Vercel también siguen funcionando. Si cambia el dominio del frontend, cambiarlo también acá | `frontend/vercel.json` |
 
 ## 6. Paso a paso
 
@@ -375,7 +376,9 @@ prueba del 12/10/2026, hecha con Playwright en Chromium de escritorio (1366 px) 
 - **¿Por qué tarda el primer ingreso?** Render gratis apaga el backend tras 15 minutos sin uso
   y lo vuelve a encender con el primer pedido.
 - **¿Por qué hace falta CORS?** Frontend y backend están en dominios distintos; el backend solo
-  acepta pedidos del dominio del frontend.
+  acepta pedidos del dominio del frontend. El frontend tampoco deja que otros sitios lean sus
+  archivos: Vercel respondía `Access-Control-Allow-Origin: *` y `vercel.json` lo limita a su
+  propio dominio.
 - **¿Por qué la regla de redirección del frontend?** Porque las rutas las maneja React Router en
   el navegador: el hosting tiene que devolver siempre `index.html`.
 

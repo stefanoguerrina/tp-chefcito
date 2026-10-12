@@ -23,7 +23,10 @@
   border: 1px solid $color-outline-variant;
   border-radius: $radius-md;
   box-shadow: $shadow-level-2;
-  overflow: hidden;
+  // Si no entra en la pantalla (celular con el teclado abierto), scrollea adentro.
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
   // Animación de entrada
   animation: reviewModalIn 0.2s ease-out;
 

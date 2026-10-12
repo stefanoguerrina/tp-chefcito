@@ -11,12 +11,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: $spacing-lg;
+  padding: $spacing-md;
 }
 
 .DatePickerModal-card {
+  box-sizing: border-box;
   width: 100%;
-  max-width: 300px;
+  // Más ancha que antes: con 7 columnas, cada día queda de ~40px, fácil de tocar con el dedo.
+  max-width: 340px;
+  // Si no entra en la pantalla (celular apaisado o con el teclado abierto), scrollea adentro
+  // en vez de quedar cortada: la página de atrás no se mueve con un modal abierto.
+  max-height: 100%;
+  overflow-y: auto;
   background: $color-surface-container-lowest;
   border: 1px solid $color-outline-variant;
   border-radius: $radius-lg;
@@ -47,9 +53,15 @@
   cursor: pointer;
   transition: background-color 0.15s ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: $color-surface-container-low;
     color: $color-on-background;
+  }
+
+  // Sin mes siguiente (ya se está en el mes actual): no hay fechas futuras para elegir.
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
   }
 }
 
@@ -106,6 +118,12 @@
   }
 
   &--empty {
+    cursor: default;
+  }
+
+  // Día futuro: se ve apagado y no se puede elegir.
+  &:disabled:not(&--empty) {
+    color: $color-outline;
     cursor: default;
   }
 

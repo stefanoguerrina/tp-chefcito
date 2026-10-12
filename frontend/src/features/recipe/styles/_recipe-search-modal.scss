@@ -22,7 +22,7 @@
     box-sizing: border-box;
     width: 100%;
     max-width: 420px;
-    max-height: min(520px, 80vh);
+    max-height: min(520px, 80dvh);
     display: flex;
     flex-direction: column;
     gap: $spacing-sm;

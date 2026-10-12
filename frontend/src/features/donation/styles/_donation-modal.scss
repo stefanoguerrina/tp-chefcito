@@ -4,7 +4,7 @@
 
 .DonationModal {
   max-width: 480px;
-  max-height: calc(100vh - #{$spacing-xl});
+  max-height: calc(100dvh - #{$spacing-xl});
   overflow-y: auto;
 
   &-status {

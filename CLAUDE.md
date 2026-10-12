@@ -276,7 +276,14 @@ preview and upload it on save, `useOverlayClose(onClose)` spread on a modal's ov
 closes when the press starts and ends on the backdrop, never `onClick={onClose}` (every modal
 uses it), `useDeleteConfirmation(onDelete)` for "confirm, delete, show why it failed"); reuse
 them instead of duplicating. A modal opened from inside `ScrollReveal` (it uses `transform`)
-must render through `createPortal(..., document.body)` or its fixed overlay won't cover the page.
+must render through `createPortal(..., document.body)` or its fixed overlay won't cover the page;
+the same goes for a modal opened from inside another modal whose overlay scrolls or has
+`backdrop-filter` (`DatePickerModal` already does). Every modal sets `aria-modal="true"`:
+`index.css` locks the page scroll with `html:has([aria-modal='true'])` (the mobile sidebar
+does the same in its own scss), so a new modal needs no extra code, but its card must fit the
+screen (`max-height: 100%` / `dvh` + `overflow-y: auto`, never `vh`). On touch screens
+`index.css` forces form controls to 16px (smaller makes iPhone zoom in on focus); grids use
+`minmax(min(100%, Npx), 1fr)` / `minmax(0, 1fr)` so nothing overflows a 320px phone.
 Admin tables share `AdminTablePagination`, and both category sections use `AdminCategoriesTable`.
 `AdminPage` lazy-loads each section (`SECTION_LOADERS`, preloaded after entering), keeps the
 sections already opened mounted but `hidden` (each takes `isActive` and calls

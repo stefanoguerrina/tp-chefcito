@@ -64,7 +64,7 @@ Estados: **Hecha**, **En curso**, **Pendiente**.
 | T-6.3 | Documentación: README, API, metodología, tracking y minutas ([#32](https://github.com/stefanoguerrina/tp-chefcito/pull/32)) | Stéfano | Hecha |
 | T-6.4 | Deploy de backend (Render), frontend (Vercel), base de datos (Aiven) y fotos (Cloudinary), publicado y probado el 12/10, con links y usuarios en [deploy.md](deploy.md) ([#36](https://github.com/stefanoguerrina/tp-chefcito/pull/36), [#38](https://github.com/stefanoguerrina/tp-chefcito/pull/38), Stéfano) | Gastón | Hecha |
 | T-6.5 | Video de la aplicación | Juan | Pendiente |
-| T-6.6 | Pull request de `develop` a `main` ([#37](https://github.com/stefanoguerrina/tp-chefcito/pull/37), [#39](https://github.com/stefanoguerrina/tp-chefcito/pull/39); repetirlo con lo último antes de entregar) y formulario de entrega | Stéfano | En curso |
+| T-6.6 | Pull request de `develop` a `main` ([#37](https://github.com/stefanoguerrina/tp-chefcito/pull/37), [#39](https://github.com/stefanoguerrina/tp-chefcito/pull/39), [#41](https://github.com/stefanoguerrina/tp-chefcito/pull/41); repetirlo con lo último antes de entregar) y formulario de entrega | Stéfano | En curso |
 
 ## Bugs corregidos
 
@@ -82,10 +82,15 @@ Estados: **Hecha**, **En curso**, **Pendiente**.
 | En una base vacía, el primer registro creaba el rol "Usuario" con el id 1 (el de administrador) y todo usuario nuevo quedaba como admin | Al registrar, primero se crea el rol "Admin" con id 1 si no existe | [#34](https://github.com/stefanoguerrina/tp-chefcito/pull/34) |
 | Las fotos subidas se perdían en el deploy, porque el disco de Render gratis se borra en cada reinicio | Las fotos se suben a Cloudinary cuando están sus variables (en local, al disco como antes) | [#36](https://github.com/stefanoguerrina/tp-chefcito/pull/36) |
 | En celular la landing no mostraba "Iniciar sesión" (solo "Registrarse"), y entre 768 y 1024 px el buscador de la barra tapaba el logo | En celular el logo queda solo con el gorro y se ven los dos botones; el buscador aparece desde 1024 px y nunca achica el logo | [#38](https://github.com/stefanoguerrina/tp-chefcito/pull/38) |
+| En celular, el primer toque en un campo del login no abría el teclado, y en iPhone tocar cualquier campo hacía zoom | Los campos del login se habilitan al tocarlos (antes de tomar el foco) y en pantallas táctiles todos los campos tienen letra de 16 px; sin zoom por doble toque | [#40](https://github.com/stefanoguerrina/tp-chefcito/pull/40) |
+| Con un modal abierto se podía seguir scrolleando la página de atrás (celular y compu) | Con cualquier modal abierto (o el menú del celular) la página no scrollea; los modales que no entran en la pantalla scrollean por dentro | [#40](https://github.com/stefanoguerrina/tp-chefcito/pull/40) |
+| En el registro desde el celular, el calendario podía abrirse fuera de la vista, empezaba en el año actual y dejaba elegir fechas futuras | El calendario se dibuja sobre toda la página, la lista de años abre en el año elegido y los días futuros no se pueden elegir | [#40](https://github.com/stefanoguerrina/tp-chefcito/pull/40) |
+| "Mis recetas" y "Donaciones" se salían de la pantalla en celulares angostos, y el navegador achicaba la página | Grillas que se adaptan al ancho (sin desbordes de 320 a 390 px) | [#40](https://github.com/stefanoguerrina/tp-chefcito/pull/40) |
+| Auditoría de seguridad: el frontend respondía `Access-Control-Allow-Origin: *` (CORS permisivo, OWASP A05), por defecto de Vercel | `frontend/vercel.json` limita esa cabecera al dominio del frontend; la API ya estaba restringida con `CORS_ORIGINS` | [#40](https://github.com/stefanoguerrina/tp-chefcito/pull/40) |
 
 ## Issues abiertos
 
 | Issue | Detalle |
 |---|---|
 | Sin webhook de Mercado Pago | El pago se confirma consultando a Mercado Pago; con el deploy en https se podría sumar el webhook |
-| Recorrido visual pendiente | Revisar las pantallas en 375 px y 768 px y en modo claro (la barra de la landing ya está revisada de 320 a 1366 px) |
+| Recorrido visual pendiente | Revisadas en celular (320, 360 y 390 px, modo claro) las pantallas de usuario, el panel admin, el login, el registro y el calendario. Falta 768 px y el modo oscuro en celular |

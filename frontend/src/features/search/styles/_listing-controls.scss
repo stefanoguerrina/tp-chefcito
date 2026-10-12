@@ -109,6 +109,8 @@
 .ListingSortSelect {
   display: flex;
   align-items: center;
+  // En un celular angosto el desplegable baja debajo de "Ordenar por" en vez de salirse.
+  flex-wrap: wrap;
   gap: $spacing-sm;
 
   label {

@@ -113,6 +113,8 @@
 
   &--qty strong {
     color: $color-primary;
+    // La cantidad y su unidad ("750 ml") van juntas: en celular la unidad quedaba sola abajo.
+    white-space: nowrap;
   }
 }
 

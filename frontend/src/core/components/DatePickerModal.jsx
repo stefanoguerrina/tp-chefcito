@@ -1,5 +1,6 @@
-// Modal de selección de fecha: calendario de mes propio, sin librerías externas.
+// Modal de selección de fecha de nacimiento: calendario de mes propio, sin librerías externas.
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useOverlayClose } from '../hooks/useOverlayClose.js';
 import DropdownSelect from './DropdownSelect.jsx';
 import './_date-picker-modal.scss';
@@ -22,13 +23,19 @@ const toIsoDate = (date) => {
 // Recibe: value (fecha ya elegida en formato ISO "YYYY-MM-DD", o "" si no hay ninguna),
 // onSelect(isoDate) y onClose. Muestra selectores de mes/año (en vez de solo flechas
 // prev/next) porque para una fecha de nacimiento hay que poder saltar décadas rápido.
+// Las fechas futuras se ven pero no se pueden elegir (nadie nació mañana).
 const DatePickerModal = ({ value, onSelect, onClose }) => {
-    const initialDate = value ? new Date(`${value}T00:00:00`) : new Date();
+    const today = new Date();
+    const initialDate = value ? new Date(`${value}T00:00:00`) : today;
     const [viewYear, setViewYear] = useState(initialDate.getFullYear());
     const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
     const overlayCloseProps = useOverlayClose(onClose);
 
-    const currentYear = new Date().getFullYear();
+    const currentYear = today.getFullYear();
+    const todayIso = toIsoDate(today);
+    // En el mes actual (o después) la flecha "siguiente" no tiene a dónde ir.
+    const isCurrentMonthOrLater = viewYear > currentYear
+        || (viewYear === currentYear && viewMonth >= today.getMonth());
     // Opciones de los desplegables de mes y año ({ value, label }, ver DropdownSelect).
     const monthOptions = MONTH_NAMES.map((name, index) => ({ value: index, label: name }));
     const yearOptions = [];
@@ -68,7 +75,12 @@ const DatePickerModal = ({ value, onSelect, onClose }) => {
         onClose();
     };
 
-    return (
+    // createPortal: se dibuja directo en <body>. Se abre desde adentro de otro modal (el de
+    // registro), cuyo fondo tiene backdrop-filter y scroll propio: sin el portal, el
+    // position: fixed del calendario queda atado a ese fondo y, si el registro estaba
+    // scrolleado (en el celular, para llegar a la fecha), el calendario aparece fuera de vista.
+    // Los eventos igual burbujean por el árbol de React, por eso sigue el stopPropagation.
+    return createPortal(
         <div
             className="DatePickerModal-overlay"
             onMouseDown={overlayCloseProps.onMouseDown}
@@ -105,6 +117,7 @@ const DatePickerModal = ({ value, onSelect, onClose }) => {
                         type="button"
                         className="DatePickerModal-navButton"
                         onClick={handleNextMonth}
+                        disabled={isCurrentMonthOrLater}
                         aria-label="Mes siguiente"
                     >
                         <span className="material-symbols-outlined">chevron_right</span>
@@ -121,12 +134,14 @@ const DatePickerModal = ({ value, onSelect, onClose }) => {
                     {cells.map((day, index) => {
                         const iso = day ? toIsoDate(new Date(viewYear, viewMonth, day)) : null;
                         const isSelected = Boolean(iso) && iso === value;
+                        // Las fechas ISO se pueden comparar como texto ("2026-10-13" > "2026-10-12").
+                        const isFuture = Boolean(iso) && iso > todayIso;
                         return (
                             <button
                                 type="button"
                                 key={index}
                                 className={`DatePickerModal-day${day ? '' : ' DatePickerModal-day--empty'}${isSelected ? ' DatePickerModal-day--selected' : ''}`}
-                                disabled={!day}
+                                disabled={!day || isFuture}
                                 onClick={() => handleSelectDay(day)}
                             >
                                 {day || ''}
@@ -135,7 +150,8 @@ const DatePickerModal = ({ value, onSelect, onClose }) => {
                     })}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

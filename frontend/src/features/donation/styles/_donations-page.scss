@@ -45,7 +45,9 @@
 // ---- Grilla de tarjetas ----
 .DonationsPage-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  // minmax(0, 1fr) y no 1fr: con 1fr la columna no se achica por debajo de lo que mide su
+  // contenido, y en un celular de 320px las tarjetas se salían de la pantalla.
+  grid-template-columns: minmax(0, 1fr);
   gap: $spacing-md;
 
   @include respond-to(lg) {

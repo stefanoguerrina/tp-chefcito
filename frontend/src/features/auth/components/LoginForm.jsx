@@ -26,11 +26,18 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister, initialIdentif
 
     // Los inputs arrancan como readOnly para que el navegador no los autocomplete solo
     // al abrir el modal (Chrome rellena de una los campos con autoComplete="username"/
-    // "current-password" apenas se montan, sin que el usuario haga nada). Se sacan al
-    // primer focus: ahí sí es el usuario quien decide tocar el campo y, si quiere, elegir
-    // una credencial guardada del desplegable nativo del navegador.
+    // "current-password" apenas se montan, sin que el usuario haga nada). Se sacan cuando
+    // el usuario toca el campo: ahí sí decide él y, si quiere, elige una credencial guardada.
+    // Se sacan en onPointerDown (antes de que el campo tome el foco) y no en onFocus: en el
+    // celular, un campo readOnly que recibe el foco no abre el teclado, y había que tocarlo
+    // dos veces. onFocus queda para quien llega con Tab desde el teclado.
     const [autofillLocked, setAutofillLocked] = useState(true);
     const handleUnlockAutofill = () => setAutofillLocked(false);
+    const unlockProps = {
+        readOnly: autofillLocked,
+        onPointerDown: handleUnlockAutofill,
+        onFocus: handleUnlockAutofill
+    };
 
     return (
         <AuthModalLayout titleId={TITLE_ID} onClose={onClose}>
@@ -51,8 +58,7 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister, initialIdentif
                         id="login-identifier"
                         name="emailLogIn"
                         autoComplete="username"
-                        readOnly={autofillLocked}
-                        onFocus={handleUnlockAutofill}
+                        {...unlockProps}
                         value={form.email}
                         onChange={(event) => handleInputChange(event, "email")}
                         {...getFieldAriaProps("login-identifier", { error: fieldErrors.email, isRequired: true })}
@@ -64,8 +70,7 @@ const LoginForm = ({ onClose, onLoginSession, onSwitchToRegister, initialIdentif
                         id="login-password"
                         name="passwordLogIn"
                         autoComplete="current-password"
-                        readOnly={autofillLocked}
-                        onFocus={handleUnlockAutofill}
+                        {...unlockProps}
                         // Si ya viene el usuario (recién registrado), el cursor arranca acá.
                         autoFocus={Boolean(initialIdentifier)}
                         value={form.password}
