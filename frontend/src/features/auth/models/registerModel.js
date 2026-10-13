@@ -5,11 +5,13 @@ import { mapApiFieldErrors } from "../../../shared/utils/fieldAria.js";
 
 // Estado inicial del formulario de registro.
 // telephone y birthDate son opcionales — no bloquean el envío si están vacíos.
+// passwordConfirmation solo existe en el formulario: no se manda al backend.
 export const formInitialState = {
     userName: "",
     formalName: "",
     surName: "",
     password: "",
+    passwordConfirmation: "",
     email: "",
     telephone: "",
     birthDate: ""
@@ -46,6 +48,10 @@ const PHONE_MAX_DIGITS = 11;
 // El backend guarda hasta 20 caracteres contando la característica ("+54 "): este es el
 // máximo que se puede escribir en el campo.
 export const PHONE_NUMBER_MAX_LENGTH = 20 - `${PHONE_COUNTRY_PREFIX} `.length;
+
+// Mensaje cuando la confirmación no es igual a la contraseña (lo usa también useRegisterForm
+// para avisarlo mientras se escribe).
+export const PASSWORDS_MISMATCH_MESSAGE = "Las contraseñas no coinciden.";
 
 // Antigüedad máxima de una fecha de nacimiento (la misma que ofrece DatePickerModal).
 const BIRTH_DATE_MAX_YEARS_AGO = 110;
@@ -135,6 +141,12 @@ export const validateRegisterForm = (form) => {
         errors.password = `No puede superar los ${PASSWORD_MAX_LENGTH} caracteres.`;
     }
 
+    if (!form.passwordConfirmation) {
+        errors.passwordConfirmation = "Repetí la contraseña.";
+    } else if (form.passwordConfirmation !== form.password) {
+        errors.passwordConfirmation = PASSWORDS_MISMATCH_MESSAGE;
+    }
+
     const telephoneError = getPhoneError(form.telephone);
     if (telephoneError) errors.telephone = telephoneError;
 
@@ -164,7 +176,8 @@ export const mapRegisterApiErrors = (fieldErrors) =>
 
 // Arma el body que espera el backend a partir del formulario (lo usan el registro y el
 // alta de usuarios del panel admin, que piden los mismos datos).
-// Recibe: form. Devuelve: { username, name, lastName, email, password, phone, birthDate }.
+// Recibe: form. Devuelve: { username, name, lastName, email, password, phone, birthDate }
+// (sin passwordConfirmation, que solo sirve para revisar la contraseña antes de enviar).
 export const toRegisterPayload = (form) => ({
     username: form.userName.trim(),
     name: form.formalName.trim(),

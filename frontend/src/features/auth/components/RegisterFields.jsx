@@ -1,5 +1,5 @@
 // Campos del formulario de alta de una cuenta (nombre, apellido, usuario, email, teléfono,
-// fecha de nacimiento y contraseña). Los comparten el registro (RegisterForm) y el alta de
+// fecha de nacimiento, contraseña y su confirmación). Los comparten el registro (RegisterForm) y el alta de
 // un usuario desde el panel admin (AdminCreateUserModal), así los dos piden lo mismo y con
 // las mismas validaciones. Desde sm van de a dos por fila (AuthModal-row).
 import { useState } from "react";
@@ -31,6 +31,7 @@ function RegisterFields({ form, fieldErrors, onInputChange, onDateChange, idPref
         phone: `${idPrefix}-phone`,
         birthDate: `${idPrefix}-birthdate`,
         password: `${idPrefix}-password`,
+        passwordConfirmation: `${idPrefix}-password-confirmation`,
     };
 
     return (
@@ -136,6 +137,25 @@ function RegisterFields({ form, fieldErrors, onInputChange, onDateChange, idPref
                     {...getFieldAriaProps(ids.password, {
                         error: fieldErrors.password,
                         hint: PASSWORD_HINT,
+                        isRequired: true
+                    })}
+                />
+            </AuthField>
+
+            <AuthField
+                id={ids.passwordConfirmation}
+                label="Confirmar contraseña"
+                isRequired
+                error={fieldErrors.passwordConfirmation}
+            >
+                <PasswordInput
+                    id={ids.passwordConfirmation}
+                    autoComplete="new-password"
+                    maxLength={PASSWORD_MAX_LENGTH}
+                    value={form.passwordConfirmation}
+                    onChange={(event) => onInputChange(event, "passwordConfirmation")}
+                    {...getFieldAriaProps(ids.passwordConfirmation, {
+                        error: fieldErrors.passwordConfirmation,
                         isRequired: true
                     })}
                 />
