@@ -65,14 +65,21 @@ export async function updateUserRecipe(
   return { ok: true, userRecipe };
 }
 
-// Elimina por completo el registro userrecipe del usuario para una receta.
+// Quita la receta de los guardados del usuario.
+// Si el usuario la reseñó, solo se marca isSaved = false: borrar el registro userrecipe
+// borraría en cascada sus reviews (FK con onDelete: Cascade). Sin reviews, se elimina.
 export async function deleteUserRecipe(
   idUser: number,
   idRecipe: number
 ): Promise<{ ok: true } | { ok: false; reason: 'not_found' }> {
   const existing = await userRecipeRepository.findOne(idUser, idRecipe);
-  if (!existing) return { ok: false, reason: 'not_found' };
+  if (!existing?.isSaved) return { ok: false, reason: 'not_found' };
 
-  await userRecipeRepository.delete(idUser, idRecipe);
+  const reviewCount = await userRecipeRepository.countReviews(idUser, idRecipe);
+  if (reviewCount > 0) {
+    await userRecipeRepository.update(idUser, idRecipe, { isSaved: false });
+  } else {
+    await userRecipeRepository.delete(idUser, idRecipe);
+  }
   return { ok: true };
 }

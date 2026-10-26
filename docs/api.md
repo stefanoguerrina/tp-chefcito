@@ -174,7 +174,7 @@ El usuario siempre es el del token.
 | GET | `/recipes/:idRecipe/save` | Token | | 200 estado de guardado · 404 |
 | POST | `/recipes/:idRecipe/save` | Token | `isSaved` opcional | 201 · 404 · 409 ya guardada |
 | PATCH | `/recipes/:idRecipe/save` | Token | `isSaved` | 200 · 404 |
-| DELETE | `/recipes/:idRecipe/save` | Token | | 200 · 404 |
+| DELETE | `/recipes/:idRecipe/save` | Token | | 200 (si la reseñaste, solo pasa a `isSaved: false` para no borrar tus reseñas) · 404 no guardada |
 | GET | `/saved-recipes/:idUser` | Dueño/Admin | | 200 recetas guardadas del usuario |
 
 ## Inventario

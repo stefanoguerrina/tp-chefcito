@@ -62,6 +62,10 @@ export const userRecipeRepository = {
       include: withRecipe,
     }),
 
+  // Cuenta las reviews que el usuario dejó sobre la receta (cuelgan de su userrecipe).
+  countReviews: (idUser: number, idRecipe: number) =>
+    prisma.review.count({ where: { idUser, idRecipe } }),
+
   // Elimina el registro userrecipe por completo (ver nota de cascada arriba).
   delete: (idUser: number, idRecipe: number) =>
     prisma.userrecipe.delete({
